@@ -1,0 +1,56 @@
+syntax = "proto2";
+package gpx;
+option go_package = "gpx/;gpx";
+
+message TrackLog {
+	optional string creator = 1;
+	optional string name = 2;
+    optional int64 nano_time = 3;
+	optional TrackLink link = 4;
+    repeated WayPoint way_points = 5;
+    repeated Track tracks = 6;
+}
+
+message TrackLink {
+	required string url = 1;
+	optional string text = 2;
+}
+
+message WayPoint {
+    required double latitude = 1;
+    required double longitude = 2;
+    optional int64 nano_time = 3;
+    optional double elevation = 4;
+    optional string name = 5;
+    optional string description = 6;
+    optional string comment = 7;
+    optional string symbol = 8;
+}
+
+message Track {
+    optional string name = 1;
+    optional string type = 2;
+    optional string comment = 3;
+    repeated Segment segments = 4;
+}
+
+message Segment {
+    repeated Point points = 1;
+}
+
+message Point {
+    required double latitude = 1;
+    required double longitude = 2;
+    optional int64 nano_time = 3;
+    optional double elevation = 4;
+}
+
+message TrackStats {
+    required double distance = 1;
+    optional int64 nano_time = 7;
+    required int64 nano_duration = 2;
+    required double elevation_gain = 3;
+    required double elevation_loss = 4;
+    optional double elevation_min = 5;
+    optional double elevation_max = 6;
+}
