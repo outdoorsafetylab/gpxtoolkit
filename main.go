@@ -28,6 +28,7 @@ func main() {
 	marker := &milestone.Marker{
 		Distance:     100,
 		NameTemplate: `5{{printf "%02d" .Index}}/{{printf "%.1f" .Kilometer}}K`,
+		Reverse:      true,
 	}
 	err = marker.Mark(log)
 	if err != nil {

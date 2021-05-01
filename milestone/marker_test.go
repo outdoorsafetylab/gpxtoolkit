@@ -10,7 +10,10 @@ func TestMarker(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	marker := &Marker{Distance: 100}
+	marker := &Marker{
+		Distance:     100,
+		NameTemplate: `{{printf "%.1f" .Kilometer}}K`,
+	}
 	err = marker.Mark(log)
 	if err != nil {
 		t.Fatal(err)

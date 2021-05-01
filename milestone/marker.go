@@ -14,6 +14,7 @@ type Marker struct {
 	Distance     float64
 	NameTemplate string
 	Symbol       string
+	Reverse      bool
 }
 
 func (m *Marker) Mark(log *gpx.TrackLog) error {
@@ -23,7 +24,15 @@ func (m *Marker) Mark(log *gpx.TrackLog) error {
 	}
 	for _, t := range log.Tracks {
 		for _, s := range t.Segments {
-			markers, err := m.mark(tmpl, s.Points)
+			points := s.Points
+			if m.Reverse {
+				n := len(s.Points)
+				points = make([]*gpx.Point, n)
+				for i, p := range s.Points {
+					points[n-1-i] = p
+				}
+			}
+			markers, err := m.mark(tmpl, points)
 			if err != nil {
 				return err
 			}
