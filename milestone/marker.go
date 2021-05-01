@@ -13,6 +13,7 @@ import (
 type Marker struct {
 	Distance     float64
 	NameTemplate string
+	Symbol       string
 }
 
 func (m *Marker) Mark(log *gpx.TrackLog) error {
@@ -49,26 +50,21 @@ func (m *Marker) mark(tmpl *template.Template, points []*gpx.Point) ([]*gpx.WayP
 				dlon := lon2 - lon1
 				ele1 := a.GetElevation()
 				ele2 := b.GetElevation()
-				dele := float64(-1)
-				if a.Elevation != nil && b.Elevation != nil {
-					dele = ele2 - ele1
-				}
+				dele := ele2 - ele1
 				t1 := a.Time()
 				t2 := b.Time()
-				dt := time.Duration(-1)
-				if a.NanoTime != nil && b.NanoTime != nil {
-					dt = t2.Sub(t1)
-				}
+				dt := t2.Sub(t1)
 				pos := first
 				for pos < dist {
 					ratio := pos / dist
 					lat := lat1 + dlat*ratio
 					lon := lon1 + dlon*ratio
 					payload := &templatePayload{
-						Index:  len(res),
-						Number: len(res) + 1,
-						Meter:  float64(len(res)+1) * m.Distance,
+						Index: len(res),
 					}
+					payload.Number = payload.Index + 1
+					payload.Meter = float64(payload.Number) * m.Distance
+					payload.Kilometer = payload.Meter / 1000
 					var buf bytes.Buffer
 					err := tmpl.Execute(&buf, payload)
 					if err != nil {
@@ -79,11 +75,14 @@ func (m *Marker) mark(tmpl *template.Template, points []*gpx.Point) ([]*gpx.WayP
 						Longitude: proto.Float64(lon),
 						Name:      proto.String(buf.String()),
 					}
-					if dele > 0 {
+					if a.Elevation != nil && b.Elevation != nil {
 						wpt.Elevation = proto.Float64(ele1 + dele*ratio)
 					}
-					if dt > 0 {
+					if a.NanoTime != nil && b.NanoTime != nil {
 						wpt.NanoTime = proto.Int64(t1.Add(dt * time.Duration(ratio)).UnixNano())
+					}
+					if m.Symbol != "" {
+						wpt.Symbol = proto.String(m.Symbol)
 					}
 					res = append(res, wpt)
 					pos += m.Distance
@@ -99,7 +98,8 @@ func (m *Marker) mark(tmpl *template.Template, points []*gpx.Point) ([]*gpx.WayP
 }
 
 type templatePayload struct {
-	Index  int
-	Number int
-	Meter  float64
+	Index     int
+	Number    int
+	Meter     float64
+	Kilometer float64
 }

@@ -22,16 +22,16 @@ func main() {
 	}
 	log, err := gpx.Open(file)
 	if err != nil {
-		fmt.Printf("Failed to open GPX '%s': %s\n", file, err.Error())
+		fmt.Fprintf(os.Stderr, "Failed to open GPX '%s': %s\n", file, err.Error())
 		os.Exit(1)
 	}
 	marker := &milestone.Marker{
 		Distance:     100,
-		NameTemplate: `5{{printf "%02d" .Index}}自動`,
+		NameTemplate: `5{{printf "%02d" .Index}}/{{printf "%.1f" .Kilometer}}K`,
 	}
 	err = marker.Mark(log)
 	if err != nil {
-		fmt.Printf("Failed to mark GPX: %s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "Failed to mark GPX: %s\n", err.Error())
 		os.Exit(1)
 	}
 	writer := &gpx.Writer{
@@ -40,7 +40,7 @@ func main() {
 	}
 	err = writer.Write(log)
 	if err != nil {
-		fmt.Printf("Failed to write GPX: %s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "Failed to write GPX: %s\n", err.Error())
 		os.Exit(1)
 	}
 }
