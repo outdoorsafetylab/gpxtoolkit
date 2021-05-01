@@ -6,6 +6,7 @@ all: $(PBGO)
 
 test:
 	go test ./gpx
+	go test ./milestone
 
 include .make/golangci-lint.mk
 include .make/protoc.mk

@@ -19,7 +19,7 @@ func (st *TrackStats) AddTime(duration time.Duration) {
 }
 
 func (st *TrackStats) StartTime() time.Time {
-	return time.Unix(0, st.GetNanoTime())
+	return time.Unix(0, st.GetNanoTime()).UTC()
 }
 
 func (st *TrackStats) Duration() time.Duration {

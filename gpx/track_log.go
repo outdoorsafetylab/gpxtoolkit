@@ -14,7 +14,7 @@ type TrackLogCorrector interface {
 }
 
 func (log *TrackLog) Time() time.Time {
-	return time.Unix(0, log.GetNanoTime())
+	return time.Unix(0, log.GetNanoTime()).UTC()
 }
 
 func (log *TrackLog) Start() *Point {

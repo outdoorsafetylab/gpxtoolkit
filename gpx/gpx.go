@@ -3,6 +3,7 @@ package gpx
 import (
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"time"
 
@@ -10,6 +11,15 @@ import (
 
 	"google.golang.org/protobuf/proto"
 )
+
+func Open(file string) (*TrackLog, error) {
+	r, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	parser := &Parser{}
+	return parser.Parse(r)
+}
 
 type Parser struct {
 }
@@ -192,10 +202,10 @@ func (gw *Writer) Write(log *TrackLog) error {
 				return err
 			}
 		}
+		indent.level--
 		if _, err := w.Write([]byte(fmt.Sprintf(`%s</metadata>%s`, indent, newline))); err != nil {
 			return err
 		}
-		indent.level--
 	}
 	for _, wpt := range log.WayPoints {
 		if _, err := w.Write([]byte(fmt.Sprintf(`%s<wpt lat="%f" lon="%f">%s`, indent, wpt.GetLatitude(), wpt.GetLongitude(), newline))); err != nil {
@@ -287,10 +297,10 @@ func (gw *Writer) Write(log *TrackLog) error {
 				return err
 			}
 		}
+		indent.level--
 		if _, err := w.Write([]byte(fmt.Sprintf(`%s</trk>%s`, indent, newline))); err != nil {
 			return err
 		}
-		indent.level--
 	}
 	indent.level--
 	if _, err := w.Write([]byte(fmt.Sprintf(`%s</gpx>%s`, indent, newline))); err != nil {

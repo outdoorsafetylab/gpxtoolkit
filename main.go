@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"gpxtoolkit/gpx"
+	"gpxtoolkit/milestone"
 	"os"
 )
 
@@ -19,15 +20,18 @@ func main() {
 		help(progname)
 		os.Exit(1)
 	}
-	r, err := os.Open(file)
+	log, err := gpx.Open(file)
 	if err != nil {
-		fmt.Printf("Failed to open file '%s': %s\n", file, err.Error())
+		fmt.Printf("Failed to open GPX '%s': %s\n", file, err.Error())
 		os.Exit(1)
 	}
-	parser := &gpx.Parser{}
-	log, err := parser.Parse(r)
+	marker := &milestone.Marker{
+		Distance:     100,
+		NameTemplate: `5{{printf "%02d" .Index}}自動`,
+	}
+	err = marker.Mark(log)
 	if err != nil {
-		fmt.Printf("Failed to read GPX '%s': %s\n", file, err.Error())
+		fmt.Printf("Failed to mark GPX: %s\n", err.Error())
 		os.Exit(1)
 	}
 	writer := &gpx.Writer{
