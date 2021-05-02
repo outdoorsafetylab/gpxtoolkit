@@ -1,0 +1,19 @@
+steps:
+- name: gcr.io/cloud-builders/docker
+  args:
+  - build
+  - -t
+  - $_IMAGE_NAME
+  - .
+- name: gcr.io/cloud-builders/docker
+  args:
+  - push
+  - $_IMAGE_NAME
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - run
+  - deploy
+  - $_SERVICE_NAME
+  - --image=$_IMAGE_NAME
+  - --region=$_REGION
+  - --platform=managed
