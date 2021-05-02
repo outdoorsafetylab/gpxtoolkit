@@ -18,6 +18,7 @@ import (
 
 var progname string
 var nameTemplate = `5{{printf "%02d" .Index}}/{{printf "%.1f" .Kilometer}}K`
+var webroot = "./webroot"
 
 func help(progname string) {
 	fmt.Printf("Usage: %s <gpx>\n", progname)
@@ -36,7 +37,8 @@ func main() {
 	}
 	flag.BoolVar(&daemon, "d", daemon, "start a daemon")
 	flag.IntVar(&port, "p", port, "HTTP port")
-	flag.StringVar(&nameTemplate, "n", nameTemplate, "Template of waypint name")
+	flag.StringVar(&nameTemplate, "n", nameTemplate, "template of waypint name")
+	flag.StringVar(&webroot, "w", webroot, "web root dir")
 	flag.Parse()
 	var err error
 	if daemon {
@@ -91,7 +93,7 @@ func startDaemon(port int) error {
 	r := mux.NewRouter()
 	s := r.PathPrefix("/cgi").Subrouter()
 	s.HandleFunc("/milestones", milestonesHandler).Methods("POST")
-	r.NotFoundHandler = http.FileServer(http.Dir("./webroot"))
+	r.NotFoundHandler = http.FileServer(http.Dir(webroot))
 	log.Printf("Listening port %d...", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
 	if err != nil {

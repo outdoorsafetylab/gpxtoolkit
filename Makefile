@@ -1,6 +1,8 @@
 PROTOS := $(wildcard *.proto) $(wildcard */*.proto) $(wildcard */*/*.proto)
 PBGO := $(PROTOS:.proto=.pb.go)
 
+IMAGE_NAME := outdoorsafetylab/gpxtoolkit
+
 all: $(PBGO)
 	go build -o gpxtoolkit .
 
@@ -14,3 +16,15 @@ include .make/protoc-gen-go.mk
 
 lint: $(GOLANGCI_LINT)
 	$(realpath $(GOLANGCI_LINT)) run
+
+docker/build:
+	docker build --network=host --force-rm \
+		$(if $(call eq,$(no-cache),yes),--no-cache --pull,) \
+		-t $(IMAGE_NAME) \
+		-f Dockerfile \
+		.
+
+docker/run:
+	docker run -it --rm \
+		--network=host \
+		$(IMAGE_NAME)
