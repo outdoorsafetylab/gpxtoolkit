@@ -21,6 +21,10 @@ func Open(file string) (*TrackLog, error) {
 	return parser.Parse(r)
 }
 
+func Parse(r io.Reader) (*TrackLog, error) {
+	return (&Parser{}).Parse(r)
+}
+
 type Parser struct {
 }
 

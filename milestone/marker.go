@@ -3,8 +3,8 @@ package milestone
 import (
 	"bytes"
 	"gpxtoolkit/gpx"
-	"html/template"
 	"math"
+	"text/template"
 	"time"
 
 	"google.golang.org/protobuf/proto"
@@ -12,16 +12,22 @@ import (
 
 type Marker struct {
 	Distance     float64
-	NameTemplate string
+	NameTemplate *template.Template
 	Symbol       string
 	Reverse      bool
 }
 
 func (m *Marker) Mark(log *gpx.TrackLog) error {
-	tmpl, err := template.New("").Parse(m.NameTemplate)
+	marks, err := m.Marks(log)
 	if err != nil {
 		return err
 	}
+	log.WayPoints = append(log.WayPoints, marks...)
+	return nil
+}
+
+func (m *Marker) Marks(log *gpx.TrackLog) ([]*gpx.WayPoint, error) {
+	allMarks := make([]*gpx.WayPoint, 0)
 	for _, t := range log.Tracks {
 		for _, s := range t.Segments {
 			points := s.Points
@@ -32,17 +38,17 @@ func (m *Marker) Mark(log *gpx.TrackLog) error {
 					points[n-1-i] = p
 				}
 			}
-			markers, err := m.mark(tmpl, points)
+			marks, err := m.marks(points)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			log.WayPoints = append(log.WayPoints, markers...)
+			allMarks = append(allMarks, marks...)
 		}
 	}
-	return nil
+	return allMarks, nil
 }
 
-func (m *Marker) mark(tmpl *template.Template, points []*gpx.Point) ([]*gpx.WayPoint, error) {
+func (m *Marker) marks(points []*gpx.Point) ([]*gpx.WayPoint, error) {
 	res := make([]*gpx.WayPoint, 0)
 	remainder := float64(0)
 	var a *gpx.Point
@@ -75,7 +81,7 @@ func (m *Marker) mark(tmpl *template.Template, points []*gpx.Point) ([]*gpx.WayP
 					payload.Meter = float64(payload.Number) * m.Distance
 					payload.Kilometer = payload.Meter / 1000
 					var buf bytes.Buffer
-					err := tmpl.Execute(&buf, payload)
+					err := m.NameTemplate.Execute(&buf, payload)
 					if err != nil {
 						return nil, err
 					}
