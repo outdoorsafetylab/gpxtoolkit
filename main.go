@@ -17,8 +17,15 @@ import (
 )
 
 var progname string
-var nameTemplate = `5{{printf "%02d" .Index}}/{{printf "%.1f" .Kilometer}}K`
-var webroot = "./webroot"
+var command = &Command{
+	template: `{{printf "%.1f" .Kilometer}}K`,
+	distance: 100,
+	reverse:  false,
+}
+var server = &Server{
+	webroot: "./webroot",
+	port:    8080,
+}
 
 func help(progname string) {
 	fmt.Printf("Usage: %s <gpx>\n", progname)
@@ -27,31 +34,38 @@ func help(progname string) {
 func main() {
 	progname = filepath.Base(os.Args[0])
 	daemon := false
-	port := 8080
 	env := os.Getenv("PORT")
 	if env != "" {
 		val, err := strconv.ParseInt(env, 10, 32)
 		if err != nil {
-			port = int(val)
+			server.port = int(val)
 		}
 	}
-	flag.BoolVar(&daemon, "d", daemon, "start a daemon")
-	flag.IntVar(&port, "p", port, "HTTP port")
-	flag.StringVar(&nameTemplate, "n", nameTemplate, "template of waypint name")
-	flag.StringVar(&webroot, "w", webroot, "web root dir")
+	flag.BoolVar(&daemon, "D", daemon, "run as a HTTP server")
+	flag.IntVar(&server.port, "p", server.port, "HTTP port")
+	flag.Float64Var(&command.distance, "d", command.distance, "distance between milestone (in meter)")
+	flag.BoolVar(&command.reverse, "r", command.reverse, "create milestone in reverse way")
+	flag.StringVar(&command.template, "n", command.template, "template of milestone name")
+	flag.StringVar(&server.webroot, "w", server.webroot, "web root dir")
 	flag.Parse()
 	var err error
 	if daemon {
-		err = startDaemon(port)
+		err = server.Run()
 	} else {
-		err = startCommand()
+		err = command.Run()
 	}
 	if err != nil {
 		os.Exit(1)
 	}
 }
 
-func startCommand() error {
+type Command struct {
+	template string
+	distance float64
+	reverse  bool
+}
+
+func (c *Command) Run() error {
 	file := flag.Arg(0)
 	if file == "" {
 		help(progname)
@@ -62,15 +76,15 @@ func startCommand() error {
 		fmt.Fprintf(os.Stderr, "Failed to open GPX '%s': %s\n", file, err.Error())
 		return err
 	}
-	tmpl, err := template.New("").Parse(nameTemplate)
+	tmpl, err := template.New("").Parse(c.template)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to parse template: %s\n", err.Error())
 		return err
 	}
 	marker := &milestone.Marker{
-		Distance:     100,
+		Distance:     c.distance,
 		NameTemplate: tmpl,
-		Reverse:      false,
+		Reverse:      c.reverse,
 	}
 	err = marker.Mark(log)
 	if err != nil {
@@ -89,15 +103,20 @@ func startCommand() error {
 	return nil
 }
 
-func startDaemon(port int) error {
+type Server struct {
+	webroot string
+	port    int
+}
+
+func (s *Server) Run() error {
 	r := mux.NewRouter()
-	s := r.PathPrefix("/cgi").Subrouter()
-	s.HandleFunc("/milestones", milestonesHandler).Methods("POST")
-	r.NotFoundHandler = http.FileServer(http.Dir(webroot))
-	log.Printf("Listening port %d...", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
+	sub := r.PathPrefix("/cgi").Subrouter()
+	sub.HandleFunc("/milestones", milestonesHandler).Methods("POST")
+	r.NotFoundHandler = http.FileServer(http.Dir(s.webroot))
+	log.Printf("Listening port %d...", s.port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to listen %d: %s\n", port, err.Error())
+		fmt.Fprintf(os.Stderr, "Failed to listen %d: %s\n", s.port, err.Error())
 	}
 	return err
 }
