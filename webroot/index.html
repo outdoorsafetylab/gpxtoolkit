@@ -50,8 +50,9 @@
             </div>
             <div class="modal-body">
               <p>本工具可讀取原始GPX檔案，依指定間距計算出里程航點 (例如 0.1K, 0.2K 等等) 後產生新的GPX檔案。</p>
-              <p>本工具源於桃園市山岳協會及中華民國山岳協會持續推動<a href="https://www.tytaaa.org.tw/news/7">登山路標的標準化及建置</a>，為簡化及加速路標架設的GPX前置處理作業，因此開始創作此工具。相關問題回報及建議請來信：<code>outdoorsafetylab 小老鼠 gmail.com</code></p>
-              <p>如果您有 web 前端或 golang 後端技能，也歡迎在<a href="https://github.com/outdoorsafetylab/gpxtoolkit">GitHub</a>上加入我們持續改善此工具！</p>
+              <p>本工具源於桃園市山岳協會及中華民國山岳協會持續推動<a href="https://www.tytaaa.org.tw/news/7" target="_blank">登山路標的標準化及建置</a>，為簡化及加速路標架設的GPX前置處理作業，因此開始創作此工具。</p>
+              <p>相關問題回報及建議請來信：<code>outdoorsafetylab 小老鼠 gmail.com</code></p>
+              <p>如果您有 web 前端或 golang 後端技能，也歡迎在<a href="https://github.com/outdoorsafetylab/gpxtoolkit" target="_blank">GitHub</a>上加入我們持續改善此工具！</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
@@ -88,14 +89,14 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
             </div>
             <div class="modal-body">
-              <p>里程航點名稱採用 <a href="https://golang.org/pkg/text/template/">Go 語言樣版語法</a>，並提供以下變數可供使用：</p>
+              <p>里程航點名稱採用 <a href="https://golang.org/pkg/text/template/" target="_blank">Go 語言樣版語法</a>，並提供以下變數可供使用：</p>
               <ul>
                 <li><b>.Index</b>: 里程索引，整數，從0開始。</li>
                 <li><b>.Number</b>: 里程號碼，整數，從1開始。</li>
                 <li><b>.Meter</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
                 <li><b>.Kilometer</b>: 里程距離，浮點數(小數)，以公里計算。</li>
               </ul>
-              <p>範例：<code>CT5{{printf "%02d" .Index}}</code><br/>產出結果：<b>CT500</b>, <b>CT501</b>, <b>CT502</b>...</p>
+              <p>範例：<code>5{{printf "%02d" .Index}}</code><br/>產出結果：<b>500</b>, <b>501</b>, <b>502</b>...</p>
               <p>範例：<code>{{printf "%.1f" .Kilometer}}K</code><br/>產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
             </div>
             <div class="modal-footer">
