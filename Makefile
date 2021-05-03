@@ -26,5 +26,5 @@ docker/build:
 
 docker/run:
 	docker run -it --rm \
-		--network=host \
+		-p 8080:8080 \
 		$(IMAGE_NAME)
