@@ -10,6 +10,7 @@ import (
 	"gpxtoolkit/router"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -46,6 +47,12 @@ func main() {
 	}
 	env = os.Getenv("ELEVATION_URL")
 	if env != "" {
+		url, err := url.Parse(env)
+		if err != nil || (url.Scheme != "http" && url.Scheme != "https") {
+			log.Printf("Invalid URL of elevation service: '%s'", env)
+			os.Exit(1)
+			return
+		}
 		log.Printf("Using elevation service: %s", env)
 		service = &elevation.OutdoorSafetyLab{
 			Client: http.DefaultClient,
