@@ -41,4 +41,4 @@ steps:
   - --image=$_IMAGE_NAME
   - --region=$_REGION
   - --platform=managed
-  - --update-env-vars=ELEVATION_URL=_ELEVATION_URL,ELEVATION_TOKEN=_ELEVATION_TOKEN
+  - --update-env-vars=ELEVATION_URL=$_ELEVATION_URL,ELEVATION_TOKEN=$_ELEVATION_TOKEN
