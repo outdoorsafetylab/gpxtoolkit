@@ -3,6 +3,7 @@ package milestone
 import (
 	"bytes"
 	"fmt"
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"math"
 	"text/template"
@@ -16,6 +17,7 @@ type Marker struct {
 	NameTemplate *template.Template
 	Symbol       string
 	Reverse      bool
+	Service      elevation.Service
 }
 
 func (m *Marker) MarkToGPX(log *gpx.TrackLog) error {
@@ -33,7 +35,7 @@ func (m *Marker) MarkToCSV(csv [][]string, log *gpx.TrackLog) ([][]string, error
 		return nil, err
 	}
 	for _, m := range marks {
-		csv = append(csv, []string{m.GetName(), fmt.Sprintf("%f", m.GetLatitude()), fmt.Sprintf("%f", m.GetLongitude())})
+		csv = append(csv, []string{m.GetName(), fmt.Sprintf("%f", m.GetLatitude()), fmt.Sprintf("%f", m.GetLongitude()), fmt.Sprintf("%f", m.GetElevation())})
 	}
 	return csv, nil
 }
@@ -55,6 +57,22 @@ func (m *Marker) Marks(log *gpx.TrackLog) ([]*gpx.WayPoint, error) {
 				return nil, err
 			}
 			allMarks = append(allMarks, marks...)
+		}
+	}
+	if m.Service != nil {
+		points := make([]*elevation.LatLon, len(allMarks))
+		for i, m := range allMarks {
+			points[i] = &elevation.LatLon{Lat: m.GetLatitude(), Lon: m.GetLongitude()}
+		}
+		eles, err := m.Service.Lookup(points)
+		if err != nil {
+			return nil, err
+		}
+		if len(eles) != len(allMarks) {
+			return nil, fmt.Errorf("unexpected length of elevation result: expect=%d, actual=%d", len(points), len(eles))
+		}
+		for i, m := range allMarks {
+			m.Elevation = eles[i]
 		}
 	}
 	return allMarks, nil

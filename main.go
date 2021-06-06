@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/milestone"
 	"gpxtoolkit/router"
@@ -16,6 +17,7 @@ import (
 )
 
 var progname string
+var service elevation.Service
 var command = &Command{
 	template: `{{printf "%.1f" .Kilometer}}K`,
 	distance: 100,
@@ -38,7 +40,17 @@ func main() {
 	if env != "" {
 		val, err := strconv.ParseInt(env, 10, 32)
 		if err != nil {
+			log.Printf("Using HTTP port: %s", env)
 			server.port = int(val)
+		}
+	}
+	env = os.Getenv("ELEVATION_URL")
+	if env != "" {
+		log.Printf("Using elevation service: %s", env)
+		service = &elevation.OutdoorSafetyLab{
+			Client: http.DefaultClient,
+			URL:    env,
+			Token:  os.Getenv("ELEVATION_TOKEN"),
 		}
 	}
 	flag.StringVar(&command.template, "n", command.template, "template of milestone name")
@@ -90,6 +102,7 @@ func (c *Command) Run() error {
 		Distance:     c.distance,
 		NameTemplate: tmpl,
 		Reverse:      c.reverse,
+		Service:      service,
 	}
 	switch c.format {
 	case "gpx":
@@ -110,7 +123,7 @@ func (c *Command) Run() error {
 		return nil
 	case "csv":
 		records := [][]string{
-			{"Name", "Latitude", "Longitude"},
+			{"Name", "Latitude", "Longitude", "Elevation"},
 		}
 		records, err = marker.MarkToCSV(records, log)
 		if err != nil {
@@ -139,7 +152,7 @@ type Server struct {
 }
 
 func (s *Server) Run() error {
-	r := router.NewRouter(s.webroot, progname)
+	r := router.NewRouter(s.webroot, progname, service)
 	log.Printf("Listening port %d...", s.port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
 	if err != nil {

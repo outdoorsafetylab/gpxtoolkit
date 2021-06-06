@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/csv"
 	"fmt"
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/milestone"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 
 type MilestoneController struct {
 	GPXCreator string
+	Service    elevation.Service
 }
 
 func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +48,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	marker := &milestone.Marker{
 		Distance:     distance,
 		NameTemplate: tmpl,
+		Service:      c.Service,
 	}
 	if _, ok := r.Form["reverse"]; ok {
 		marker.Reverse = true
@@ -75,7 +78,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	case "csv":
 		records := [][]string{
-			{r.FormValue("csv-name"), r.FormValue("csv-latitude"), r.FormValue("csv-longitude")},
+			{r.FormValue("csv-name"), r.FormValue("csv-latitude"), r.FormValue("csv-longitude"), r.FormValue("csv-elevation")},
 		}
 		records, err = marker.MarkToCSV(records, log)
 		if err != nil {
