@@ -1,19 +1,36 @@
 steps:
-- name: gcr.io/cloud-builders/docker
+- name: golang:1.16-alpine
   args:
-  - build
-  - -t
-  - $_IMAGE_NAME
-  - .
-- name: gcr.io/cloud-builders/docker
+  - sh
+  - -c
+  - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /workspace v1.40.1
+- name: golang:1.16-alpine
   args:
-  - push
-  - $_IMAGE_NAME
-- name: gcr.io/cloud-builders/gcloud
-  args:
+  - /workspace/golangci-lint
   - run
-  - deploy
-  - $_SERVICE_NAME
-  - --image=$_IMAGE_NAME
-  - --region=$_REGION
-  - --platform=managed
+  env:
+  - 'CGO_ENABLED=0'
+- name: golang:1.16-alpine
+  args:
+  - go
+  - test
+  - ./gpx
+  - ./milestone
+# - name: gcr.io/cloud-builders/docker
+#   args:
+#   - build
+#   - -t
+#   - $_IMAGE_NAME
+#   - .
+# - name: gcr.io/cloud-builders/docker
+#   args:
+#   - push
+#   - $_IMAGE_NAME
+# - name: gcr.io/cloud-builders/gcloud
+#   args:
+#   - run
+#   - deploy
+#   - $_SERVICE_NAME
+#   - --image=$_IMAGE_NAME
+#   - --region=$_REGION
+#   - --platform=managed
