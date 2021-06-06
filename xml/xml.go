@@ -185,7 +185,7 @@ func (s *Parser) hook() *xmlHook {
 	return nil
 }
 
-func (s *Parser) dump() string {
+func (s *Parser) Dump() string {
 	var b bytes.Buffer
 	for _, e := range s.slice {
 		b.WriteString("<")

@@ -2,6 +2,7 @@ package milestone
 
 import (
 	"bytes"
+	"fmt"
 	"gpxtoolkit/gpx"
 	"math"
 	"text/template"
@@ -17,13 +18,24 @@ type Marker struct {
 	Reverse      bool
 }
 
-func (m *Marker) Mark(log *gpx.TrackLog) error {
+func (m *Marker) MarkToGPX(log *gpx.TrackLog) error {
 	marks, err := m.Marks(log)
 	if err != nil {
 		return err
 	}
 	log.WayPoints = append(log.WayPoints, marks...)
 	return nil
+}
+
+func (m *Marker) MarkToCSV(csv [][]string, log *gpx.TrackLog) ([][]string, error) {
+	marks, err := m.Marks(log)
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range marks {
+		csv = append(csv, []string{m.GetName(), fmt.Sprintf("%f", m.GetLatitude()), fmt.Sprintf("%f", m.GetLongitude())})
+	}
+	return csv, nil
 }
 
 func (m *Marker) Marks(log *gpx.TrackLog) ([]*gpx.WayPoint, error) {

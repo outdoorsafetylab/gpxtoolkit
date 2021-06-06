@@ -119,8 +119,7 @@
       </div>
       <div class="row g-5">
         <div class="col-md-12 col-lg-12">
-          <form class="needs-validation" method="post" action="/cgi/milestones" enctype="multipart/form-data" novalidate>
-            <input type="hidden" name="filename-suffix" value="(含里程)">
+          <form class="needs-validation" id="milestone-form" method="post" action="/cgi/milestones" enctype="multipart/form-data" novalidate>
             <div class="row g-3">
               <div class="col-12">
                 <label for="gpx-file" class="form-label">GPX檔</label>
@@ -156,7 +155,13 @@
             </div>
             <hr class="my-4">
             <div class="text-center">
-              <button class="btn btn-primary" type="submit">產生里程GPX檔</button>
+              <input type="hidden" id="format" name="format" />
+              <input type="hidden" id="filename-suffix" name="filename-suffix">
+              <input type="hidden" name="csv-name" value="航點名稱" />
+              <input type="hidden" name="csv-latitude" value="緯度" />
+              <input type="hidden" name="csv-longitude" value="經度" />
+              <button class="btn btn-primary" type="button" onclick="generate('gpx', '(含里程)')">產生里程GPX檔</button>
+              <button class="btn btn-primary" type="button" onclick="generate('csv', '(僅里程)')">產生里程CSV檔</button>
             </div>
           </form>
         </div>
@@ -173,6 +178,7 @@
     integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
     crossorigin="anonymous"></script>
   <script src="https://getbootstrap.com/docs/5.0/examples/checkout/form-validation.js"></script>
+  <script src="index.js"></script>
 </body>
 
 </html>

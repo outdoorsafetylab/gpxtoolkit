@@ -13,6 +13,10 @@ test:
 include .make/golangci-lint.mk
 include .make/protoc.mk
 include .make/protoc-gen-go.mk
+include .make/watcher.mk
+
+watch: $(WATCHER)
+	$(realpath $(WATCHER)) -D
 
 lint: $(GOLANGCI_LINT)
 	$(realpath $(GOLANGCI_LINT)) run
