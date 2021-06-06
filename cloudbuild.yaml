@@ -6,6 +6,11 @@ steps:
   - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /workspace v1.40.1
 - name: golang:1.16-alpine
   args:
+  - go
+  - mod
+  - tidy
+- name: golang:1.16-alpine
+  args:
   - /workspace/golangci-lint
   - run
   env:
