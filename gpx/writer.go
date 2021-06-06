@@ -1,6 +1,8 @@
 package gpx
 
 import (
+	"bytes"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"time"
@@ -30,7 +32,7 @@ func (gw *Writer) Write(log *TrackLog) error {
 		}
 		indent.level++
 		if log.Name != nil {
-			if _, err := w.Write([]byte(fmt.Sprintf(`%s<name><![CDATA[%s]]></name>%s`, indent, log.GetName(), newline))); err != nil {
+			if _, err := w.Write([]byte(fmt.Sprintf(`%s<name>%s</name>%s`, indent, xmlEscape(log.GetName()), newline))); err != nil {
 				return err
 			}
 		}
@@ -65,17 +67,17 @@ func (gw *Writer) Write(log *TrackLog) error {
 			}
 		}
 		if wpt.Name != nil {
-			if _, err := w.Write([]byte(fmt.Sprintf(`%s<name><![CDATA[%s]]></name>%s`, indent, wpt.GetName(), newline))); err != nil {
+			if _, err := w.Write([]byte(fmt.Sprintf(`%s<name>%s</name>%s`, indent, xmlEscape(wpt.GetName()), newline))); err != nil {
 				return err
 			}
 		}
 		if wpt.Comment != nil {
-			if _, err := w.Write([]byte(fmt.Sprintf(`%s<cmt><![CDATA[%s]]></cmt>%s`, indent, wpt.GetComment(), newline))); err != nil {
+			if _, err := w.Write([]byte(fmt.Sprintf(`%s<cmt>%s</cmt>%s`, indent, xmlEscape(wpt.GetComment()), newline))); err != nil {
 				return err
 			}
 		}
 		if wpt.Description != nil {
-			if _, err := w.Write([]byte(fmt.Sprintf(`%s<desc><![CDATA[%s]]></desc>%s`, indent, wpt.GetDescription(), newline))); err != nil {
+			if _, err := w.Write([]byte(fmt.Sprintf(`%s<desc>%s</desc>%s`, indent, xmlEscape(wpt.GetDescription()), newline))); err != nil {
 				return err
 			}
 		}
@@ -95,12 +97,12 @@ func (gw *Writer) Write(log *TrackLog) error {
 		}
 		indent.level++
 		if track.Name != nil {
-			if _, err := w.Write([]byte(fmt.Sprintf(`%s<name><![CDATA[%s]]></name>%s`, indent, track.GetName(), newline))); err != nil {
+			if _, err := w.Write([]byte(fmt.Sprintf(`%s<name>%s</name>%s`, indent, xmlEscape(track.GetName()), newline))); err != nil {
 				return err
 			}
 		}
 		if track.Comment != nil {
-			if _, err := w.Write([]byte(fmt.Sprintf(`%s<cmt><![CDATA[%s]]></cmt>%s`, indent, track.GetComment(), newline))); err != nil {
+			if _, err := w.Write([]byte(fmt.Sprintf(`%s<cmt>%s</cmt>%s`, indent, xmlEscape(track.GetComment()), newline))); err != nil {
 				return err
 			}
 		}
@@ -149,6 +151,15 @@ func (gw *Writer) Write(log *TrackLog) error {
 		return err
 	}
 	return nil
+}
+
+func xmlEscape(s string) string {
+	var buf bytes.Buffer
+	err := xml.EscapeText(&buf, []byte(s))
+	if err != nil {
+		return err.Error()
+	}
+	return buf.String()
 }
 
 type indent struct {
