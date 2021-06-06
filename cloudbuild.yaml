@@ -21,6 +21,8 @@ steps:
   - test
   - ./gpx
   - ./milestone
+  env:
+  - 'CGO_ENABLED=0'
 - name: gcr.io/cloud-builders/docker
   args:
   - build
