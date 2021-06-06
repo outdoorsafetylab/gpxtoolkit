@@ -9,6 +9,7 @@ RUN mkdir -p /src/
 COPY . /src/
 WORKDIR /src/
 
+RUN go mod tidy
 RUN go build -o gpxtoolkit .
 
 FROM alpine
