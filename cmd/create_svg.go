@@ -85,10 +85,6 @@ func (c *CreateSVG) Run() error {
 		}
 		fmt.Fprintf(file, "  </g>\n")
 	}
-	// floatMinX, _ := c.getXY(bbox.Min.Latitude, bbox.Min.Longitude)
-	// _, floatMaxY := c.getXY(bbox.Max.Latitude, bbox.Max.Longitude)
-	// shiftX := (floatMinX - float64(minX)) * float64(c.TileWidth)
-	// shiftY := (float64(maxY) - floatMaxY) * float64(c.TileHeight)
 	for i, t := range log.GetTracks() {
 		fmt.Fprintf(file, "  <g id=\"track_%02d_%s\">\n", i, t.GetName())
 		for j, s := range t.GetSegments() {
@@ -135,8 +131,9 @@ func (c *CreateSVG) Run() error {
 			{Fill: "none", Stroke: "#ffffff", StrokeWidth: int(math.Max(1, maxWidthHeight*0.001)), Opacity: 0.9},
 			{Fill: "#000000", Stroke: "none", Opacity: 1.0},
 		}
+		fontSize := int(math.Max(1, maxWidthHeight*0.008))
 		for _, st := range textStyles {
-			fmt.Fprintf(file, "    <text x=\"%f\" y=\"%f\" fill=\"%s\" stroke=\"%s\" stroke-width=\"%d\" opacity=\"%f\">%s</text>\n", dx+shift, dy-shift, st.Fill, st.Stroke, st.StrokeWidth, st.Opacity, p.GetName())
+			fmt.Fprintf(file, "    <text x=\"%f\" y=\"%f\" font-size=\"%d\" fill=\"%s\" stroke=\"%s\" stroke-width=\"%d\" opacity=\"%f\">%s</text>\n", dx+shift, dy-shift, fontSize, st.Fill, st.Stroke, st.StrokeWidth, st.Opacity, p.GetName())
 		}
 		fmt.Fprintf(file, "  </g>\n")
 	}
