@@ -11,7 +11,8 @@ var command = &cmd.CreateSVG{
 	ZoomLevel:  16,
 	TileWidth:  256,
 	TileHeight: 256,
-	Padding: struct {
+	Background: "#40a040",
+	TilePadding: struct {
 		Top     int
 		Left    int
 		Botttom int
@@ -26,10 +27,11 @@ var command = &cmd.CreateSVG{
 
 func main() {
 	flag.IntVar(&command.ZoomLevel, "z", command.ZoomLevel, "zoom level")
-	flag.IntVar(&command.Padding.Top, "t", command.Padding.Top, "top padding")
-	flag.IntVar(&command.Padding.Left, "l", command.Padding.Left, "left padding")
-	flag.IntVar(&command.Padding.Botttom, "b", command.Padding.Botttom, "bottom padding")
-	flag.IntVar(&command.Padding.Right, "r", command.Padding.Right, "right padding")
+	flag.StringVar(&command.Background, "bg", command.Background, "background color")
+	flag.IntVar(&command.TilePadding.Top, "tp", command.TilePadding.Top, "top padding")
+	flag.IntVar(&command.TilePadding.Left, "lp", command.TilePadding.Left, "left padding")
+	flag.IntVar(&command.TilePadding.Botttom, "bp", command.TilePadding.Botttom, "bottom padding")
+	flag.IntVar(&command.TilePadding.Right, "rp", command.TilePadding.Right, "right padding")
 	flag.Parse()
 	command.InputFile = flag.Arg(0)
 	if command.InputFile == "" {
