@@ -63,6 +63,17 @@ func (s *Segment) Stat() *TrackStats {
 	return st
 }
 
+func (s *Segment) BoundingBox() *BoundingBox {
+	bbox := &BoundingBox{}
+	for _, p := range s.Points {
+		if p.Latitude == nil || p.Longitude == nil {
+			continue
+		}
+		bbox.Add(p.GetLatitude(), p.GetLongitude())
+	}
+	return bbox
+}
+
 func (s *Segment) ThresholdFilter(horizon, vertical, slope float64) int {
 	if math.IsNaN(horizon) && math.IsNaN(vertical) && math.IsNaN(slope) {
 		return 0

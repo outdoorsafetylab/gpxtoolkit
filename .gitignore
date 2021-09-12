@@ -1,3 +1,5 @@
 /.tool
 /go.sum
-/gpxtoolkit
+/gpxtoolkitd
+/gpxmarks
+/gpx2svg

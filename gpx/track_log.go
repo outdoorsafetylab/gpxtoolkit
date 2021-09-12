@@ -70,3 +70,11 @@ func (log *TrackLog) PointCount() int {
 	}
 	return n
 }
+
+func (log *TrackLog) BoundingBox() *BoundingBox {
+	bbox := &BoundingBox{}
+	for _, t := range log.Tracks {
+		bbox.Merge(t.BoundingBox())
+	}
+	return bbox
+}

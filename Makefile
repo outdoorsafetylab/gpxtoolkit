@@ -4,7 +4,9 @@ PBGO := $(PROTOS:.proto=.pb.go)
 IMAGE_NAME := outdoorsafetylab/gpxtoolkit
 
 all: $(PBGO)
-	go build -o gpxtoolkit .
+	go build -o gpxtoolkitd ./cmd/gpxtoolkitd
+	go build -o gpxmarks ./cmd/gpxmarks
+	go build -o gpx2svg ./cmd/gpx2svg
 
 test:
 	go test ./gpx
