@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
 	"gpxtoolkit/gpx"
+	"io"
 	"math"
+	"net/http"
 	"os"
 )
 
@@ -19,6 +22,7 @@ type CreateSVG struct {
 		Botttom int
 		Right   int
 	}
+	EmbedImage bool
 }
 
 type layer struct {
@@ -65,7 +69,7 @@ func (c *CreateSVG) Run() error {
 	width := (maxX - minX + 1) * c.TileWidth
 	height := (minY - maxY + 1) * c.TileHeight
 	maxWidthHeight := math.Max(float64(width), float64(height))
-	fmt.Fprintf(file, "<svg width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\">\n", width, height)
+	fmt.Fprintf(file, "<svg width=\"%d\" height=\"%d\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n", width, height)
 	fmt.Fprintf(file, "  <g id=\"background\">\n")
 	fmt.Fprintf(file, "    <rect width=\"%d\" height=\"%d\" fill=\"%s\"/>\n", width, height, c.Background)
 	fmt.Fprintf(file, "  </g>\n")
@@ -75,12 +79,33 @@ func (c *CreateSVG) Run() error {
 		{Name: "map", Opacity: 1.0, TileURLFormat: "https://wmts.nlsc.gov.tw/wmts/EMAP2/default/EPSG:3857/%d/%d/%d.png"},
 	}
 	for _, l := range layers {
-		fmt.Fprintf(file, "  <g id=\"%s\">\n", l.Name)
+		fmt.Fprintf(file, "  <g id=\"%s\" opacity=\"%f\">\n", l.Name, l.Opacity)
 		for x := minX; x <= maxX; x++ {
 			for y := maxY; y <= minY; y++ {
 				dx := (x - minX) * c.TileWidth
 				dy := (y - maxY) * c.TileHeight
-				fmt.Fprintf(file, "    <image href=\"%s\" x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" opacity=\"%f\"/>\n", l.getURL(x, y, c.ZoomLevel), dx, dy, c.TileWidth, c.TileHeight, l.Opacity)
+				fmt.Fprintf(file, "    <image x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" ", dx, dy, c.TileWidth, c.TileHeight)
+				imageUrl := l.getURL(x, y, c.ZoomLevel)
+				if c.EmbedImage {
+					fmt.Fprintf(os.Stderr, "Embedding: %s\n", imageUrl)
+					res, err := http.Get(imageUrl)
+					if err != nil {
+						return err
+					}
+					defer res.Body.Close()
+					if res.StatusCode != 200 {
+						return fmt.Errorf("Failed to download image '%s': %s", imageUrl, res.Status)
+					}
+					fmt.Fprintf(file, "xlink:href=\"data:image/png;base64,")
+					err = c.base64enc(res.Body, file)
+					if err != nil {
+						return err
+					}
+					fmt.Fprintf(file, "\"")
+				} else {
+					fmt.Fprintf(file, "href=\"%s\"", imageUrl)
+				}
+				fmt.Fprintf(file, " />\n")
 			}
 		}
 		fmt.Fprintf(file, "  </g>\n")
@@ -150,6 +175,27 @@ func (c *CreateSVG) getXY(lat, lon float64) (x, y float64) {
 	x = (lon + 180.0) / 360.0 * (math.Exp2(float64(c.ZoomLevel)))
 	y = (1.0 - math.Log(math.Tan(lat*math.Pi/180.0)+1.0/math.Cos(lat*math.Pi/180.0))/math.Pi) / 2.0 * (math.Exp2(float64(c.ZoomLevel)))
 	return
+}
+
+func (c *CreateSVG) base64enc(r io.Reader, w io.Writer) error {
+	pr, pw := io.Pipe()
+	encoder := base64.NewEncoder(base64.StdEncoding, pw)
+	go func() {
+		_, err := io.Copy(encoder, r)
+		encoder.Close()
+		if err != nil {
+			_ = pw.CloseWithError(err)
+		} else {
+			pw.Close()
+		}
+	}()
+	_, err := io.Copy(w, pr)
+	if err != nil {
+		_ = pr.CloseWithError(err)
+	} else {
+		pr.Close()
+	}
+	return err
 }
 
 func (l layer) getURL(x, y, z int) string {

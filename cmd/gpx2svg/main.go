@@ -32,6 +32,7 @@ func main() {
 	flag.IntVar(&command.TilePadding.Left, "lp", command.TilePadding.Left, "left padding")
 	flag.IntVar(&command.TilePadding.Botttom, "bp", command.TilePadding.Botttom, "bottom padding")
 	flag.IntVar(&command.TilePadding.Right, "rp", command.TilePadding.Right, "right padding")
+	flag.BoolVar(&command.EmbedImage, "e", command.EmbedImage, "embed image into svg")
 	flag.Parse()
 	command.InputFile = flag.Arg(0)
 	if command.InputFile == "" {
