@@ -186,12 +186,17 @@
               case 'Point':
                 var lngLat = [feature.geometry.coordinates[0], feature.geometry.coordinates[1]];
                 var options = null;
+                var img = document.createElement("img");
                 if (feature.properties.sym == 'Milestone') {
-                  var img = document.createElement("img");
                   img.src = "/images/flag.svg";
                   options = {
                     element: img,
                     anchor: 'bottom-left',
+                  };
+                } else {
+                  img.src = "/images/pin_drop.svg"; options = {
+                    element: img,
+                    anchor: 'bottom',
                   };
                 }
                 var marker = new mapboxgl.Marker(options)
@@ -269,25 +274,25 @@
         },
         preview() {
           var self = this;
-          this.post('gpx', function(response) {
-              self.loadGpx(response);
-              self.previewed = true;
+          this.post('gpx', function (response) {
+            self.loadGpx(response);
+            self.previewed = true;
           });
         },
         download(format) {
           var filename = this.gpxFile.name.replace(/\.[^/.]+$/, "") + '(含里程).' + format;
           var self = this;
-          this.post(format, function(response, type) {
-              var reader = new FileReader();
-              reader.onload = function (event) {
-                var a = document.createElement("a");
-                a.href = event.target.result;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-              };
-              var blob = new Blob([response], { type: type });
-              reader.readAsDataURL(blob);
+          this.post(format, function (response, type) {
+            var reader = new FileReader();
+            reader.onload = function (event) {
+              var a = document.createElement("a");
+              a.href = event.target.result;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+            };
+            var blob = new Blob([response], { type: type });
+            reader.readAsDataURL(blob);
           });
         },
         downloadGpx() {
