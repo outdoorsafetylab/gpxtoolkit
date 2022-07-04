@@ -7,8 +7,6 @@ import (
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/milestone"
 	"net/http"
-	"net/url"
-	"path/filepath"
 	"strconv"
 	"text/template"
 )
@@ -19,28 +17,18 @@ type MilestoneController struct {
 }
 
 func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(10 * 1048576)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	distance, err := strconv.ParseFloat(r.FormValue("distance"), 64)
+	vars := r.URL.Query()
+	distance, err := strconv.ParseFloat(vars.Get("distance"), 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Invalid distance: %s", err.Error()), 400)
 		return
 	}
-	f, h, err := r.FormFile("gpx-file")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	defer f.Close()
-	log, err := gpx.Parse(f)
+	log, err := gpx.Parse(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	tmpl, err := template.New("").Parse(r.FormValue("name-template"))
+	tmpl, err := template.New("").Parse(vars.Get("name-template"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse template: %s", err.Error()), 400)
 		return
@@ -49,11 +37,12 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		Distance:     distance,
 		NameTemplate: tmpl,
 		Service:      c.Service,
+		Symbol:       "Milestone",
 	}
-	if _, ok := r.Form["reverse"]; ok {
+	if vars.Get("reverse") == "true" {
 		marker.Reverse = true
 	}
-	format := r.FormValue("format")
+	format := vars.Get("format")
 	switch format {
 	case "gpx":
 		err = marker.MarkToGPX(log)
@@ -66,10 +55,6 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 			Writer:  w,
 		}
 		w.Header().Set("Content-Type", "application/gpx+xml")
-		extname := filepath.Ext(h.Filename)
-		basename := h.Filename[0 : len(h.Filename)-len(extname)]
-		filename := fmt.Sprintf("%s%s%s", basename, r.FormValue("filename-suffix"), extname)
-		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename*=UTF-8''%s`, url.PathEscape(filename)))
 		err = writer.Write(log)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to write GPX: %s", err.Error()), 500)
@@ -86,10 +71,6 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "text/csv")
-		extname := filepath.Ext(h.Filename)
-		basename := h.Filename[0 : len(h.Filename)-len(extname)]
-		filename := fmt.Sprintf("%s%s%s", basename, r.FormValue("filename-suffix"), ".csv")
-		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename*=UTF-8''%s`, url.PathEscape(filename)))
 		writer := csv.NewWriter(w)
 		for _, record := range records {
 			if err := writer.Write(record); err != nil {

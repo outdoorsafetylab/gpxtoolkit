@@ -1,185 +1,371 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="">
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GPX里程產生器</title>
-  <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/checkout/">
-  <!-- Bootstrap core CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
-  <!-- Favicons -->
-  <link rel="apple-touch-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/apple-touch-icon.png"
-    sizes="180x180">
-  <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32"
-    type="image/png">
-  <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16"
-    type="image/png">
-  <!-- <link rel="manifest" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/manifest.json"> -->
-  <link rel="mask-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/safari-pinned-tab.svg"
-    color="#7952b3">
-  <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
-  <meta name="theme-color" content="#7952b3">
-  <style>
-    .bd-placeholder-img {
-      font-size: 1.125rem;
-      text-anchor: middle;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      user-select: none;
-    }
-    @media (min-width: 768px) {
-      .bd-placeholder-img-lg {
-        font-size: 3.5rem;
-      }
-    }
-  </style>
-  <!-- Custom styles for this template -->
-  <link href="https://getbootstrap.com/docs/5.0/examples/checkout/form-validation.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-  <div class="container">
-    <main>
-      <!-- Modal -->
-      <div class="modal fade" id="introModal" tabindex="-1" aria-labelledby="introModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="introModalLabel">簡介及源起</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-            </div>
-            <div class="modal-body">
-              <p>本工具可讀取原始GPX檔案，依指定間距計算出里程航點 (例如 0.1K, 0.2K 等等) 後產生新的GPX檔案。</p>
-              <p>本工具源於桃園市山岳協會及中華民國山岳協會持續推動<a href="https://www.tytaaa.org.tw/news/7" target="_blank">登山路標的標準化及建置</a>，為簡化及加速路標架設的GPX前置處理作業，因此開始創作此工具。</p>
-              <p>相關問題回報及建議請來信：<code>outdoorsafetylab 小老鼠 gmail.com</code></p>
-              <p>如果您有 web 前端或 golang 後端技能，也歡迎在<a href="https://github.com/outdoorsafetylab/gpxtoolkit" target="_blank">GitHub</a>上加入我們持續改善此工具！</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal fade" id="notesModal" tabindex="-1" aria-labelledby="notesModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="notesModalLabel">注意事項</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-            </div>
-            <div class="modal-body">
-              <ol>
-                <li>請注意路線起點位置，里程會以其為基準開始計算。</li>
-                <li>請預先去除雜點，漂移點及原地不動時的毛線球航跡。</li>
-                <li>請務必再以人工確認產出結果。</li>
-                <li>建議一條路線使用一個GPX檔案以便確認。</li>
-              </ol>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal fade" id="nameTemplateModal" tabindex="-1" aria-labelledby="nameTemplateModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="nameTemplateModalLabel">里程航點名稱樣版說明</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-            </div>
-            <div class="modal-body">
-              <p>里程航點名稱採用 <a href="https://golang.org/pkg/text/template/" target="_blank">Go 語言樣版語法</a>，並提供以下變數可供使用：</p>
-              <ul>
-                <li><b>.Index</b>: 里程索引，整數，從0開始。</li>
-                <li><b>.Number</b>: 里程號碼，整數，從1開始。</li>
-                <li><b>.Meter</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
-                <li><b>.Kilometer</b>: 里程距離，浮點數(小數)，以公里計算。</li>
-              </ul>
-              <p>範例：<code>5{{printf "%02d" .Index}}</code><br/>產出結果：<b>500</b>, <b>501</b>, <b>502</b>...</p>
-              <p>範例：<code>{{printf "%.1f" .Kilometer}}K</code><br/>產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="py-3 text-center">
-        <!-- <img class="d-block mx-auto mb-2" src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt=""
-          width="72" height="57"> -->
-        <img class="d-block mx-auto mb-2" src="/icon.png">
-        <h2 class="mb-3">GPX里程產生器</h2>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#introModal">
-          簡介及源起
-        </button>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#notesModal">
-          注意事項
-        </button>
-      </div>
-      <div class="row g-5">
-        <div class="col-md-12 col-lg-12">
-          <form class="needs-validation" id="milestone-form" method="post" action="/cgi/milestones" enctype="multipart/form-data" novalidate>
-            <div class="row g-3">
-              <div class="col-12">
-                <label for="gpx-file" class="form-label">GPX檔</label>
-                <input class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required>
-                <div class="invalid-feedback">
-                  請選擇GPX檔
-                </div>
-              </div>
-              <div class="col-12">
-                <input type="checkbox" class="form-check-input" id="reverse" name="reverse">
-                <label class="form-check-label" for="reverse">反向產生里程航點</label>
-              </div>
-              <div class="col-sm-6">
-                <label for="distance" class="form-label">里程間距</label>
-                <div class="input-group">
-                  <input type="number" class="form-control" id="distance" name="distance" value="100" placeholder="100" required aria-describedby="distance-addon2">
-                  <span class="input-group-text" id="distance-addon2">公尺</span>
-                </div>
-                <div class="invalid-feedback">
-                  請輸入里程間距
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <label for="name-template" class="form-label">里程航點名稱樣版</label>
-                <div class="input-group">
-                  <input type="text" class="form-control" id="name-template" name="name-template" value='{{printf "%.1f" .Kilometer}}K' required aria-describedby="name-template-addon2">
-                  <button class="btn btn-outline-primary" type="button" id="name-template-addon2" data-bs-toggle="modal" data-bs-target="#nameTemplateModal">說明</button>
-                </div>
-                <div class="invalid-feedback">
-                  請輸入里程航點名稱樣版
-                </div>
-              </div>
-            </div>
-            <hr class="my-4">
-            <div class="text-center">
-              <input type="hidden" id="format" name="format" />
-              <input type="hidden" id="filename-suffix" name="filename-suffix">
-              <input type="hidden" name="csv-name" value="航點名稱" />
-              <input type="hidden" name="csv-latitude" value="緯度" />
-              <input type="hidden" name="csv-longitude" value="經度" />
-              <input type="hidden" name="csv-elevation" value="高程" />
-              <button class="btn btn-primary" type="button" onclick="generate('gpx', '(含里程)')">產生里程GPX檔</button>
-              <button class="btn btn-primary" type="button" onclick="generate('csv', '(僅里程)')">產生里程CSV檔</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
-    <footer class="pt-5 text-muted text-center text-small">
-      <p class="mb-1">&copy; 2021 <a href="https://outdoorsafetylab.org/">Outdoor Safety Lab</a></p>
-      <ul class="list-inline">
-        <li class="list-inline-item"><a href="https://github.com/outdoorsafetylab/gpxtoolkit">GitHub開源專案</a></li>
-      </ul>
-    </footer>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>里程產生器</title>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
     crossorigin="anonymous"></script>
-  <script src="https://getbootstrap.com/docs/5.0/examples/checkout/form-validation.js"></script>
-  <script src="index.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin="" />
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+  <style>
+  </style>
+</head>
+
+<body class="bg-light">
+  <noscript>
+    <strong>We're sorry but this site won't work properly without JavaScript enabled. Please enable it to
+      continue.</strong>
+  </noscript>
+  <div id="app" class="container-fluid min-vh-100 d-flex flex-column">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark row">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">{{gpxFile ? gpxFile.name : '里程產生器'}}</a>
+        <div>
+          <input v-if="!gpxFile" class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required
+            @change="previewGpx">
+        </div>
+        <div>
+          <button v-if="gpxFile" type="button" class="btn btn-primary" @click="preview()">預覽</button>
+          <div v-if="previewed" class="btn-group" role="group">
+            <button id="btnGroupDrop1" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              下載
+            </button>
+            <div class="dropdown-menu">
+              <button type="button" class="dropdown-item" @click="downloadGpx()">GPX</button>
+              <button type="button" class="dropdown-item" @click="downloadCsv()">CSV</button>
+            </div>
+          </div>
+          <button v-if="gpxFile" type="button" class="btn btn-danger" @click="clear()">清除</button>
+          <div class="btn-group" role="group">
+            <button id="btnGroupDrop1" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              關於
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+              <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                data-bs-target="#introModal">簡介及源起</button>
+              <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                data-bs-target="#notesModal">注意事項</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div v-if="gpxFile" id="options" class="row py-1">
+      <div class="col-sm-6">
+        <label for="distance" class="form-label">里程間距</label>
+        <div class="input-group">
+          <input type="number" class="form-control" id="distance" required aria-describedby="distance-addon2"
+            v-model="distance">
+          <span class="input-group-text" id="distance-addon2">公尺</span>
+        </div>
+        <div class="invalid-feedback">
+          請輸入里程間距
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <label for="name-template" class="form-label">里程航點名稱樣版</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="name-template" required aria-describedby="name-template-addon2"
+            v-model="nameTemplate">
+          <button class="btn btn-outline-primary" type="button" id="name-template-addon2" data-bs-toggle="modal"
+            data-bs-target="#nameTemplateModal">說明</button>
+        </div>
+        <div class="invalid-feedback">
+          請輸入里程航點名稱樣版
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
+        <label class="form-check-label" for="reverse">反向產生里程航點</label>
+      </div>
+    </div>
+    <div id="map" class="row flex-grow-1"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-cookies@1.7.4/vue-cookies.min.js"></script>
+  <script src='togeojson.js'></script>
+  <script>
+    function encodeQueryData(data) {
+      const ret = [];
+      for (let d in data) {
+        ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+      }
+      return ret.join('&');
+    }
+    mapboxgl.accessToken = 'pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg';
+    new Vue({
+      el: '#app',
+      data: {
+        center: [120.957283, 23.47],
+        zoom: 14,
+        map: null,
+        gpxFile: null,
+        previewed: false,
+        layers: [],
+        sources: [],
+        markers: [],
+        distance: '100',
+        nameTemplate: '{{printf "%.1f" .Kilometer}}K',
+        reverse: false,
+      },
+      mounted() {
+        this.map = new mapboxgl.Map({
+          container: 'map', // container ID
+          style: 'mapbox://styles/mapbox/outdoors-v11', // style URL
+          center: this.center, // starting position [lng, lat]
+          zoom: this.zoom, // starting zoom
+          projection: 'globe' // display the map as a 3D globe
+        });
+      },
+      watch: {
+        gpxFile: function (gpxFile) {
+          if (!gpxFile) return;
+          var reader = new FileReader();
+          var self = this;
+          reader.onload = function (event) {
+            self.loadGpx(event.target.result);
+          };
+          reader.readAsText(gpxFile);
+        },
+      },
+      methods: {
+        previewGpx(event) {
+          this.gpxFile = event.target.files[0];
+        },
+        loadGpx(gpx) {
+          this.clearMap();
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(gpx, "application/xml");
+          var geojson = toGeoJSON.gpx(doc);
+          var id = 'gpx';
+          this.map.addSource(id, {
+            'type': 'geojson',
+            'data': geojson,
+          });
+          this.sources.push(id)
+          id = 'tracks';
+          this.map.addLayer({
+            'id': id,
+            'type': 'line',
+            'source': 'gpx',
+            'layout': {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            'paint': {
+              'line-color': '#f00',
+              'line-width': 4
+            }
+          });
+          this.layers.push(id);
+          var coordinates = [];
+          for (var i = 0; i < geojson.features.length; i++) {
+            var feature = geojson.features[i];
+            switch (feature.geometry.type) {
+              case 'LineString':
+                coordinates = coordinates.concat(feature.geometry.coordinates);
+                break;
+              case 'MultiLineString':
+                for (var j = 0; j < feature.geometry.coordinates.length; j++) {
+                  coordinates = coordinates.concat(feature.geometry.coordinates[j]);
+                }
+                break;
+              case 'Point':
+                var lngLat = [feature.geometry.coordinates[0], feature.geometry.coordinates[1]];
+                var options = null;
+                if (feature.properties.sym == 'Milestone') {
+                  var img = document.createElement("img");
+                  img.src = "/markers/svgs/cross.svg";
+                  options = {
+                    element: img,
+                    anchor: 'center',
+                  };
+                }
+                var marker = new mapboxgl.Marker(options)
+                  .setLngLat(lngLat)
+                  .addTo(this.map);
+                this.markers.push(marker);
+                coordinates.push(lngLat);
+                break;
+              default:
+                console.error('Unexpected feature type: ' + feature.geometry.type);
+                console.error(JSON.stringify(feature));
+                break;
+            }
+          }
+          id = 'waypoints';
+          this.map.addLayer({
+            'id': id,
+            'type': 'symbol',
+            'source': 'gpx',
+            'layout': {
+              'text-field': ['get', 'name'],
+              'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+              'text-radial-offset': 0.5,
+              'text-justify': 'auto',
+              'icon-image': ['get', 'icon']
+            }
+          });
+          this.layers.push(id);
+          if (coordinates.length > 0) {
+            const bounds = new mapboxgl.LngLatBounds(
+              coordinates[0],
+              coordinates[0],
+            );
+            // Extend the 'LngLatBounds' to include every coordinate in the bounds result.
+            for (const coord of coordinates) {
+              bounds.extend(coord);
+            }
+            this.map.fitBounds(bounds, {
+              padding: { top: 50, bottom: 150, left: 25, right: 25 }
+            });
+          }
+        },
+        clear() {
+          this.gpxFile = null;
+          this.previewed = false;
+          this.clearMap();
+        },
+        clearMap() {
+          for (var i = 0; i < this.layers.length; i++) {
+            this.map.removeLayer(this.layers[i]);
+          }
+          this.layers = [];
+          for (var i = 0; i < this.sources.length; i++) {
+            this.map.removeSource(this.sources[i]);
+          }
+          this.sources = [];
+          for (var i = 0; i < this.markers.length; i++) {
+            this.markers[i].remove();
+          }
+          this.markers = [];
+        },
+        post(format, onresponse) {
+          var xhr = new XMLHttpRequest();
+          var data = { 'distance': this.distance, 'name-template': this.nameTemplate, 'reverse': this.reverse, 'format': format };
+          xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
+          xhr.setRequestHeader("Content-Type", "application/gpx+xml");
+          xhr.onload = function () {
+            if (xhr.status != 200) {
+              console.error(xhr.responseText);
+            } else {
+              onresponse(xhr.response, xhr.getResponseHeader('Content-Type'));
+            }
+          };
+          xhr.send(this.gpxFile);
+        },
+        preview() {
+          var self = this;
+          this.post('gpx', function(response) {
+              self.loadGpx(response);
+              self.previewed = true;
+          });
+        },
+        download(format) {
+          var filename = this.gpxFile.name.replace(/\.[^/.]+$/, "") + '(含里程).' + format;
+          var self = this;
+          this.post(format, function(response, type) {
+              var reader = new FileReader();
+              reader.onload = function (event) {
+                var a = document.createElement("a");
+                a.href = event.target.result;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+              };
+              var blob = new Blob([response], { type: type });
+              reader.readAsDataURL(blob);
+          });
+        },
+        downloadGpx() {
+          this.download('gpx');
+        },
+        downloadCsv() {
+          this.download('csv');
+        },
+      }
+    });
+  </script>
+  <div class="modal fade" id="introModal" tabindex="-1" aria-labelledby="introModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="introModalLabel">簡介及源起</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p>本工具可讀取原始GPX檔案，依指定間距計算出里程航點 (例如 0.1K, 0.2K 等等) 後產生新的GPX檔案。</p>
+          <p>本工具源於桃園市山岳協會及中華民國山岳協會持續推動<a href="https://www.tytaaa.org.tw/news/7"
+              target="_blank">登山路標的標準化及建置</a>，為簡化及加速路標架設的GPX前置處理作業，因此開始創作此工具。</p>
+          <p>相關問題回報及建議請來信：<code>outdoorsafetylab 小老鼠 gmail.com</code></p>
+          <p>如果您有 web 前端或 golang 後端技能，也歡迎在<a href="https://github.com/outdoorsafetylab/gpxtoolkit"
+              target="_blank">GitHub</a>上加入我們持續改善此工具！</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="notesModal" tabindex="-1" aria-labelledby="notesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="notesModalLabel">注意事項</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <ol>
+            <li>請注意路線起點位置，里程會以其為基準開始計算。</li>
+            <li>請預先去除雜點，漂移點及原地不動時的毛線球航跡。</li>
+            <li>請務必再以人工確認產出結果。</li>
+            <li>建議一條路線使用一個GPX檔案以便確認。</li>
+          </ol>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="nameTemplateModal" tabindex="-1" aria-labelledby="nameTemplateModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="nameTemplateModalLabel">里程航點名稱樣版說明</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body">
+          <p>里程航點名稱採用 <a href="https://golang.org/pkg/text/template/" target="_blank">Go 語言樣版語法</a>，並提供以下變數可供使用：</p>
+          <ul>
+            <li><b>.Index</b>: 里程索引，整數，從0開始。</li>
+            <li><b>.Number</b>: 里程號碼，整數，從1開始。</li>
+            <li><b>.Meter</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
+            <li><b>.Kilometer</b>: 里程距離，浮點數(小數)，以公里計算。</li>
+          </ul>
+          <p>範例：<code>5{{printf "%02d" .Index}}</code><br />產出結果：<b>500</b>, <b>501</b>, <b>502</b>...</p>
+          <p>範例：<code>{{printf "%.1f" .Kilometer}}K</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
