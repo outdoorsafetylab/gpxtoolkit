@@ -13,3 +13,12 @@ func (p *WayPoint) Millis() int64 {
 func (p *WayPoint) DistanceTo(o *WayPoint) float64 {
 	return GeoDistance(p.GetLatitude(), p.GetLongitude(), o.GetLatitude(), o.GetLongitude())
 }
+
+func (p *WayPoint) GetPoint() *Point {
+	return &Point{
+		NanoTime:  p.NanoTime,
+		Latitude:  p.Latitude,
+		Longitude: p.Longitude,
+		Elevation: p.Elevation,
+	}
+}

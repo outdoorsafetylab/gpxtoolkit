@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
+	"log"
 	"math"
 	"text/template"
 	"time"
@@ -20,17 +21,17 @@ type Marker struct {
 	Service      elevation.Service
 }
 
-func (m *Marker) MarkToGPX(log *gpx.TrackLog) error {
-	marks, err := m.Marks(log)
+func (m *Marker) MarkToGPX(tracklog *gpx.TrackLog) error {
+	marks, err := m.Marks(tracklog)
 	if err != nil {
 		return err
 	}
-	log.WayPoints = append(log.WayPoints, marks...)
+	tracklog.WayPoints = append(tracklog.WayPoints, marks...)
 	return nil
 }
 
-func (m *Marker) MarkToCSV(csv [][]string, log *gpx.TrackLog) ([][]string, error) {
-	marks, err := m.Marks(log)
+func (m *Marker) MarkToCSV(csv [][]string, tracklog *gpx.TrackLog) ([][]string, error) {
+	marks, err := m.Marks(tracklog)
 	if err != nil {
 		return nil, err
 	}
@@ -40,17 +41,21 @@ func (m *Marker) MarkToCSV(csv [][]string, log *gpx.TrackLog) ([][]string, error
 	return csv, nil
 }
 
-func (m *Marker) Marks(log *gpx.TrackLog) ([]*gpx.WayPoint, error) {
+func (m *Marker) Marks(tracklog *gpx.TrackLog) ([]*gpx.WayPoint, error) {
 	allMarks := make([]*gpx.WayPoint, 0)
-	for _, t := range log.Tracks {
-		for _, s := range t.Segments {
+	for i, t := range tracklog.Tracks {
+		log.Printf("Processing trk[%d]: %s", i, t.GetName())
+		for j, s := range t.Segments {
 			points := s.Points
 			if m.Reverse {
+				log.Printf("Reverse processing trk[%d]/trkseg[%d]", i, j)
 				n := len(s.Points)
 				points = make([]*gpx.Point, n)
 				for i, p := range s.Points {
 					points[n-1-i] = p
 				}
+			} else {
+				log.Printf("Forward processing trk[%d]/trkseg[%d]", i, j)
 			}
 			marks, err := m.marks(points)
 			if err != nil {

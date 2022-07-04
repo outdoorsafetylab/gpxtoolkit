@@ -49,7 +49,7 @@
           </div>
           <button v-if="gpxFile" type="button" class="btn btn-danger" @click="clear()">清除</button>
           <div class="btn-group" role="group">
-            <button id="btnGroupDrop1" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
+            <button id="btnGroupDrop1" type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown"
               aria-expanded="false">
               關於
             </button>
@@ -63,8 +63,8 @@
         </div>
       </div>
     </nav>
-    <div v-if="gpxFile" id="options" class="row py-1">
-      <div class="col-sm-6">
+    <div v-if="gpxFile" id="options" class="row pt-1 pb-2">
+      <div class="col-sm-4">
         <label for="distance" class="form-label">里程間距</label>
         <div class="input-group">
           <input type="number" class="form-control" id="distance" required aria-describedby="distance-addon2"
@@ -75,7 +75,7 @@
           請輸入里程間距
         </div>
       </div>
-      <div class="col-sm-6">
+      <div class="col-sm-4">
         <label for="name-template" class="form-label">里程航點名稱樣版</label>
         <div class="input-group">
           <input type="text" class="form-control" id="name-template" required aria-describedby="name-template-addon2"
@@ -87,7 +87,7 @@
           請輸入里程航點名稱樣版
         </div>
       </div>
-      <div class="col-sm-6">
+      <div class="col-sm-4 mt-4">
         <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
         <label class="form-check-label" for="reverse">反向產生里程航點</label>
       </div>
@@ -188,10 +188,10 @@
                 var options = null;
                 if (feature.properties.sym == 'Milestone') {
                   var img = document.createElement("img");
-                  img.src = "/markers/svgs/cross.svg";
+                  img.src = "/images/flag.svg";
                   options = {
                     element: img,
-                    anchor: 'center',
+                    anchor: 'bottom-left',
                   };
                 }
                 var marker = new mapboxgl.Marker(options)

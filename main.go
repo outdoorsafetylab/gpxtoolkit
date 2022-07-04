@@ -8,6 +8,8 @@ import (
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/milestone"
 	"gpxtoolkit/router"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -21,6 +23,7 @@ var progname string
 var service elevation.Service
 var command = &Command{
 	template: `{{printf "%.1f" .Kilometer}}K`,
+	symbol:   "Milestone",
 	distance: 100,
 	reverse:  false,
 	format:   "gpx",
@@ -61,9 +64,11 @@ func main() {
 		}
 	}
 	flag.StringVar(&command.template, "n", command.template, "template of milestone name")
+	flag.StringVar(&command.symbol, "s", command.symbol, "GPX symbol of milestone")
 	flag.Float64Var(&command.distance, "d", command.distance, "distance between milestone (in meter)")
 	flag.BoolVar(&command.reverse, "r", command.reverse, "create milestone in reverse way")
 	flag.StringVar(&command.format, "f", command.format, "output format, one of 'gpx', 'csv'")
+	flag.StringVar(&command.output, "o", command.output, "path of output file")
 
 	flag.BoolVar(&daemon, "D", daemon, "run as a HTTP server")
 	flag.IntVar(&server.port, "p", server.port, "HTTP port")
@@ -83,8 +88,10 @@ func main() {
 type Command struct {
 	template string
 	distance float64
+	symbol   string
 	reverse  bool
 	format   string
+	output   string
 }
 
 func (c *Command) Run() error {
@@ -95,7 +102,7 @@ func (c *Command) Run() error {
 		help(progname)
 		return err
 	}
-	log, err := gpx.Open(file)
+	gpxLog, err := gpx.Open(file)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open GPX '%s': %s\n", file, err.Error())
 		return err
@@ -110,19 +117,31 @@ func (c *Command) Run() error {
 		NameTemplate: tmpl,
 		Reverse:      c.reverse,
 		Service:      service,
+		Symbol:       c.symbol,
+	}
+	var output io.Writer
+	if command.output == "" {
+		log.SetOutput(ioutil.Discard)
+		output = os.Stdout
+	} else {
+		output, err = os.Create(command.output)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed create output file: %s\n", err.Error())
+			return err
+		}
 	}
 	switch c.format {
 	case "gpx":
-		err := marker.MarkToGPX(log)
+		err := marker.MarkToGPX(gpxLog)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to mark GPX: %s\n", err.Error())
 			return err
 		}
 		writer := &gpx.Writer{
 			Creator: progname,
-			Writer:  os.Stdout,
+			Writer:  output,
 		}
-		err = writer.Write(log)
+		err = writer.Write(gpxLog)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to write GPX: %s\n", err.Error())
 			return err
@@ -132,7 +151,7 @@ func (c *Command) Run() error {
 		records := [][]string{
 			{"Name", "Latitude", "Longitude", "Elevation"},
 		}
-		records, err = marker.MarkToCSV(records, log)
+		records, err = marker.MarkToCSV(records, gpxLog)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to create CSV: %s\n", err.Error())
 			return err
