@@ -50,7 +50,7 @@ func (c *MilestoneController) handlePost(w http.ResponseWriter, r *http.Request)
 		Service:      c.Service,
 		Symbol:       "Milestone",
 	}
-	if _, ok := vars["reverse"]; ok {
+	if vars.Get("reverse") == "true" {
 		marker.Reverse = true
 	}
 	format := vars.Get("format")
