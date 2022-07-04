@@ -1,16 +1,11 @@
 package milestone
 
 import (
-	"bytes"
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"log"
-	"math"
 	"text/template"
-	"time"
-
-	"google.golang.org/protobuf/proto"
 )
 
 type Marker struct {
@@ -46,22 +41,45 @@ func (m *Marker) Marks(tracklog *gpx.TrackLog) ([]*gpx.WayPoint, error) {
 	for i, t := range tracklog.Tracks {
 		log.Printf("Processing trk[%d]: %s", i, t.GetName())
 		for j, s := range t.Segments {
-			points := s.Points
+			var points gpxPoints = s.Points
 			if m.Reverse {
 				log.Printf("Reverse processing trk[%d]/trkseg[%d]", i, j)
 				n := len(s.Points)
-				points = make([]*gpx.Point, n)
+				points = make(gpxPoints, n)
 				for i, p := range s.Points {
 					points[n-1-i] = p
 				}
 			} else {
 				log.Printf("Forward processing trk[%d]/trkseg[%d]", i, j)
 			}
-			marks, err := m.marks(points)
-			if err != nil {
-				return nil, err
+			// marks, err := points.marks(0, m.Distance, m.Distance, m.NameTemplate, m.Symbol)
+			// if err != nil {
+			// 	return nil, err
+			// }
+			// allMarks = append(allMarks, marks...)
+			projections := points.projectWaypoints(tracklog.WayPoints)
+			segments := points.segments(projections, m.Distance)
+			total := 0.0
+			for i, seg := range segments {
+				log.Printf("segment[%d]: %d: %f: %s", i, len(seg.points), seg.distance, seg.waypoint.GetName())
+				marks, err := seg.points.marks(total, seg.distance, m.Distance, m.NameTemplate, m.Symbol)
+				if err != nil {
+					return nil, err
+				}
+				allMarks = append(allMarks, marks...)
+				total += m.Distance * float64(len(marks)+1)
+				log.Printf("total: %f", total)
 			}
-			allMarks = append(allMarks, marks...)
+			// for _, p := range projections {
+			// 	prj := p.projection
+			// 	allMarks = append(allMarks, &gpx.WayPoint{
+			// 		NanoTime:  prj.NanoTime,
+			// 		Latitude:  prj.Latitude,
+			// 		Longitude: prj.Longitude,
+			// 		Elevation: prj.Elevation,
+			// 		Symbol:    proto.String("Milestone"),
+			// 	})
+			// }
 		}
 	}
 	if m.Service != nil {
@@ -81,75 +99,4 @@ func (m *Marker) Marks(tracklog *gpx.TrackLog) ([]*gpx.WayPoint, error) {
 		}
 	}
 	return allMarks, nil
-}
-
-func (m *Marker) marks(points []*gpx.Point) ([]*gpx.WayPoint, error) {
-	res := make([]*gpx.WayPoint, 0)
-	remainder := float64(0)
-	var a *gpx.Point
-	for _, b := range points {
-		if a != nil {
-			dist := b.DistanceTo(a)
-			if (remainder + dist) >= m.Distance {
-				first := (m.Distance - remainder)
-				lat1 := a.GetLatitude()
-				lat2 := b.GetLatitude()
-				lon1 := a.GetLongitude()
-				lon2 := b.GetLongitude()
-				dlat := lat2 - lat1
-				dlon := lon2 - lon1
-				ele1 := a.GetElevation()
-				ele2 := b.GetElevation()
-				dele := ele2 - ele1
-				t1 := a.Time()
-				t2 := b.Time()
-				dt := t2.Sub(t1)
-				pos := first
-				for pos < dist {
-					ratio := pos / dist
-					lat := lat1 + dlat*ratio
-					lon := lon1 + dlon*ratio
-					payload := &templatePayload{
-						Index: len(res),
-					}
-					payload.Number = payload.Index + 1
-					payload.Meter = float64(payload.Number) * m.Distance
-					payload.Kilometer = payload.Meter / 1000
-					var buf bytes.Buffer
-					err := m.NameTemplate.Execute(&buf, payload)
-					if err != nil {
-						return nil, err
-					}
-					wpt := &gpx.WayPoint{
-						Latitude:  proto.Float64(lat),
-						Longitude: proto.Float64(lon),
-						Name:      proto.String(buf.String()),
-					}
-					if a.Elevation != nil && b.Elevation != nil {
-						wpt.Elevation = proto.Float64(ele1 + dele*ratio)
-					}
-					if a.NanoTime != nil && b.NanoTime != nil {
-						wpt.NanoTime = proto.Int64(t1.Add(dt * time.Duration(ratio)).UnixNano())
-					}
-					if m.Symbol != "" {
-						wpt.Symbol = proto.String(m.Symbol)
-					}
-					res = append(res, wpt)
-					pos += m.Distance
-				}
-				remainder = math.Mod(remainder+dist, m.Distance)
-			} else {
-				remainder += dist
-			}
-		}
-		a = b
-	}
-	return res, nil
-}
-
-type templatePayload struct {
-	Index     int
-	Number    int
-	Meter     float64
-	Kilometer float64
 }
