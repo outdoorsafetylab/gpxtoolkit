@@ -27,14 +27,20 @@
     <strong>We're sorry but this site won't work properly without JavaScript enabled. Please enable it to
       continue.</strong>
   </noscript>
-  <div id="app" class="container-fluid min-vh-100 d-flex flex-column">
+  <div id="app" class="container-fluid min-vh-100 d-flex flex-column" @dragover.prevent @drop.prevent>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark row">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">{{gpxFile ? gpxFile.name : '里程產生器'}}</a>
         <div>
-          <input v-if="!gpxFile" class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required
-            @change="previewGpx">
-        </div>
+          <span v-if="gpxFile" class="navbar-text">{{gpxFile.name}}</span>
+          <input class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required
+            @change="onGpxChosen" style="display:none;">
+          <label v-if="!gpxFile" for="gpx-file" class="btn btn-primary position-relative">
+            選擇GPX檔案...
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              或拖放到地圖上
+            </span>
+          </label>
+        </div>     
         <div>
           <button v-if="gpxFile" type="button" class="btn btn-primary" @click="preview()">預覽</button>
           <div v-if="previewed" class="btn-group" role="group">
@@ -92,7 +98,7 @@
         <label class="form-check-label" for="reverse">反向產生里程航點</label>
       </div>
     </div>
-    <div id="map" class="row flex-grow-1"></div>
+    <div id="map" class="row flex-grow-1" @drop="onGpxDropped"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue-cookies@1.7.4/vue-cookies.min.js"></script>
@@ -105,6 +111,19 @@
       }
       return ret.join('&');
     }
+    function isDOMParseError(parsedDocument) {
+      // parser and parsererrorNS could be cached on startup for efficiency
+      var parser = new DOMParser(),
+        errorneousParse = parser.parseFromString('<', 'application/xml'),
+        parsererrorNS = errorneousParse.getElementsByTagName("parsererror")[0].namespaceURI;
+
+      if (parsererrorNS === 'http://www.w3.org/1999/xhtml') {
+        // In PhantomJS the parseerror element doesn't seem to have a special namespace, so we are just guessing here :(
+        return parsedDocument.getElementsByTagName("parsererror").length > 0;
+      }
+
+      return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
+    };
     mapboxgl.accessToken = 'pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg';
     new Vue({
       el: '#app',
@@ -142,13 +161,21 @@
         },
       },
       methods: {
-        previewGpx(event) {
+        onGpxChosen(event) {
           this.gpxFile = event.target.files[0];
         },
+        onGpxDropped(event) {
+          this.gpxFile = event.dataTransfer.files[0];
+        },
         loadGpx(gpx) {
-          this.clearMap();
           var parser = new DOMParser();
           var doc = parser.parseFromString(gpx, "application/xml");
+          if (isDOMParseError(doc)) {
+            alert('無法處理的GPX格式');
+            this.gpxFile = null;
+            return;
+          }
+          this.clearMap();
           var geojson = toGeoJSON.gpx(doc);
           var id = 'gpx';
           this.map.addSource(id, {
