@@ -17,8 +17,8 @@ type MilestoneController struct {
 }
 
 func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
-	vars := r.URL.Query()
-	distance, err := strconv.ParseFloat(vars.Get("distance"), 64)
+	query := r.URL.Query()
+	distance, err := strconv.ParseFloat(query.Get("distance"), 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Invalid distance: %s", err.Error()), 400)
 		return
@@ -28,7 +28,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	tmpl, err := template.New("").Parse(vars.Get("name-template"))
+	tmpl, err := template.New("").Parse(query.Get("name-template"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse template: %s", err.Error()), 400)
 		return
@@ -39,10 +39,10 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		Service:      c.Service,
 		Symbol:       "Milestone",
 	}
-	if vars.Get("reverse") == "true" {
+	if query.Get("reverse") == "true" {
 		marker.Reverse = true
 	}
-	format := vars.Get("format")
+	format := query.Get("format")
 	switch format {
 	case "gpx":
 		err = marker.MarkToGPX(log)

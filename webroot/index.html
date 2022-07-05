@@ -153,11 +153,6 @@
           defaultLanguage: 'zh-Hant'
         }));
       },
-      watch: {
-        gpxFile: function (gpxFile) {
-          if (gpxFile) this.loadGpx(gpxFile);
-        },
-      },
       methods: {
         onGpxChosen(event) {
           this.readGpx(event.target.files[0]);
@@ -169,7 +164,9 @@
           var reader = new FileReader();
           var self = this;
           reader.onload = function (event) {
-            self.gpxFile = event.target.result;
+            if (self.loadGpx(event.target.result)) {
+              self.gpxFile = gpxFile;
+            }
           };
           reader.readAsText(gpxFile);
         },
