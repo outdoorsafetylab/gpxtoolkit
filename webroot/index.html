@@ -155,29 +155,30 @@
       },
       watch: {
         gpxFile: function (gpxFile) {
-          if (!gpxFile) return;
-          var reader = new FileReader();
-          var self = this;
-          reader.onload = function (event) {
-            self.loadGpx(event.target.result);
-          };
-          reader.readAsText(gpxFile);
+          if (gpxFile) this.loadGpx(gpxFile);
         },
       },
       methods: {
         onGpxChosen(event) {
-          this.gpxFile = event.target.files[0];
+          this.readGpx(event.target.files[0]);
         },
         onGpxDropped(event) {
-          this.gpxFile = event.dataTransfer.files[0];
+          this.readGpx(event.dataTransfer.files[0]);
+        },
+        readGpx(gpxFile) {
+          var reader = new FileReader();
+          var self = this;
+          reader.onload = function (event) {
+            self.gpxFile = event.target.result;
+          };
+          reader.readAsText(gpxFile);
         },
         loadGpx(gpx) {
           var parser = new DOMParser();
           var doc = parser.parseFromString(gpx, "application/xml");
           if (isDOMParseError(doc)) {
             alert('無法處理的GPX格式');
-            this.gpxFile = null;
-            return;
+            return false;
           }
           this.clearMap();
           var geojson = toGeoJSON.gpx(doc);
@@ -269,6 +270,7 @@
               padding: { top: 50, bottom: 150, left: 25, right: 25 }
             });
           }
+          return true;
         },
         clear() {
           this.gpxFile = null;
@@ -306,8 +308,7 @@
         preview() {
           var self = this;
           this.post('gpx', function (response) {
-            self.loadGpx(response);
-            self.previewed = true;
+            self.previewed = self.loadGpx(response);
           });
         },
         download(format) {
