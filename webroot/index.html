@@ -17,6 +17,7 @@
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
     crossorigin="" />
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-language/v1.0.0/mapbox-gl-language.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
   <style>
   </style>
@@ -40,7 +41,7 @@
               或拖放到地圖上
             </span>
           </label>
-        </div>     
+        </div>
         <div>
           <button v-if="gpxFile" type="button" class="btn btn-primary" @click="preview()">預覽</button>
           <div v-if="previewed" class="btn-group" role="group">
@@ -148,6 +149,9 @@
           zoom: this.zoom, // starting zoom
           projection: 'globe' // display the map as a 3D globe
         });
+        this.map.addControl(new MapboxLanguage({
+          defaultLanguage: 'zh-Hant'
+        }));
       },
       watch: {
         gpxFile: function (gpxFile) {
