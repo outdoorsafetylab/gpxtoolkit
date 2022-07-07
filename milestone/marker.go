@@ -84,6 +84,93 @@ func (m *Marker) Marks(tracklog *gpx.TrackLog) ([]*gpx.WayPoint, error) {
 }
 
 func (m *Marker) marks(points []*gpx.Point) ([]*gpx.WayPoint, error) {
+	if len(points) <= 0 {
+		return []*gpx.WayPoint{}, nil
+	}
+	distances := make([]float64, len(points)-1)
+	total := 0.0
+	for i, b := range points[1:] {
+		a := points[i]
+		dist := a.DistanceTo(b)
+		distances[i] = dist
+		total += dist
+	}
+	milestones := make([]*milestone, int(math.Floor(total/m.Distance)))
+	for i, _ := range milestones {
+		payload := &templatePayload{
+			Index:  i,
+			Number: i + 1,
+		}
+		payload.Number = payload.Index + 1
+		payload.Meter = float64(payload.Number) * m.Distance
+		payload.Kilometer = payload.Meter / 1000
+		var buf bytes.Buffer
+		err := m.NameTemplate.Execute(&buf, payload)
+		if err != nil {
+			return nil, err
+		}
+		milestones[i] = &milestone{
+			name:     buf.String(),
+			distance: float64(i) * m.Distance,
+		}
+	}
+	markers := make([]*gpx.WayPoint, 0)
+	start := 0.0
+	for i, b := range points[1:] {
+		a := points[i]
+		dist := distances[i]
+		end := start + dist
+		for _, ms := range milestones {
+			if start > ms.distance || end <= ms.distance {
+				continue
+			}
+			p := interpolate(a, b, (ms.distance-start)/dist)
+			wpt := &gpx.WayPoint{
+				Name:      proto.String(ms.name),
+				Latitude:  p.Latitude,
+				Longitude: p.Longitude,
+				NanoTime:  p.NanoTime,
+				Elevation: p.Elevation,
+			}
+			if m.Symbol != "" {
+				wpt.Symbol = proto.String(m.Symbol)
+			}
+			markers = append(markers, wpt)
+		}
+		start += dist
+	}
+	return markers, nil
+}
+
+func interpolate(a, b *gpx.Point, ratio float64) *gpx.Point {
+	lat1 := a.GetLatitude()
+	lat2 := b.GetLatitude()
+	lon1 := a.GetLongitude()
+	lon2 := b.GetLongitude()
+	dlat := lat2 - lat1
+	dlon := lon2 - lon1
+	ele1 := a.GetElevation()
+	ele2 := b.GetElevation()
+	dele := ele2 - ele1
+	t1 := a.Time()
+	t2 := b.Time()
+	dt := t2.Sub(t1)
+	lat := lat1 + dlat*ratio
+	lon := lon1 + dlon*ratio
+	res := &gpx.Point{
+		Latitude:  proto.Float64(lat),
+		Longitude: proto.Float64(lon),
+	}
+	if a.Elevation != nil && b.Elevation != nil {
+		res.Elevation = proto.Float64(ele1 + dele*ratio)
+	}
+	if a.NanoTime != nil && b.NanoTime != nil {
+		res.NanoTime = proto.Int64(t1.Add(dt * time.Duration(ratio)).UnixNano())
+	}
+	return res
+}
+
+func (m *Marker) marks2(points []*gpx.Point) ([]*gpx.WayPoint, error) {
 	res := make([]*gpx.WayPoint, 0)
 	remainder := float64(0)
 	var a *gpx.Point
