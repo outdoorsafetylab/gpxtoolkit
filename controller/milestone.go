@@ -63,7 +63,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	case "csv":
 		records := [][]string{
-			{r.FormValue("csv-name"), r.FormValue("csv-latitude"), r.FormValue("csv-longitude"), r.FormValue("csv-elevation")},
+			{"航點名稱", "緯度", "經度", "高程"},
 		}
 		records, err = marker.MarkToCSV(records, log)
 		if err != nil {
