@@ -70,6 +70,9 @@
         </div>
       </div>
     </nav>
+    <div class="row progress" style="height: 4px;">
+      <div v-if="progress > 0" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"  v-bind:style="{ width: progress + '%' }"></div>
+    </div>
     <div v-if="gpxFile" id="options" class="row pt-1 pb-2">
       <div class="col-sm-4">
         <label for="distance" class="form-label">里程間距</label>
@@ -133,6 +136,7 @@
         zoom: 14,
         map: null,
         gpxFile: null,
+        progress: 0,
         previewed: false,
         layers: [],
         sources: [],
@@ -170,11 +174,13 @@
           };
           reader.readAsText(gpxFile);
         },
-        loadGpx(gpx) {
+        loadGpx(gpx, fitBounds = true) {
+          this.progress = 100;
           var parser = new DOMParser();
           var doc = parser.parseFromString(gpx, "application/xml");
           if (isDOMParseError(doc)) {
             alert('無法處理的GPX格式');
+            this.progress = 0;
             return false;
           }
           this.clearMap();
@@ -254,7 +260,7 @@
             }
           });
           this.layers.push(id);
-          if (coordinates.length > 0) {
+          if (fitBounds && coordinates.length > 0) {
             const bounds = new mapboxgl.LngLatBounds(
               coordinates[0],
               coordinates[0],
@@ -267,6 +273,7 @@
               padding: { top: 50, bottom: 150, left: 25, right: 25 }
             });
           }
+          this.progress = 0;
           return true;
         },
         clear() {
@@ -289,23 +296,27 @@
           this.markers = [];
         },
         post(format, onresponse) {
+          var self = this;
           var xhr = new XMLHttpRequest();
-          var data = { 'distance': this.distance, 'name-template': this.nameTemplate, 'reverse': this.reverse, 'format': format };
-          xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
+          var data = {'outlier': true, 'format': format};
+          // var data = { 'distance': this.distance, 'name-template': this.nameTemplate, 'reverse': this.reverse, 'format': format };
+          xhr.open("POST", "/cgi/correct?" + encodeQueryData(data));
           xhr.setRequestHeader("Content-Type", "application/gpx+xml");
           xhr.onload = function () {
+            self.progress = 0;
             if (xhr.status != 200) {
-              console.error(xhr.responseText);
+              alert(xhr.responseText);
             } else {
               onresponse(xhr.response, xhr.getResponseHeader('Content-Type'));
             }
           };
           xhr.send(this.gpxFile);
+          this.progress = 100;
         },
         preview() {
           var self = this;
           this.post('gpx', function (response) {
-            self.previewed = self.loadGpx(response);
+            self.previewed = self.loadGpx(response, !self.previewed);
           });
         },
         download(format) {

@@ -53,4 +53,7 @@ message TrackStats {
     required double elevation_loss = 4;
     optional double elevation_min = 5;
     optional double elevation_max = 6;
+    optional int64 num_tracks = 8;
+    optional int64 num_segments = 9;
+    optional int64 num_points = 10;
 }

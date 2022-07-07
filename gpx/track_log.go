@@ -41,32 +41,9 @@ func (log *TrackLog) End() *Point {
 
 func (log *TrackLog) Stat() *TrackStats {
 	st := NewTrackStats()
+	*st.NumTracks = int64(len(log.Tracks))
 	for _, t := range log.Tracks {
 		st.Merge(t.Stat())
 	}
 	return st
-}
-
-func (log *TrackLog) Filter(vt, ht, slope, alpha float64) int {
-	n := 0
-	for _, t := range log.Tracks {
-		n += t.Filter(vt, ht, slope, alpha)
-	}
-	return n
-}
-
-func (log *TrackLog) OutlierFilter() int {
-	n := 0
-	for _, t := range log.Tracks {
-		n += t.OutlierFilter()
-	}
-	return n
-}
-
-func (log *TrackLog) PointCount() int {
-	n := 0
-	for _, t := range log.Tracks {
-		n += t.PointCount()
-	}
-	return n
 }
