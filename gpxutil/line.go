@@ -6,8 +6,8 @@ import (
 )
 
 type line struct {
-	p1       *gpx.Point
-	p2       *gpx.Point
+	a        *gpx.Point
+	b        *gpx.Point
 	dist     float64
 	duration *time.Duration
 	speed    *float64
@@ -17,10 +17,10 @@ type line struct {
 func (l *line) project(p *gpx.Point) *gpx.Point {
 	x := p.GetLatitude()
 	y := p.GetLongitude()
-	x1 := l.p1.GetLatitude()
-	y1 := l.p1.GetLongitude()
-	x2 := l.p2.GetLatitude()
-	y2 := l.p2.GetLongitude()
+	x1 := l.a.GetLatitude()
+	y1 := l.a.GetLongitude()
+	x2 := l.b.GetLatitude()
+	y2 := l.b.GetLongitude()
 	A := x - x1
 	B := y - y1
 	C := x2 - x1
@@ -34,10 +34,10 @@ func (l *line) project(p *gpx.Point) *gpx.Point {
 	}
 
 	if param > 0 && param <= 1 {
-		dist1 := p.DistanceTo(l.p1)
-		dist2 := p.DistanceTo(l.p2)
+		dist1 := p.DistanceTo(l.a)
+		dist2 := p.DistanceTo(l.b)
 		dist := dist1 + dist2
-		return Interpolate(l.p1, l.p2, dist1/dist)
+		return Interpolate(l.a, l.b, dist1/dist)
 	} else {
 		return nil
 	}
@@ -50,14 +50,14 @@ func getLines(points []*gpx.Point) []*line {
 	lines := make([]*line, len(points)-1)
 	for i, p := range points[1:] {
 		line := &line{
-			p1: points[i],
-			p2: p,
+			a: points[i],
+			b: p,
 		}
-		line.dist = line.p1.DistanceTo(line.p2)
+		line.dist = line.a.DistanceTo(line.b)
 		// log.Printf("Line[%d]: dist=%f", i, line.dist)
-		if line.p1.NanoTime != nil && line.p2.NanoTime != nil {
+		if line.a.NanoTime != nil && line.b.NanoTime != nil {
 			line.duration = new(time.Duration)
-			*line.duration = line.p2.Time().Sub(line.p1.Time())
+			*line.duration = line.b.Time().Sub(line.a.Time())
 
 			line.speed = new(float64)
 			if *line.duration != 0 {
@@ -73,11 +73,11 @@ func getLines(points []*gpx.Point) []*line {
 func joinLines(lines []*line) []*gpx.Point {
 	points := make([]*gpx.Point, 0)
 	for i, line := range lines {
-		if i == 0 || points[len(points)-1] != line.p1 {
-			points = append(points, line.p1)
+		if i == 0 || points[len(points)-1] != line.a {
+			points = append(points, line.a)
 		}
-		if points[len(points)-1] != line.p2 {
-			points = append(points, line.p2)
+		if points[len(points)-1] != line.b {
+			points = append(points, line.b)
 		}
 	}
 	return points

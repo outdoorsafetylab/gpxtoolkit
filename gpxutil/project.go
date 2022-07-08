@@ -75,7 +75,7 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 			if prj.point == nil {
 				continue
 			}
-			if prj.line.p1 == a && prj.line.p2 == b {
+			if prj.line.a == a && prj.line.b == b {
 				seg.points = append(seg.points, prj.point)
 				seg.b = struct {
 					waypoint *gpx.WayPoint
@@ -120,12 +120,12 @@ func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, threshold 
 			if dist > threshold {
 				continue
 			}
-			// d1 := p.DistanceTo(l.p1)
-			// d2 := p.DistanceTo(l.p2)
-			lat1 := l.p1.GetLatitude()
-			lat2 := l.p2.GetLatitude()
-			lon1 := l.p1.GetLongitude()
-			lon2 := l.p2.GetLongitude()
+			// d1 := p.DistanceTo(l.a)
+			// d2 := p.DistanceTo(l.b)
+			lat1 := l.a.GetLatitude()
+			lat2 := l.b.GetLatitude()
+			lon1 := l.a.GetLongitude()
+			lon2 := l.b.GetLongitude()
 			// // log.Printf("Distance from '%s' to (%f,%f):(%f:%f): %f", w.GetName(), lat1, lon1, lat2, lon2, dist)
 			if prj.point == nil || dist < prj.distance {
 				log.Printf("Shortest distance from '%s' to line[%d] (%f,%f):(%f:%f): %f", w.GetName(), j, lat1, lon1, lat2, lon2, dist)

@@ -129,9 +129,6 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 				return nil, err
 			}
 			markers = append(markers, m...)
-			if i == 7 {
-				break
-			}
 		}
 		return markers, nil
 	} else {
