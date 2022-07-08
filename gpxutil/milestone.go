@@ -95,26 +95,6 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		if err != nil {
 			return nil, err
 		}
-		projectedDistances := make([]float64, len(projections))
-		projectedIndexes := make([]int, len(projections))
-		start := 0.0
-		for i, b := range points[1:] {
-			a := points[i]
-			dist := distances[i]
-			for j, prj := range projections {
-				if prj.point == nil {
-					continue
-				}
-				if prj.line.p1 == a && prj.line.p2 == b {
-					d := start + a.DistanceTo(prj.point)
-					projectedDistances[j] = d
-					index := int(math.Round(d / c.Distance))
-					projectedIndexes[j] = index
-					log.Printf("Distance to %s: %f @ %d", waypoints[j].GetName(), d, index)
-				}
-			}
-			start += dist
-		}
 		segments := projections.slice(points)
 		log.Printf("Sliced %d points to %d segments", len(points), len(segments))
 		n := 0
@@ -127,9 +107,11 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		end := 0.0
 		for i, segment := range segments {
 			start := end
+			distances := make([]float64, len(segment)-1)
 			for j, b := range segment[1:] {
 				a := segment[j]
 				dist := a.DistanceTo(b)
+				distances[j] = dist
 				log.Printf("Distance %d: %f", j, dist)
 				end += dist
 			}
@@ -160,7 +142,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 					distance: float64(j+1) * step,
 				}
 			}
-			m, err := c.create(segment, milestones, nil)
+			m, err := c.create(segment, milestones, distances)
 			if err != nil {
 				return nil, err
 			}
