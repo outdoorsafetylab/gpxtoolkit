@@ -95,6 +95,7 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 					},
 					points: make([]*gpx.Point, 0),
 				}
+				seg.points = append(seg.points, prj.point)
 			}
 		}
 	}

@@ -112,10 +112,10 @@ func (c *Command) Run() error {
 		return err
 	}
 	marker := &gpxutil.Milestone{
-		Distance:     c.distance,
-		NameTemplate: tmpl,
-		Reverse:      c.reverse,
-		Symbol:       c.symbol,
+		Distance: c.distance,
+		Template: tmpl,
+		Reverse:  c.reverse,
+		Symbol:   c.symbol,
 	}
 	var output io.Writer
 	if command.output == "" {
