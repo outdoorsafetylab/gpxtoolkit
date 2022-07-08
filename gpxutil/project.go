@@ -111,7 +111,7 @@ func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, threshold 
 		prj := &projection{}
 		projections[i] = prj
 		p := w.GetPoint()
-		for _, l := range lines {
+		for j, l := range lines {
 			pp := l.project(p)
 			if pp == nil {
 				continue
@@ -122,14 +122,13 @@ func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, threshold 
 			}
 			// d1 := p.DistanceTo(l.p1)
 			// d2 := p.DistanceTo(l.p2)
-			// lat1 := l.p1.GetLatitude()
-			// lat2 := l.p2.GetLatitude()
-			// lon1 := l.p1.GetLongitude()
-			// lon2 := l.p2.GetLongitude()
+			lat1 := l.p1.GetLatitude()
+			lat2 := l.p2.GetLatitude()
+			lon1 := l.p1.GetLongitude()
+			lon2 := l.p2.GetLongitude()
 			// // log.Printf("Distance from '%s' to (%f,%f):(%f:%f): %f", w.GetName(), lat1, lon1, lat2, lon2, dist)
 			if prj.point == nil || dist < prj.distance {
-				// log.Printf("New shortest distance: %f", dist)
-				// log.Printf("Shortest distance from '%s' to line[%d] (%f,%f):(%f:%f): %f", w.GetName(), j, lat1, lon1, lat2, lon2, dist)
+				log.Printf("Shortest distance from '%s' to line[%d] (%f,%f):(%f:%f): %f", w.GetName(), j, lat1, lon1, lat2, lon2, dist)
 				prj.point = pp
 				prj.waypoint = w
 				prj.line = l

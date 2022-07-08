@@ -2,6 +2,7 @@ package gpxutil
 
 import (
 	"bytes"
+	"fmt"
 	"gpxtoolkit/gpx"
 	"log"
 	"math"
@@ -52,6 +53,7 @@ func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 type milestone struct {
 	name     string
 	distance float64
+	waypoint *gpx.WayPoint
 }
 
 func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([]*gpx.WayPoint, error) {
@@ -100,7 +102,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 				a := segment.points[j]
 				dist := a.DistanceTo(b)
 				distances[j] = dist
-				log.Printf("Distance %d: %f", j, dist)
+				// log.Printf("Distance %d: %f", j, dist)
 				end += dist
 			}
 			num := int(math.Round(end/c.Distance) - math.Round(start/c.Distance))
@@ -119,11 +121,17 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 					distance: float64(j+1) * step,
 				}
 			}
+			if num > 1 {
+				milestones[num-1].waypoint = segment.b.waypoint
+			}
 			m, err := c.create(segment.points, milestones, distances)
 			if err != nil {
 				return nil, err
 			}
 			markers = append(markers, m...)
+			if i == 7 {
+				break
+			}
 		}
 		return markers, nil
 	} else {
@@ -171,18 +179,26 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 				continue
 			}
 			log.Printf("Hit milestone %s: %f", ms.name, ms.distance)
-			p := Interpolate(a, b, (ms.distance-start)/dist)
-			wpt := &gpx.WayPoint{
-				Name:      proto.String(ms.name),
-				Latitude:  p.Latitude,
-				Longitude: p.Longitude,
-				NanoTime:  p.NanoTime,
-				Elevation: p.Elevation,
+			if ms.waypoint != nil {
+				if ms.waypoint.Name != nil {
+					ms.waypoint.Name = proto.String(fmt.Sprintf("%s/%s", ms.waypoint.GetName(), ms.name))
+				} else {
+					ms.waypoint.Name = proto.String(ms.name)
+				}
+			} else {
+				p := Interpolate(a, b, (ms.distance-start)/dist)
+				wpt := &gpx.WayPoint{
+					Name:      proto.String(ms.name),
+					Latitude:  p.Latitude,
+					Longitude: p.Longitude,
+					NanoTime:  p.NanoTime,
+					Elevation: p.Elevation,
+				}
+				if c.Symbol != "" {
+					wpt.Symbol = proto.String(c.Symbol)
+				}
+				markers = append(markers, wpt)
 			}
-			if c.Symbol != "" {
-				wpt.Symbol = proto.String(c.Symbol)
-			}
-			markers = append(markers, wpt)
 		}
 		start += dist
 	}
