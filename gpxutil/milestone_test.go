@@ -16,8 +16,8 @@ func TestMilestone(t *testing.T) {
 		t.Fatal(err)
 	}
 	milestone := &Milestone{
-		Distance:     100,
-		NameTemplate: tmpl,
+		Distance: 100,
+		Template: tmpl,
 	}
 	n, err := milestone.Run(log)
 	if err != nil {

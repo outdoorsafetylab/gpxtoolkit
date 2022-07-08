@@ -47,6 +47,7 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 }
 
 type projection struct {
+	waypoint *gpx.WayPoint
 	point    *gpx.Point
 	line     *line
 	distance float64
@@ -54,26 +55,52 @@ type projection struct {
 
 type projections []*projection
 
-func (projections projections) slice(points []*gpx.Point) [][]*gpx.Point {
-	slices := make([][]*gpx.Point, 0)
-	slice := make([]*gpx.Point, 0)
+type segment struct {
+	a, b struct {
+		waypoint *gpx.WayPoint
+		point    *gpx.Point
+	}
+	points []*gpx.Point
+}
+
+func (projections projections) slice(points []*gpx.Point) []*segment {
+	segments := make([]*segment, 0)
+	seg := &segment{
+		points: make([]*gpx.Point, 0),
+	}
 	for i, b := range points[1:] {
 		a := points[i]
+		seg.points = append(seg.points, a)
 		for _, prj := range projections {
 			if prj.point == nil {
 				continue
 			}
 			if prj.line.p1 == a && prj.line.p2 == b {
-				slice = append(slice, prj.point)
-				slices = append(slices, slice)
-				slice = make([]*gpx.Point, 0)
+				seg.points = append(seg.points, prj.point)
+				seg.b = struct {
+					waypoint *gpx.WayPoint
+					point    *gpx.Point
+				}{
+					waypoint: prj.waypoint,
+					point:    prj.point,
+				}
+				segments = append(segments, seg)
+				seg = &segment{
+					a: struct {
+						waypoint *gpx.WayPoint
+						point    *gpx.Point
+					}{
+						waypoint: prj.waypoint,
+						point:    prj.point,
+					},
+					points: make([]*gpx.Point, 0),
+				}
 			}
 		}
-		slice = append(slice, a)
 	}
-	slice = append(slice, points[len(points)-1])
-	slices = append(slices, slice)
-	return slices
+	seg.points = append(seg.points, points[len(points)-1])
+	segments = append(segments, seg)
+	return segments
 }
 
 func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, threshold float64) (projections, error) {
@@ -103,6 +130,7 @@ func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, threshold 
 				// log.Printf("New shortest distance: %f", dist)
 				// log.Printf("Shortest distance from '%s' to line[%d] (%f,%f):(%f:%f): %f", w.GetName(), j, lat1, lon1, lat2, lon2, dist)
 				prj.point = pp
+				prj.waypoint = w
 				prj.line = l
 				prj.distance = dist
 			}

@@ -49,7 +49,7 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("After: %v", after)
 	log.Printf("Excluded: %v", excluded)
 
-	switch getQuery(query, "format", "gpx") {
+	switch queryGetString(query, "format", "gpx") {
 	case "gpx":
 		writer := &gpx.Writer{
 			Creator: c.GPXCreator,

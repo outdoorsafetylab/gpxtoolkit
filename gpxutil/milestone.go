@@ -12,7 +12,7 @@ import (
 
 type Milestone struct {
 	Distance     float64
-	NameTemplate *template.Template
+	Template     *template.Template
 	Symbol       string
 	Reverse      bool
 	FitWaypoints bool
@@ -80,7 +80,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		payload.Meter = float64(payload.Number) * c.Distance
 		payload.Kilometer = payload.Meter / 1000
 		var buf bytes.Buffer
-		err := c.NameTemplate.Execute(&buf, payload)
+		err := c.Template.Execute(&buf, payload)
 		if err != nil {
 			return nil, err
 		}
@@ -99,17 +99,17 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		log.Printf("Sliced %d points to %d segments", len(points), len(segments))
 		n := 0
 		for i, segment := range segments {
-			log.Printf("Segment %d: %d points", i, len(segment))
-			n += len(segment)
+			log.Printf("Segment %d: %d points", i, len(segment.points))
+			n += len(segment.points)
 		}
 		log.Printf("Total %d points", n)
 		markers := make([]*gpx.WayPoint, 0)
 		end := 0.0
 		for i, segment := range segments {
 			start := end
-			distances := make([]float64, len(segment)-1)
-			for j, b := range segment[1:] {
-				a := segment[j]
+			distances := make([]float64, len(segment.points)-1)
+			for j, b := range segment.points[1:] {
+				a := segment.points[j]
 				dist := a.DistanceTo(b)
 				distances[j] = dist
 				log.Printf("Distance %d: %f", j, dist)
@@ -133,7 +133,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 				payload.Meter = float64(payload.Number) * c.Distance
 				payload.Kilometer = payload.Meter / 1000
 				var buf bytes.Buffer
-				err := c.NameTemplate.Execute(&buf, payload)
+				err := c.Template.Execute(&buf, payload)
 				if err != nil {
 					return nil, err
 				}
@@ -142,7 +142,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 					distance: float64(j+1) * step,
 				}
 			}
-			m, err := c.create(segment, milestones, distances)
+			m, err := c.create(segment.points, milestones, distances)
 			if err != nil {
 				return nil, err
 			}

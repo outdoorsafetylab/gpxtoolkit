@@ -6,7 +6,6 @@ import (
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/gpxutil"
 	"net/http"
-	"strconv"
 	"text/template"
 )
 
@@ -17,11 +16,6 @@ type MilestoneController struct {
 
 func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	distance, err := strconv.ParseFloat(query.Get("distance"), 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Invalid distance: %s", err.Error()), 400)
-		return
-	}
 	tracklog, err := gpx.Parse(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
@@ -34,10 +28,23 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	}
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
-			&gpxutil.ProjectWaypoints{Threshold: 100},
+			&gpxutil.Deduplicate{},
+			// gpxutil.RemoveOutlierBySpeed(),
+			// &gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
+			// &gpxutil.Simplify{
+			// 	Epsilon: 10,
+			// 	First:   true,
+			// },
+			// &gpxutil.ReTimestamp{
+			// 	Start: time.Unix(0, 0),
+			// 	Speed: 0.5,
+			// },
+			// &gpxutil.ReSegment{
+			// 	Threshold: 500,
+			// },
 			&gpxutil.Milestone{
-				Distance:     distance,
-				NameTemplate: tmpl,
+				Distance:     queryGetFloat64(query, "distance", 100),
+				Template:     tmpl,
 				Reverse:      query.Get("reverse") == "true",
 				Symbol:       "Milestone",
 				FitWaypoints: query.Get("fit-waypoints") == "true",

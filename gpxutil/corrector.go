@@ -17,6 +17,9 @@ func (c *CorrectElevation) Name() string {
 }
 
 func (c *CorrectElevation) Run(tracklog *gpx.TrackLog) (int, error) {
+	if c.Service == nil {
+		return 0, nil
+	}
 	points := make([]*elevation.LatLon, 0)
 	for _, p := range tracklog.WayPoints {
 		points = append(points, &elevation.LatLon{Lat: p.GetLatitude(), Lon: p.GetLongitude()})
