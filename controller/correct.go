@@ -26,7 +26,7 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
-			&gpxutil.Deduplicate{},
+			gpxutil.RemoveDistanceLessThan(0.1),
 			gpxutil.RemoveOutlierBySpeed(),
 			&gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
 			&gpxutil.Simplify{

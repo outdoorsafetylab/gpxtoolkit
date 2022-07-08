@@ -285,10 +285,10 @@
         },
         clear() {
           this.gpxFile = null;
-          this.previewed = false;
           this.clearMap();
         },
         clearMap() {
+          this.previewed = false;
           for (var i = 0; i < this.layers.length; i++) {
             this.map.removeLayer(this.layers[i]);
           }
