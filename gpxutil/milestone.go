@@ -81,7 +81,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		log.Printf("Milestone %d: %s @ %f m", i+1, milestones[i].name, milestones[i].distance)
 	}
 	if waypoints != nil {
-		projections, err := projectWaypoints(points, waypoints, c.Distance/2)
+		projections, err := projectWaypoints(points, waypoints, c.Distance/10, c.Distance/2)
 		if err != nil {
 			return nil, err
 		}

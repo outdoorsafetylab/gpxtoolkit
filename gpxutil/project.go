@@ -7,11 +7,14 @@ import (
 )
 
 type ProjectWaypoints struct {
-	Threshold float64
+	Threshold struct {
+		Inclusive float64
+		Exclusive float64
+	}
 }
 
 func (c *ProjectWaypoints) Name() string {
-	return fmt.Sprintf("Project Waypoints with Threshold %f m", c.Threshold)
+	return fmt.Sprintf("Project Waypoints with Threshold [%f,%f] m", c.Threshold.Inclusive, c.Threshold.Exclusive)
 }
 
 func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
@@ -21,7 +24,7 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(points, tracklog.WayPoints, c.Threshold)
+	projections, err := projectWaypoints(points, tracklog.WayPoints, c.Threshold.Inclusive, c.Threshold.Exclusive)
 	if err != nil {
 		return 0, err
 	}
@@ -104,7 +107,7 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 	return segments
 }
 
-func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, threshold float64) (projections, error) {
+func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, inclusive, exclusive float64) (projections, error) {
 	lines := getLines(points)
 	projections := make(projections, len(waypoints))
 	for i, w := range waypoints {
@@ -114,10 +117,22 @@ func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, threshold 
 		for j, l := range lines {
 			pp := l.project(p)
 			if pp == nil {
-				continue
+				d1 := p.DistanceTo(l.a)
+				d2 := p.DistanceTo(l.b)
+				if d1 <= inclusive {
+					if d2 < d1 {
+						pp = l.b
+					} else {
+						pp = l.a
+					}
+				} else if d2 <= inclusive {
+					pp = l.b
+				} else {
+					continue
+				}
 			}
 			dist := p.DistanceTo(pp)
-			if dist > threshold {
+			if dist > exclusive {
 				continue
 			}
 			// d1 := p.DistanceTo(l.a)

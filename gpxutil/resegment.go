@@ -8,11 +8,14 @@ import (
 )
 
 type ReSegment struct {
-	Threshold float64
+	Threshold struct {
+		Inclusive float64
+		Exclusive float64
+	}
 }
 
 func (c *ReSegment) Name() string {
-	return fmt.Sprintf("Re-Segment by Waypoints with Threshold %f m", c.Threshold)
+	return fmt.Sprintf("Re-Segment by Waypoints with Threshold  [%f,%f] m", c.Threshold.Inclusive, c.Threshold.Exclusive)
 }
 
 func (c *ReSegment) Run(tracklog *gpx.TrackLog) (int, error) {
@@ -22,7 +25,7 @@ func (c *ReSegment) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(points, tracklog.WayPoints, c.Threshold)
+	projections, err := projectWaypoints(points, tracklog.WayPoints, c.Threshold.Inclusive, c.Threshold.Exclusive)
 	if err != nil {
 		return 0, err
 	}
