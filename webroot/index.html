@@ -97,9 +97,15 @@
           請輸入里程航點名稱樣版
         </div>
       </div>
-      <div class="col-sm-4 mt-4">
-        <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
-        <label class="form-check-label" for="reverse">反向產生里程航點</label>
+      <div class="col-sm-4 mt-2">
+        <div>
+          <input type="checkbox" class="form-check-input" id="fitWaypoints" v-model="fitWaypoints">
+          <label class="form-check-label" for="fitWaypoints">配合航點位置</label>
+        </div>
+        <div>
+          <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
+          <label class="form-check-label" for="reverse">反向產生里程航點</label>
+        </div>
       </div>
     </div>
     <div id="map" class="row flex-grow-1" @drop="onGpxDropped"></div>
@@ -144,6 +150,7 @@
         distance: '100',
         nameTemplate: '{{printf "%.1f" .Kilometer}}K',
         reverse: false,
+        fitWaypoints: false,
       },
       mounted() {
         this.map = new mapboxgl.Map({
@@ -298,9 +305,8 @@
         post(format, onresponse) {
           var self = this;
           var xhr = new XMLHttpRequest();
-          var data = {'outlier': true, 'format': format};
-          // var data = { 'distance': this.distance, 'name-template': this.nameTemplate, 'reverse': this.reverse, 'format': format };
-          xhr.open("POST", "/cgi/correct?" + encodeQueryData(data));
+          var data = { 'format': format, 'distance': this.distance, 'name-template': this.nameTemplate, 'reverse': this.reverse, 'fit-waypoints': this.fitWaypoints };
+          xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
           xhr.setRequestHeader("Content-Type", "application/gpx+xml");
           xhr.onload = function () {
             self.progress = 0;

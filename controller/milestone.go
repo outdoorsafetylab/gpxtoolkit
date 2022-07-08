@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"encoding/csv"
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
-	"gpxtoolkit/milestone"
+	"gpxtoolkit/gpxutil"
 	"net/http"
 	"strconv"
 	"text/template"
@@ -23,7 +22,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Invalid distance: %s", err.Error()), 400)
 		return
 	}
-	log, err := gpx.Parse(r.Body)
+	tracklog, err := gpx.Parse(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -33,52 +32,48 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Failed to parse template: %s", err.Error()), 400)
 		return
 	}
-	marker := &milestone.Marker{
-		Distance:     distance,
-		NameTemplate: tmpl,
-		Service:      c.Service,
-		Symbol:       "Milestone",
+	commands := &gpxutil.ChainedCommands{
+		Commands: []gpxutil.Command{
+			&gpxutil.ProjectWaypoints{Threshold: 100},
+			&gpxutil.Milestone{
+				Distance:     distance,
+				NameTemplate: tmpl,
+				Reverse:      query.Get("reverse") == "true",
+				Symbol:       "Milestone",
+				FitWaypoints: query.Get("fit-waypoints") == "true",
+			},
+			&gpxutil.CorrectElevation{
+				Service: c.Service,
+			},
+		},
 	}
-	if query.Get("reverse") == "true" {
-		marker.Reverse = true
+	_, err = commands.Run(tracklog)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
 	}
 	format := query.Get("format")
 	switch format {
 	case "gpx":
-		err = marker.MarkToGPX(log)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to mark GPX: %s", err.Error()), 500)
-			return
-		}
 		writer := &gpx.Writer{
 			Creator: c.GPXCreator,
 			Writer:  w,
 		}
 		w.Header().Set("Content-Type", "application/gpx+xml")
-		err = writer.Write(log)
+		err = writer.Write(tracklog)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to write GPX: %s", err.Error()), 500)
 			return
 		}
 		return
 	case "csv":
-		records := [][]string{
-			{r.FormValue("csv-name"), r.FormValue("csv-latitude"), r.FormValue("csv-longitude"), r.FormValue("csv-elevation")},
-		}
-		records, err = marker.MarkToCSV(records, log)
+		w.Header().Set("Content-Type", "text/csv")
+		csv := gpxutil.NewCSVWayPointWriter(w)
+		_, err = csv.Run(tracklog)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to create CSV: %s", err.Error()), 500)
+			http.Error(w, fmt.Sprintf("Failed to write CSV: %s", err.Error()), 500)
 			return
 		}
-		w.Header().Set("Content-Type", "text/csv")
-		writer := csv.NewWriter(w)
-		for _, record := range records {
-			if err := writer.Write(record); err != nil {
-				http.Error(w, fmt.Sprintf("Failed to write CSV: %s", err.Error()), 500)
-				return
-			}
-		}
-		writer.Flush()
 		return
 	default:
 		http.Error(w, fmt.Sprintf("Unknown format: %s", format), 400)

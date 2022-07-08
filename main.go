@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/csv"
 	"flag"
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
-	"gpxtoolkit/milestone"
+	"gpxtoolkit/gpxutil"
 	"gpxtoolkit/router"
 	"io"
 	"io/ioutil"
@@ -112,11 +111,10 @@ func (c *Command) Run() error {
 		fmt.Fprintf(os.Stderr, "Failed to parse template: %s\n", err.Error())
 		return err
 	}
-	marker := &milestone.Marker{
+	marker := &gpxutil.Milestone{
 		Distance:     c.distance,
 		NameTemplate: tmpl,
 		Reverse:      c.reverse,
-		Service:      service,
 		Symbol:       c.symbol,
 	}
 	var output io.Writer
@@ -132,7 +130,7 @@ func (c *Command) Run() error {
 	}
 	switch c.format {
 	case "gpx":
-		err := marker.MarkToGPX(gpxLog)
+		_, err := marker.Run(gpxLog)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to mark GPX: %s\n", err.Error())
 			return err
@@ -148,22 +146,17 @@ func (c *Command) Run() error {
 		}
 		return nil
 	case "csv":
-		records := [][]string{
-			{"Name", "Latitude", "Longitude", "Elevation"},
-		}
-		records, err = marker.MarkToCSV(records, gpxLog)
+		_, err := marker.Run(gpxLog)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to create CSV: %s\n", err.Error())
+			fmt.Fprintf(os.Stderr, "Failed to mark GPX: %s\n", err.Error())
 			return err
 		}
-		writer := csv.NewWriter(os.Stdout)
-		for _, record := range records {
-			if err := writer.Write(record); err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to write CSV: %s\n", err.Error())
-				return err
-			}
+		csv := gpxutil.NewCSVWayPointWriter(output)
+		_, err = csv.Run(gpxLog)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to write CSV: %s\n", err.Error())
+			return err
 		}
-		writer.Flush()
 		return nil
 	default:
 		err := fmt.Errorf("Unknown format: %s", c.format)
