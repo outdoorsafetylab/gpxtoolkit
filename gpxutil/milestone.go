@@ -68,24 +68,12 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 	}
 	milestones := make([]*milestone, int(math.Floor(total/c.Distance)))
 	for i := range milestones {
-		payload := &struct {
-			Index     int
-			Number    int
-			Meter     float64
-			Kilometer float64
-		}{
-			Index: i,
-		}
-		payload.Number = payload.Index + 1
-		payload.Meter = float64(payload.Number) * c.Distance
-		payload.Kilometer = payload.Meter / 1000
-		var buf bytes.Buffer
-		err := c.Template.Execute(&buf, payload)
+		name, err := c.milestoneName(i, float64(i-1)*c.Distance)
 		if err != nil {
 			return nil, err
 		}
 		milestones[i] = &milestone{
-			name:     buf.String(),
+			name:     name,
 			distance: float64(i+1) * c.Distance,
 		}
 		log.Printf("Milestone %d: %s @ %f m", i+1, milestones[i].name, milestones[i].distance)
@@ -121,24 +109,13 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 			step := length / float64(num)
 			milestones := make([]*milestone, num)
 			for j := range milestones {
-				payload := &struct {
-					Index     int
-					Number    int
-					Meter     float64
-					Kilometer float64
-				}{
-					Index: int(math.Round(start/c.Distance)) + j,
-				}
-				payload.Number = payload.Index + 1
-				payload.Meter = float64(payload.Number) * c.Distance
-				payload.Kilometer = payload.Meter / 1000
-				var buf bytes.Buffer
-				err := c.Template.Execute(&buf, payload)
+				index := int(math.Round(start/c.Distance)) + j
+				name, err := c.milestoneName(index, float64(index+1)*c.Distance)
 				if err != nil {
 					return nil, err
 				}
 				milestones[j] = &milestone{
-					name:     buf.String(),
+					name:     name,
 					distance: float64(j+1) * step,
 				}
 			}
@@ -152,6 +129,26 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 	} else {
 		return c.create(points, milestones, distances)
 	}
+}
+
+func (c *Milestone) milestoneName(index int, meter float64) (string, error) {
+	data := &struct {
+		Index     int
+		Number    int
+		Meter     float64
+		Kilometer float64
+	}{
+		Index: index,
+	}
+	data.Number = data.Index + 1
+	data.Meter = meter
+	data.Kilometer = data.Meter / 1000
+	var buf bytes.Buffer
+	err := c.Template.Execute(&buf, data)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distances []float64) ([]*gpx.WayPoint, error) {
