@@ -6,7 +6,6 @@ import (
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/gpxutil"
 	"net/http"
-	"text/template"
 )
 
 type MilestoneController struct {
@@ -21,9 +20,12 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	tmpl, err := template.New("").Parse(query.Get("template"))
+	name := &gpxutil.MilestoneName{
+		Template: query.Get("template"),
+	}
+	_, err = name.Eval(&gpxutil.MilestoneNameVariables{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to parse template: %s", err.Error()), 400)
+		http.Error(w, fmt.Sprintf("Invalid template: %s", err.Error()), 400)
 		return
 	}
 	commands := &gpxutil.ChainedCommands{
@@ -44,11 +46,11 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 			// 	Threshold: 500,
 			// },
 			&gpxutil.Milestone{
-				Distance:     queryGetFloat64(query, "distance", 100),
-				Template:     tmpl,
-				Reverse:      query.Get("reverse") == "true",
-				Symbol:       queryGetString(query, "symbol", "Milestone"),
-				FitWaypoints: query.Get("fits") == "true",
+				Distance:      queryGetFloat64(query, "distance", 100),
+				MilestoneName: name,
+				Reverse:       query.Get("reverse") == "true",
+				Symbol:        queryGetString(query, "symbol", "Milestone"),
+				FitWaypoints:  query.Get("fits") == "true",
 			},
 			&gpxutil.CorrectElevation{
 				Service: c.Service,

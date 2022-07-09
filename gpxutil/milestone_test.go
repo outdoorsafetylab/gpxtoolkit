@@ -3,7 +3,6 @@ package gpxutil
 import (
 	"gpxtoolkit/gpx"
 	"testing"
-	"text/template"
 )
 
 func TestMilestone(t *testing.T) {
@@ -11,13 +10,11 @@ func TestMilestone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tmpl, err := template.New("").Parse(`{{printf "%.1f" .Kilometer}}K`)
-	if err != nil {
-		t.Fatal(err)
-	}
 	milestone := &Milestone{
 		Distance: 100,
-		Template: tmpl,
+		MilestoneName: &MilestoneName{
+			Template: `printf("%.1fK", dist/1000)`,
+		},
 	}
 	n, err := milestone.Run(log)
 	if err != nil {
@@ -25,5 +22,39 @@ func TestMilestone(t *testing.T) {
 	}
 	if n != 11 {
 		t.Fatal(n)
+	}
+}
+
+func TestMilestoneNameValidate(t *testing.T) {
+	vars := &MilestoneNameVariables{
+		Number:   1,
+		Total:    10,
+		Distance: 100.0,
+	}
+	n := &MilestoneName{
+		Template: `printf("%.1fK", dist/1000)`,
+	}
+	val, err := n.Eval(vars)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if val != "0.1K" {
+		t.Fatal(val)
+	}
+	n.Template = `printf("%.0fm", dist)`
+	val, err = n.Eval(vars)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if val != "100m" {
+		t.Fatal(val)
+	}
+	n.Template = `printf("SM400 %02d/%d", num, total)`
+	val, err = n.Eval(vars)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if val != "SM400 01/10" {
+		t.Fatal(val)
 	}
 }

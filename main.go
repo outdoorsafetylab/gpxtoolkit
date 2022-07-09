@@ -15,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"text/template"
 )
 
 var progname string
@@ -106,16 +105,13 @@ func (c *Command) Run() error {
 		fmt.Fprintf(os.Stderr, "Failed to open GPX '%s': %s\n", file, err.Error())
 		return err
 	}
-	tmpl, err := template.New("").Parse(c.template)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to parse template: %s\n", err.Error())
-		return err
-	}
 	marker := &gpxutil.Milestone{
 		Distance: c.distance,
-		Template: tmpl,
-		Reverse:  c.reverse,
-		Symbol:   c.symbol,
+		MilestoneName: &gpxutil.MilestoneName{
+			Template: c.template,
+		},
+		Reverse: c.reverse,
+		Symbol:  c.symbol,
 	}
 	var output io.Writer
 	if command.output == "" {

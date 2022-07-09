@@ -82,7 +82,7 @@
           <span class="input-group-text" id="distance-addon2">公尺</span>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-5">
         <label for="template" class="form-label">里程航點名稱樣版</label>
         <div class="input-group">
           <input type="text" class="form-control" id="template" required aria-describedby="template-addon2"
@@ -91,7 +91,7 @@
             data-bs-target="#templateModal">說明</button>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label for="symbol" class="form-label">里程航點符號 (&lt;sym&gt;)</label>
         <div class="input-group">
           <input type="text" class="form-control" id="symbol" required aria-describedby="symbol-addon2"
@@ -151,7 +151,7 @@
         sources: [],
         markers: [],
         distance: '100',
-        template: '{{printf "%.1f" .Kilometer}}K',
+        template: 'printf("%.1fK", dist/1000)',
         symbol: 'Milestone',
         reverse: false,
         fits: false,
@@ -417,17 +417,22 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
         </div>
         <div class="modal-body">
-          <p>里程航點名稱採用 <a href="https://golang.org/pkg/text/template/" target="_blank">Go 語言樣版語法</a>，並提供以下變數可供使用：</p>
+          <p>樣版採用 <a href="https://go.dev/play/" target="_blank">Go 語言語法</a>，樣版可使用 <code>printf</code> 函數來調用 <code>fmt.Printf</code>。並提供以下變數：</p>
           <ul>
-            <li><b>.Index</b>: 里程索引，整數，從0開始。</li>
-            <li><b>.Number</b>: 里程號碼，整數，從1開始。</li>
-            <li><b>.Total</b>: 里程航點總數，整數。</li>
-            <li><b>.Meter</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
-            <li><b>.Kilometer</b>: 里程距離，浮點數(小數)，以公里計算。</li>
+            <li><b>num</b>: 里程號碼，整數，從1開始。</li>
+            <li><b>total</b>: 里程航點總數，整數。</li>
+            <li><b>dist</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
+            <li><b>lat</b>: 經度，浮點數(小數)，WGS84模型。</li>
+            <li><b>lon</b>: 緯度，浮點數(小數)，WGS84模型。</li>
+            <li><b>elev</b>: 標高，浮點數(小數)，以公尺計算。</li>
           </ul>
-          <p>範例：<code>5{{printf "%02d" .Index}}</code><br />產出結果：<b>500</b>, <b>501</b>, <b>502</b>...</p>
-          <p>範例：<code>{{printf "%.1f" .Kilometer}}K</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
-          <p>範例：<code></code>{{printf "%02d/%d" .Number .Total}}</code><br />產出結果：<b>01/86</b>, <b>02/86</b>, <b>03/86</b>...</p>
+          <p>若需要轉換為英呎或英哩，可使用數學運算符號。例如 <code>dist*0.000621371192</code> 即將公尺轉換為英哩。</p>
+          <p>範例：<code>dist</code><br />產出結果：<b>100</b>, <b>200</b>, <b>300</b>...</p>
+          <p>範例：<code>dist/1000</code><br />產出結果：<b>0.1</b>, <b>0.2</b>, <b>0.3</b>...</p>
+          <p>範例：<code>printf("%.0fm", dist)</code><br />產出結果：<b>100m</b>, <b>200m</b>, <b>300m</b>...</p>
+          <p>範例：<code>printf("%.1fK", dist/1000)</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
+          <p>範例：<code>printf("%.1fK/%.0fm", dist/1000, elev)</code><br />產出結果：<b>0.1K/2763m</b>, <b>0.2K/2756m</b>, <b>0.3K/2748m</b>...</p>
+          <p>範例：<code></code>printf("SM400 %02d/%d", num, total)</code><br />產出結果：<b>SM400 01/86</b>, <b>SM400 02/86</b>, <b>SM400 03/86</b>...</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
