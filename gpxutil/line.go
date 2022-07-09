@@ -48,10 +48,11 @@ func getLines(points []*gpx.Point) []*line {
 		return []*line{}
 	}
 	lines := make([]*line, len(points)-1)
-	for i, p := range points[1:] {
+	for i, b := range points[1:] {
+		a := points[i]
 		line := &line{
-			a: points[i],
-			b: p,
+			a: a,
+			b: b,
 		}
 		line.dist = line.a.DistanceTo(line.b)
 		// log.Printf("Line[%d]: dist=%f", i, line.dist)

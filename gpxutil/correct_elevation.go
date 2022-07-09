@@ -9,7 +9,8 @@ import (
 )
 
 type CorrectElevation struct {
-	Service elevation.Service
+	Waypoints bool
+	Service   elevation.Service
 }
 
 func (c *CorrectElevation) Name() string {
@@ -20,22 +21,24 @@ func (c *CorrectElevation) Run(tracklog *gpx.TrackLog) (int, error) {
 	if c.Service == nil {
 		return 0, nil
 	}
-	points := make([]*elevation.LatLon, 0)
-	for _, p := range tracklog.WayPoints {
-		points = append(points, &elevation.LatLon{Lat: p.GetLatitude(), Lon: p.GetLongitude()})
-	}
-	elevations, err := c.Service.Lookup(points)
-	if err != nil {
-		return 0, err
-	}
 	n := 0
-	for i, p := range tracklog.WayPoints {
-		elev := elevations[i]
-		if elev == nil || math.IsNaN(*elev) {
-			continue
+	if c.Waypoints {
+		points := make([]*elevation.LatLon, 0)
+		for _, p := range tracklog.WayPoints {
+			points = append(points, &elevation.LatLon{Lat: p.GetLatitude(), Lon: p.GetLongitude()})
 		}
-		p.Elevation = proto.Float64(math.Round(*elev))
-		n++
+		elevations, err := c.Service.Lookup(points)
+		if err != nil {
+			return 0, err
+		}
+		for i, p := range tracklog.WayPoints {
+			elev := elevations[i]
+			if elev == nil || math.IsNaN(*elev) {
+				continue
+			}
+			p.Elevation = proto.Float64(math.Round(*elev))
+			n++
+		}
 	}
 	for _, t := range tracklog.Tracks {
 		for _, s := range t.Segments {
@@ -43,7 +46,7 @@ func (c *CorrectElevation) Run(tracklog *gpx.TrackLog) (int, error) {
 			for _, p := range s.Points {
 				points = append(points, &elevation.LatLon{Lat: p.GetLatitude(), Lon: p.GetLongitude()})
 			}
-			elevations, err = c.Service.Lookup(points)
+			elevations, err := c.Service.Lookup(points)
 			if err != nil {
 				return 0, err
 			}

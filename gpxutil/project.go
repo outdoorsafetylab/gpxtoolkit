@@ -35,11 +35,6 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 			log.Printf("No projection: %s", wpt.GetName())
 			continue
 		}
-		lat1 := wpt.GetLatitude()
-		lat2 := wpt.GetLatitude()
-		lon1 := p.point.GetLongitude()
-		lon2 := p.point.GetLongitude()
-		log.Printf("Projecting %s from (%f,%f) to (%f:%f) => %f m", wpt.GetName(), lat1, lon1, lat2, lon2, p.distance)
 		wpt.Latitude = p.point.Latitude
 		wpt.Longitude = p.point.Longitude
 		wpt.Elevation = p.point.Elevation
@@ -104,6 +99,18 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 	}
 	seg.points = append(seg.points, points[len(points)-1])
 	segments = append(segments, seg)
+	log.Printf("Sliced %d segments", len(segments))
+	for i, seg := range segments {
+		a := "start"
+		if seg.a.waypoint != nil {
+			a = seg.a.waypoint.GetName()
+		}
+		b := "end"
+		if seg.b.waypoint != nil {
+			b = seg.b.waypoint.GetName()
+		}
+		log.Printf("Segment %d: from %s to %s => %d points", i, a, b, len(seg.points))
+	}
 	return segments
 }
 
@@ -116,22 +123,27 @@ func projectWaypoints(points []*gpx.Point, waypoints []*gpx.WayPoint, inclusive,
 		p := w.GetPoint()
 		for j, l := range lines {
 			pp := l.project(p)
+			var dist float64
 			if pp == nil {
 				d1 := p.DistanceTo(l.a)
 				d2 := p.DistanceTo(l.b)
 				if d1 <= inclusive {
 					if d2 < d1 {
 						pp = l.b
+						dist = d2
 					} else {
 						pp = l.a
+						dist = d1
 					}
 				} else if d2 <= inclusive {
 					pp = l.b
+					dist = d2
 				} else {
 					continue
 				}
+			} else {
+				dist = p.DistanceTo(pp)
 			}
-			dist := p.DistanceTo(pp)
 			if dist > exclusive {
 				continue
 			}

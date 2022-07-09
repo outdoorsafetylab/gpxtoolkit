@@ -60,27 +60,29 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 	if len(points) <= 0 {
 		return []*gpx.WayPoint{}, nil
 	}
-	distances := make([]float64, len(points)-1)
-	total := 0.0
-	for i, b := range points[1:] {
-		a := points[i]
-		dist := a.DistanceTo(b)
-		distances[i] = dist
-		total += dist
-	}
-	milestones := make([]*milestone, int(math.Floor(total/c.Distance)))
-	for i := range milestones {
-		name, err := c.milestoneName(i, float64(i-1)*c.Distance)
-		if err != nil {
-			return nil, err
+	if waypoints == nil {
+		distances := make([]float64, len(points)-1)
+		total := 0.0
+		for i, b := range points[1:] {
+			a := points[i]
+			dist := a.DistanceTo(b)
+			distances[i] = dist
+			total += dist
 		}
-		milestones[i] = &milestone{
-			name:     name,
-			distance: float64(i+1) * c.Distance,
+		milestones := make([]*milestone, int(math.Floor(total/c.Distance)))
+		for i := range milestones {
+			name, err := c.milestoneName(i, float64(i+1)*c.Distance)
+			if err != nil {
+				return nil, err
+			}
+			milestones[i] = &milestone{
+				name:     name,
+				distance: float64(i+1) * c.Distance,
+			}
+			log.Printf("Milestone %d: %s @ %f m", i+1, milestones[i].name, milestones[i].distance)
 		}
-		log.Printf("Milestone %d: %s @ %f m", i+1, milestones[i].name, milestones[i].distance)
-	}
-	if waypoints != nil {
+		return c.create(points, milestones, distances)
+	} else {
 		projections, err := projectWaypoints(points, waypoints, c.Distance/10, c.Distance/2)
 		if err != nil {
 			return nil, err
@@ -121,7 +123,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 					distance: float64(j+1) * step,
 				}
 			}
-			if num > 1 {
+			if num > 0 {
 				milestones[num-1].waypoint = segment.b.waypoint
 			}
 			m, err := c.create(segment.points, milestones, distances)
@@ -131,8 +133,6 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 			markers = append(markers, m...)
 		}
 		return markers, nil
-	} else {
-		return c.create(points, milestones, distances)
 	}
 }
 
@@ -175,7 +175,7 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 			if int(start*1000) >= int(ms.distance*1000) || int(end*1000) < int(ms.distance*1000) {
 				continue
 			}
-			log.Printf("Hit milestone %s: %f", ms.name, ms.distance)
+			// log.Printf("Hit milestone %s: %f => %v", ms.name, ms.distance, ms.waypoint)
 			if ms.waypoint != nil {
 				if ms.waypoint.Name != nil {
 					ms.waypoint.Name = proto.String(fmt.Sprintf("%s/%s", ms.waypoint.GetName(), ms.name))
