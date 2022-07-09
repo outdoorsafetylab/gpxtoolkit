@@ -74,33 +74,36 @@
       <div v-if="progress > 0" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"  v-bind:style="{ width: progress + '%' }"></div>
     </div>
     <div v-if="gpxFile" id="options" class="row pt-1 pb-2">
-      <div class="col-sm-4">
+      <div class="col-md-2">
         <label for="distance" class="form-label">里程間距</label>
         <div class="input-group">
           <input type="number" class="form-control" id="distance" required aria-describedby="distance-addon2"
             v-model="distance">
           <span class="input-group-text" id="distance-addon2">公尺</span>
         </div>
-        <div class="invalid-feedback">
-          請輸入里程間距
-        </div>
       </div>
-      <div class="col-sm-4">
+      <div class="col-md-4">
         <label for="name-template" class="form-label">里程航點名稱樣版</label>
         <div class="input-group">
           <input type="text" class="form-control" id="name-template" required aria-describedby="name-template-addon2"
-            v-model="nameTemplate">
+            v-model="template">
           <button class="btn btn-outline-primary" type="button" id="name-template-addon2" data-bs-toggle="modal"
-            data-bs-target="#nameTemplateModal">說明</button>
-        </div>
-        <div class="invalid-feedback">
-          請輸入里程航點名稱樣版
+            data-bs-target="#templateModal">說明</button>
         </div>
       </div>
-      <div class="col-sm-4 mt-2">
+      <div class="col-md-3">
+        <label for="symbol" class="form-label">里程航點符號 (&lt;sym&gt;)</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="symbol" required aria-describedby="symbol-addon2"
+            v-model="symbol">
+          <button class="btn btn-outline-primary" type="button" id="name-template-addon2" data-bs-toggle="modal"
+            data-bs-target="#symbolModal">說明</button>
+        </div>
+      </div>
+      <div class="col-md-3 mt-2">
         <div>
-          <input type="checkbox" class="form-check-input" id="fitWaypoints" v-model="fitWaypoints">
-          <label class="form-check-label" for="fitWaypoints">遷就地標(路標架設用)</label>
+          <input type="checkbox" class="form-check-input" id="fits" v-model="fits">
+          <label class="form-check-label" for="fits">遷就地標(路標架設用)</label>
         </div>
         <div>
           <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
@@ -148,9 +151,10 @@
         sources: [],
         markers: [],
         distance: '100',
-        nameTemplate: '{{printf "%.1f" .Kilometer}}K',
+        template: '{{printf "%.1f" .Kilometer}}K',
+        symbol: 'Milestone',
         reverse: false,
-        fitWaypoints: false,
+        fits: false,
       },
       mounted() {
         this.map = new mapboxgl.Map({
@@ -229,7 +233,7 @@
                 var lngLat = [feature.geometry.coordinates[0], feature.geometry.coordinates[1]];
                 var options = null;
                 var img = document.createElement("img");
-                if (feature.properties.sym == 'Milestone') {
+                if (feature.properties.sym == this.symbol) {
                   img.src = "/images/flag.svg";
                   options = {
                     element: img,
@@ -305,7 +309,7 @@
         post(format, onresponse) {
           var self = this;
           var xhr = new XMLHttpRequest();
-          var data = { 'format': format, 'distance': this.distance, 'name-template': this.nameTemplate, 'reverse': this.reverse, 'fit-waypoints': this.fitWaypoints };
+          var data = { 'format': format, 'distance': this.distance, 'template': this.template, 'symbol': this.symbol, 'reverse': this.reverse, 'fits': this.fits };
           xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
           xhr.setRequestHeader("Content-Type", "application/gpx+xml");
           xhr.onload = function () {
@@ -320,6 +324,18 @@
           this.progress = 100;
         },
         preview() {
+          if (!this.distance) {
+            alert('請輸入里程間距');
+            return;
+          }
+          if (!this.template) {
+            alert('請輸入里程航點名稱樣版');
+            return;
+          }
+          if (!this.symbol) {
+            alert('請輸入里程航點符號');
+            return;
+          }
           var self = this;
           this.post('gpx', function (response) {
             self.previewed = self.loadGpx(response, !self.previewed);
@@ -392,12 +408,12 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="nameTemplateModal" tabindex="-1" aria-labelledby="nameTemplateModalLabel"
+  <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel"
     aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="nameTemplateModalLabel">里程航點名稱樣版說明</h5>
+          <h5 class="modal-title" id="templateModalLabel">里程航點名稱樣版說明</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
         </div>
         <div class="modal-body">
