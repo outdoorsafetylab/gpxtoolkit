@@ -2,6 +2,7 @@ package gpxutil
 
 import (
 	"fmt"
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"log"
 	"math"
@@ -11,6 +12,8 @@ import (
 )
 
 type Milestone struct {
+	Service       elevation.Service
+	DistanceFunc  DistanceFunc
 	Distance      float64
 	MilestoneName *MilestoneName
 	Symbol        string
@@ -42,6 +45,24 @@ func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 				return 0, err
 			}
 			n += len(milestones)
+			if c.Service != nil {
+				points := make([]*elevation.LatLon, 0)
+				for _, p := range milestones {
+					points = append(points, &elevation.LatLon{Lat: p.GetLatitude(), Lon: p.GetLongitude()})
+				}
+				elevations, err := c.Service.Lookup(points)
+				if err != nil {
+					return 0, err
+				}
+				for i, p := range milestones {
+					elev := elevations[i]
+					if elev == nil || math.IsNaN(*elev) {
+						continue
+					}
+					p.Elevation = proto.Float64(math.Round(*elev))
+					n++
+				}
+			}
 			log.Printf("Appending %d milestones", len(milestones))
 			tracklog.WayPoints = append(tracklog.WayPoints, milestones...)
 		}
@@ -64,7 +85,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		total := 0.0
 		for i, b := range points[1:] {
 			a := points[i]
-			dist := a.DistanceTo(b)
+			dist := c.DistanceFunc(a, b)
 			distances[i] = dist
 			total += dist
 		}
@@ -79,9 +100,10 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 				distance: float64(i+1) * c.Distance,
 			}
 		}
+		log.Printf("Total %d points: %.1fm with %d milestones", len(points), total, len(milestones))
 		return c.create(points, milestones, distances)
 	} else {
-		projections, err := projectWaypoints(points, waypoints, c.Distance/10, c.Distance/2)
+		projections, err := projectWaypoints(c.DistanceFunc, points, waypoints, c.Distance/2)
 		if err != nil {
 			return nil, err
 		}
@@ -100,7 +122,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 			distances[i] = make([]float64, len(segment.points)-1)
 			for j, b := range segment.points[1:] {
 				a := segment.points[j]
-				dist := a.DistanceTo(b)
+				dist := c.DistanceFunc(a, b)
 				distances[i][j] = dist
 				distance += dist
 			}
@@ -170,7 +192,7 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 		if distances != nil {
 			dist = distances[i]
 		} else {
-			dist = a.DistanceTo(b)
+			dist = c.DistanceFunc(a, b)
 		}
 		end := start + dist
 		// log.Printf("Current distance: %f", end)

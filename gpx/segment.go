@@ -47,7 +47,7 @@ func (s *Segment) Stat() *TrackStats {
 			continue
 		}
 		a := s.Points[i-1]
-		*st.Distance += a.DistanceTo(b)
+		*st.Distance += a.distanceTo(b)
 		st.AddTime(b.Time().Sub(a.Time()))
 		if a.Elevation != nil && b.Elevation != nil {
 			delta := b.GetElevation() - a.GetElevation()

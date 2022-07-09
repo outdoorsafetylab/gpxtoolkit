@@ -8,7 +8,8 @@ import (
 )
 
 type ReSegment struct {
-	Threshold struct {
+	DistanceFunc DistanceFunc
+	Threshold    struct {
 		Inclusive float64
 		Exclusive float64
 	}
@@ -25,7 +26,7 @@ func (c *ReSegment) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(points, tracklog.WayPoints, c.Threshold.Inclusive, c.Threshold.Exclusive)
+	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold.Exclusive)
 	if err != nil {
 		return 0, err
 	}

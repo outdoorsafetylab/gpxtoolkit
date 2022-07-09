@@ -101,7 +101,7 @@
           <a class="btn btn-outline-primary" type="button" id="symbol-addon2" href="https://www.gpsrchive.com/BaseCamp/Custom%20Waypoint%20Symbols.html" target="_blank">說明</a>
         </div>
       </div>
-      <div class="col-md-3 mt-2">
+      <div class="col-md-3">
         <div>
           <input type="checkbox" class="form-check-input" id="fits" v-model="fits">
           <label class="form-check-label" for="fits">遷就地標(路標架設用)</label>
@@ -109,6 +109,10 @@
         <div>
           <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
           <label class="form-check-label" for="reverse">反向產生里程航點</label>
+        </div>
+        <div>
+          <input type="checkbox" class="form-check-input" id="hypotenuse" v-model="hypotenuse">
+          <label class="form-check-label" for="hypotenuse">計算距離時考慮高度</label>
         </div>
       </div>
     </div>
@@ -135,7 +139,7 @@
         // In PhantomJS the parseerror element doesn't seem to have a special namespace, so we are just guessing here :(
         return parsedDocument.getElementsByTagName("parsererror").length > 0;
       }
-
+0
       return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
     };
     mapboxgl.accessToken = 'pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg';
@@ -157,6 +161,7 @@
         symbol: 'Milestone',
         reverse: false,
         fits: false,
+        hypotenuse: false,
       },
       mounted() {
         this.loadCookies();
@@ -313,7 +318,15 @@
         post(format, onresponse) {
           var self = this;
           var xhr = new XMLHttpRequest();
-          var data = { 'format': format, 'distance': this.distance, 'template': this.template, 'symbol': this.symbol, 'reverse': this.reverse, 'fits': this.fits };
+          var data = {
+            'format': format,
+            'distance': this.distance,
+            'template': this.template,
+            'symbol': this.symbol,
+            'reverse': this.reverse,
+            'fits': this.fits,
+            'hypotenuse': this.hypotenuse,
+          };
           xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
           xhr.setRequestHeader("Content-Type", "application/gpx+xml");
           xhr.onload = function () {
@@ -374,32 +387,37 @@
           this.download('csv');
         },
         saveCookies() {
-          self.$cookies.set("milestone_distance", this.distance);
-          this.$cookies.set("milestone_template", this.template);
-          this.$cookies.set("milestone_symbol", this.symbol);
-          this.$cookies.set("milestone_reverse", this.reverse ? 'true' : 'false');
-          this.$cookies.set("milestone_fits", self.fits ? 'true' : 'false');
+          self.$cookies.set("milestone.distance", this.distance);
+          this.$cookies.set("milestone.template", this.template);
+          this.$cookies.set("milestone.symbol", this.symbol);
+          this.$cookies.set("milestone.reverse", this.reverse ? 'true' : 'false');
+          this.$cookies.set("milestone.fits", self.fits ? 'true' : 'false');
+          this.$cookies.set("milestone.hypotenuse", self.fits ? 'true' : 'false');
         },
         loadCookies() {
-          var distance = this.$cookies.get("milestone_distance");
+          var distance = this.$cookies.get("milestone.distance");
           if (distance) {
             this.distance = distance;
           }
-          var template = this.$cookies.get("milestone_template");
+          var template = this.$cookies.get("milestone.template");
           if (template) {
             this.template = template;
           }
-          var symbol = this.$cookies.get("milestone_symbol");
+          var symbol = this.$cookies.get("milestone.symbol");
           if (symbol) {
             this.symbol = symbol;
           }
-          var fits = this.$cookies.get("milestone_fits") == 'true';
+          var fits = this.$cookies.get("milestone.fits") == 'true';
           if (fits) {
             this.fits = fits;
           }
-          var reverse = this.$cookies.get("milestone_reverse") == 'true';
+          var reverse = this.$cookies.get("milestone.reverse") == 'true';
           if (reverse) {
             this.reverse = reverse;
+          }
+          var hypotenuse = this.$cookies.get("milestone.hypotenuse") == 'true';
+          if (hypotenuse) {
+            this.hypotenuse = hypotenuse;
           }
         },
       }

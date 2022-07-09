@@ -7,6 +7,7 @@ import (
 
 func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 	return &RemoveByCriteria{
+		distanceFunc: HorizontalDistance,
 		shouldRemove: func(line *line) bool {
 			return line.dist < distance
 		},
@@ -15,6 +16,7 @@ func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 
 func RemoveDurationLessThan(duration time.Duration) *RemoveByCriteria {
 	return &RemoveByCriteria{
+		distanceFunc: HorizontalDistance,
 		shouldRemove: func(line *line) bool {
 			if line.duration == nil {
 				return false
@@ -32,6 +34,7 @@ func RemoveDurationLessThan(duration time.Duration) *RemoveByCriteria {
 }
 
 type RemoveByCriteria struct {
+	distanceFunc DistanceFunc
 	shouldRemove func(line *line) bool
 }
 
@@ -56,7 +59,7 @@ func (r *RemoveByCriteria) Run(tracklog *gpx.TrackLog) (int, error) {
 }
 
 func (r *RemoveByCriteria) remove(seg *gpx.Segment) (*gpx.Segment, error) {
-	lines := getLines(seg.Points)
+	lines := getLines(r.distanceFunc, seg.Points)
 	accepted := make([]*line, 0)
 	for _, line := range lines {
 		if r.shouldRemove(line) {

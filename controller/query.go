@@ -27,3 +27,12 @@ func queryGetFloat64(q url.Values, name string, preset float64) float64 {
 	}
 	return val
 }
+
+func queryGetBool(q url.Values, name string, preset bool) bool {
+	str := q.Get(name)
+	if str == "" {
+		log.Printf("Missing '%s'", name)
+		return preset
+	}
+	return str == "true"
+}

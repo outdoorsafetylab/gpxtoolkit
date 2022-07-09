@@ -9,8 +9,9 @@ import (
 )
 
 type ReTimestamp struct {
-	Start time.Time
-	Speed float64
+	DistanceFunc DistanceFunc
+	Start        time.Time
+	Speed        float64
 }
 
 func (c *ReTimestamp) Name() string {
@@ -34,7 +35,7 @@ func (c *ReTimestamp) Run(tracklog *gpx.TrackLog) (int, error) {
 }
 
 func (c *ReTimestamp) timestamp(points []*gpx.Point, start time.Time) (time.Time, error) {
-	lines := getLines(points)
+	lines := getLines(c.DistanceFunc, points)
 	for _, line := range lines {
 		line.a.NanoTime = proto.Int64(start.UnixNano())
 		duration := time.Duration(line.dist/c.Speed) * time.Second

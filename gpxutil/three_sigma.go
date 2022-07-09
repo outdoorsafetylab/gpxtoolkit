@@ -13,8 +13,9 @@ func (c *RemoveOutlier) Name() string {
 
 func RemoveOutlierBySpeed() *RemoveOutlier {
 	return &RemoveOutlier{
-		metric: "Speed",
-		unit:   "m/s",
+		distanceFunc: HorizontalDistance,
+		metric:       "Speed",
+		unit:         "m/s",
 		value: func(line *line) *float64 {
 			return line.speed
 		},
@@ -23,8 +24,9 @@ func RemoveOutlierBySpeed() *RemoveOutlier {
 
 func RemoveOutlierByDistance() *RemoveOutlier {
 	return &RemoveOutlier{
-		metric: "Distance",
-		unit:   "m",
+		distanceFunc: HorizontalDistance,
+		metric:       "Distance",
+		unit:         "m",
 		value: func(line *line) *float64 {
 			return &line.dist
 		},
@@ -32,9 +34,10 @@ func RemoveOutlierByDistance() *RemoveOutlier {
 }
 
 type RemoveOutlier struct {
-	metric string
-	unit   string
-	value  func(line *line) *float64
+	distanceFunc DistanceFunc
+	metric       string
+	unit         string
+	value        func(line *line) *float64
 }
 
 func (r *RemoveOutlier) Run(tracklog *gpx.TrackLog) (int, error) {
@@ -54,7 +57,7 @@ func (r *RemoveOutlier) Run(tracklog *gpx.TrackLog) (int, error) {
 }
 
 func (r *RemoveOutlier) remove(seg *gpx.Segment) (*gpx.Segment, error) {
-	lines := getLines(seg.Points)
+	lines := getLines(r.distanceFunc, seg.Points)
 	var sum, avg, std float64
 	num := 0
 	for _, line := range lines {
