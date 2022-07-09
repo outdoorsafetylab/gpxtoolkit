@@ -109,7 +109,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 			}
 			num := int(math.Round(end/c.Distance) - math.Round(start/c.Distance))
 			length := (end - start)
-			log.Printf("Segment %d: %f meters (from %f to %f) with %d milestones", i, length, start, end, num)
+			log.Printf("Segment %d: %f meters (from %fm to %fm) with %d milestones", i, length, start, end, num)
 			step := length / float64(num)
 			milestones := make([]*milestone, num)
 			for j := range milestones {
