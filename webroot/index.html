@@ -267,6 +267,20 @@
                 break;
             }
           }
+          // for (var i = 0; i < coordinates.length; i++) {
+          //   var c = coordinates[i];
+          //   var lngLat = [c[0], c[1]];
+          //   var options = null;
+          //   var img = document.createElement("img");
+          //   img.src = "/images/flag.svg";
+          //   options = {
+          //     element: img,
+          //     anchor: 'bottom-left',
+          //   };
+          //   var marker = new mapboxgl.Marker(options)
+          //     .setLngLat(lngLat)
+          //     .addTo(this.map);
+          // }
           id = 'waypoints';
           this.map.addLayer({
             'id': id,
@@ -356,7 +370,7 @@
           }
           var self = this;
           this.post('gpx', function (response) {
-            self.previewed = self.loadGpx(response, !self.previewed);
+            self.previewed = self.loadGpx(response, false);
             if (self.previewed) {
               self.saveCookies();
             }

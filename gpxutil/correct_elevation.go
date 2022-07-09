@@ -52,7 +52,7 @@ func (c *CorrectElevation) Run(tracklog *gpx.TrackLog) (int, error) {
 			}
 			for i, p := range s.Points {
 				elev := elevations[i]
-				if elev == nil || math.IsNaN(*elev) {
+				if !elevation.IsValid(elev) {
 					continue
 				}
 				p.Elevation = proto.Float64(math.Round(*elev))

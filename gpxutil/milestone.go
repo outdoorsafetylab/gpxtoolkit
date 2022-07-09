@@ -103,7 +103,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		log.Printf("Total %d points: %.1fm with %d milestones", len(points), total, len(milestones))
 		return c.create(points, milestones, distances)
 	} else {
-		projections, err := projectWaypoints(c.DistanceFunc, points, waypoints, c.Distance/2)
+		projections, err := projectWaypoints(c.DistanceFunc, points, waypoints, c.Distance/2, c.Service)
 		if err != nil {
 			return nil, err
 		}
@@ -225,7 +225,7 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 					ms.waypoint.Name = proto.String(name)
 				}
 			} else {
-				p := Interpolate(a, b, (ms.distance-start)/dist)
+				p := interpolate(a, b, (ms.distance-start)/dist, c.Service)
 				ms.variables.Latitude = p.GetLatitude()
 				ms.variables.Longitude = p.GetLongitude()
 				ms.variables.Elevation = p.GetElevation()

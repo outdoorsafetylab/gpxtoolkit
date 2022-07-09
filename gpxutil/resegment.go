@@ -2,21 +2,20 @@ package gpxutil
 
 import (
 	"fmt"
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 
 	"google.golang.org/protobuf/proto"
 )
 
 type ReSegment struct {
+	Service      elevation.Service
 	DistanceFunc DistanceFunc
-	Threshold    struct {
-		Inclusive float64
-		Exclusive float64
-	}
+	Threshold    float64
 }
 
 func (c *ReSegment) Name() string {
-	return fmt.Sprintf("Re-Segment by Waypoints with Threshold  [%f,%f] m", c.Threshold.Inclusive, c.Threshold.Exclusive)
+	return fmt.Sprintf("Re-Segment by Waypoints with Threshold %fm", c.Threshold)
 }
 
 func (c *ReSegment) Run(tracklog *gpx.TrackLog) (int, error) {
@@ -26,7 +25,7 @@ func (c *ReSegment) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold.Exclusive)
+	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold, c.Service)
 	if err != nil {
 		return 0, err
 	}

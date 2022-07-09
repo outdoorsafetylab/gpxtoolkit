@@ -2,20 +2,19 @@ package gpxutil
 
 import (
 	"fmt"
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"log"
 )
 
 type ProjectWaypoints struct {
+	Service      elevation.Service
 	DistanceFunc DistanceFunc
-	Threshold    struct {
-		Inclusive float64
-		Exclusive float64
-	}
+	Threshold    float64
 }
 
 func (c *ProjectWaypoints) Name() string {
-	return fmt.Sprintf("Project Waypoints with Threshold [%f,%f] m", c.Threshold.Inclusive, c.Threshold.Exclusive)
+	return fmt.Sprintf("Project Waypoints with Threshold %fm", c.Threshold)
 }
 
 func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
@@ -25,7 +24,7 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold.Exclusive)
+	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold, c.Service)
 	if err != nil {
 		return 0, err
 	}
@@ -115,28 +114,28 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 	return segments
 }
 
-func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints []*gpx.WayPoint, exclusive float64) (projections, error) {
+func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints []*gpx.WayPoint, exclusive float64, service elevation.Service) (projections, error) {
 	lines := getLines(distanceFunc, points)
 	projections := make(projections, len(waypoints))
 	for i, w := range waypoints {
 		prj := &projection{}
 		projections[i] = prj
 		p := w.GetPoint()
-		for j, l := range lines {
-			pp := l.closestPoint(distanceFunc, p)
+		for _, l := range lines {
+			pp := l.closestPoint(distanceFunc, p, service)
 			dist := HorizontalDistance(p, pp)
 			if dist > exclusive {
 				continue
 			}
 			// d1 := p.DistanceTo(l.a)
 			// d2 := p.DistanceTo(l.b)
-			lat1 := l.a.GetLatitude()
-			lat2 := l.b.GetLatitude()
-			lon1 := l.a.GetLongitude()
-			lon2 := l.b.GetLongitude()
+			// lat1 := l.a.GetLatitude()
+			// lat2 := l.b.GetLatitude()
+			// lon1 := l.a.GetLongitude()
+			// lon2 := l.b.GetLongitude()
 			// // log.Printf("Distance from '%s' to (%f,%f):(%f:%f): %f", w.GetName(), lat1, lon1, lat2, lon2, dist)
 			if prj.point == nil || dist < prj.distance {
-				log.Printf("Shortest distance from '%s' to line[%d] (%f,%f):(%f:%f): %f", w.GetName(), j, lat1, lon1, lat2, lon2, dist)
+				// log.Printf("Shortest distance from '%s' to line[%d] (%f,%f):(%f:%f): %f", w.GetName(), j, lat1, lon1, lat2, lon2, dist)
 				prj.point = pp
 				prj.waypoint = w
 				prj.line = l

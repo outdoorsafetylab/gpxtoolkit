@@ -1,6 +1,7 @@
 package gpxutil
 
 import (
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"math"
 	"time"
@@ -27,7 +28,7 @@ type line struct {
 }
 
 // https://stackoverflow.com/a/6853926
-func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point) *gpx.Point {
+func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point, service elevation.Service) *gpx.Point {
 	pp := &gpx.Point{
 		Latitude:  l.a.Latitude,
 		Longitude: l.b.Longitude,
@@ -51,7 +52,7 @@ func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point) *gpx.Point 
 		dist1 := distanceFunc(p, l.a)
 		dist2 := distanceFunc(p, l.b)
 		dist := dist1 + dist2
-		return Interpolate(l.a, l.b, dist1/dist)
+		return interpolate(l.a, l.b, dist1/dist, service)
 	}
 	// x := p.GetLatitude()
 	// y := p.GetLongitude()

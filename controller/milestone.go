@@ -34,6 +34,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		distanceFunc = gpxutil.HorizontalDistance
 	}
+	distance := queryGetFloat64(query, "distance", 100)
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
 			// &gpxutil.Deduplicate{},
@@ -54,10 +55,15 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 			// &gpxutil.CorrectElevation{
 			// 	Service: c.Service,
 			// },
+			&gpxutil.Interpolate{
+				Service:      c.Service,
+				DistanceFunc: distanceFunc,
+				Distance:     distance / 5,
+			},
 			&gpxutil.Milestone{
 				Service:       c.Service,
 				DistanceFunc:  distanceFunc,
-				Distance:      queryGetFloat64(query, "distance", 100),
+				Distance:      distance,
 				MilestoneName: name,
 				Reverse:       queryGetBool(query, "reverse", false),
 				Symbol:        queryGetString(query, "symbol", "Milestone"),
