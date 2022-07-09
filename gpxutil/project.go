@@ -100,17 +100,17 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 	seg.points = append(seg.points, points[len(points)-1])
 	segments = append(segments, seg)
 	log.Printf("Sliced %d segments", len(segments))
-	for i, seg := range segments {
-		a := "start"
-		if seg.a.waypoint != nil {
-			a = seg.a.waypoint.GetName()
-		}
-		b := "end"
-		if seg.b.waypoint != nil {
-			b = seg.b.waypoint.GetName()
-		}
-		log.Printf("Segment %d: from %s to %s => %d points", i, a, b, len(seg.points))
-	}
+	// for i, seg := range segments {
+	// 	a := "start"
+	// 	if seg.a.waypoint != nil {
+	// 		a = seg.a.waypoint.GetName()
+	// 	}
+	// 	b := "end"
+	// 	if seg.b.waypoint != nil {
+	// 		b = seg.b.waypoint.GetName()
+	// 	}
+	// 	log.Printf("Segment %d: from %s to %s => %d points", i, a, b, len(seg.points))
+	// }
 	return segments
 }
 

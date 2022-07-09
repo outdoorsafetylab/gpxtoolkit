@@ -100,7 +100,7 @@
       <div class="col-sm-4 mt-2">
         <div>
           <input type="checkbox" class="form-check-input" id="fitWaypoints" v-model="fitWaypoints">
-          <label class="form-check-label" for="fitWaypoints">配合航點位置</label>
+          <label class="form-check-label" for="fitWaypoints">遷就地標(路標架設用)</label>
         </div>
         <div>
           <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
@@ -405,11 +405,13 @@
           <ul>
             <li><b>.Index</b>: 里程索引，整數，從0開始。</li>
             <li><b>.Number</b>: 里程號碼，整數，從1開始。</li>
+            <li><b>.Total</b>: 里程航點總數，整數。</li>
             <li><b>.Meter</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
             <li><b>.Kilometer</b>: 里程距離，浮點數(小數)，以公里計算。</li>
           </ul>
           <p>範例：<code>5{{printf "%02d" .Index}}</code><br />產出結果：<b>500</b>, <b>501</b>, <b>502</b>...</p>
           <p>範例：<code>{{printf "%.1f" .Kilometer}}K</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
+          <p>範例：<code></code>{{printf "%02d/%d" .Number .Total}}</code><br />產出結果：<b>01/86</b>, <b>02/86</b>, <b>03/86</b>...</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>

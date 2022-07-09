@@ -71,7 +71,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		}
 		milestones := make([]*milestone, int(math.Floor(total/c.Distance)))
 		for i := range milestones {
-			name, err := c.milestoneName(i, float64(i+1)*c.Distance)
+			name, err := c.milestoneName(i, i+1, len(milestones), float64(i+1)*c.Distance)
 			if err != nil {
 				return nil, err
 			}
@@ -89,44 +89,70 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		}
 		segments := projections.slice(points)
 		log.Printf("Sliced %d points to %d segments", len(points), len(segments))
-		n := 0
+		lengths := make([]float64, len(segments))
+		distances := make([][]float64, len(segments))
+		numMilestones := make([]int, len(segments))
+		totalMilestones := 0
+		numPoints := 0
+		distance := 0.0
 		for i, segment := range segments {
 			log.Printf("Segment %d: %d points", i, len(segment.points))
-			n += len(segment.points)
-		}
-		log.Printf("Total %d points", n)
-		markers := make([]*gpx.WayPoint, 0)
-		end := 0.0
-		for i, segment := range segments {
-			start := end
-			distances := make([]float64, len(segment.points)-1)
+			numPoints += len(segment.points)
+			start := distance
+			distances[i] = make([]float64, len(segment.points)-1)
 			for j, b := range segment.points[1:] {
 				a := segment.points[j]
 				dist := a.DistanceTo(b)
-				distances[j] = dist
-				// log.Printf("Distance %d: %f", j, dist)
-				end += dist
+				distances[i][j] = dist
+				distance += dist
 			}
-			num := int(math.Round(end/c.Distance) - math.Round(start/c.Distance))
-			length := (end - start)
-			log.Printf("Segment %d: %f meters (from %fm to %fm) with %d milestones", i, length, start, end, num)
-			step := length / float64(num)
-			milestones := make([]*milestone, num)
+			length := (distance - start)
+			numMilestone := int(math.Round(distance/c.Distance) - math.Round(start/c.Distance))
+			a := "start"
+			if segment.a.waypoint != nil {
+				a = segment.a.waypoint.GetName()
+			}
+			b := "end"
+			if segment.b.waypoint != nil {
+				b = segment.b.waypoint.GetName()
+			}
+			log.Printf("Segment %d: from %s @ %.1fm to %s @ %.1fm: %f meters with %d milestones", i, a, start, b, distance, length, numMilestone)
+			lengths[i] = length
+			numMilestones[i] = numMilestone
+			totalMilestones += numMilestone
+		}
+		log.Printf("Total %d points: %.1fm with %d milestones", numPoints, distance, totalMilestones)
+		markers := make([]*gpx.WayPoint, 0)
+		n := 0
+		for i, segment := range segments {
+			// start := end
+			// distances := make([]float64, len(segment.points)-1)
+			// for j, b := range segment.points[1:] {
+			// 	a := segment.points[j]
+			// 	dist := a.DistanceTo(b)
+			// 	distances[j] = dist
+			// 	// log.Printf("Distance %d: %f", j, dist)
+			// 	end += dist
+			// }
+			// num := int(math.Round((end - start) / c.Distance))
+			// length := (end - start)
+			milestones := make([]*milestone, numMilestones[i])
+			distance := lengths[i] / float64(len(milestones))
 			for j := range milestones {
-				index := int(math.Round(start/c.Distance)) + j
-				name, err := c.milestoneName(index, float64(index+1)*c.Distance)
+				name, err := c.milestoneName(n, n+1, totalMilestones, float64(n+1)*c.Distance)
 				if err != nil {
 					return nil, err
 				}
 				milestones[j] = &milestone{
 					name:     name,
-					distance: float64(j+1) * step,
+					distance: float64(j+1) * distance,
 				}
+				n++
 			}
-			if num > 0 {
-				milestones[num-1].waypoint = segment.b.waypoint
+			if len(milestones) > 0 {
+				milestones[len(milestones)-1].waypoint = segment.b.waypoint
 			}
-			m, err := c.create(segment.points, milestones, distances)
+			m, err := c.create(segment.points, milestones, distances[i])
 			if err != nil {
 				return nil, err
 			}
@@ -136,14 +162,17 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 	}
 }
 
-func (c *Milestone) milestoneName(index int, meter float64) (string, error) {
+func (c *Milestone) milestoneName(index, number, total int, meter float64) (string, error) {
 	data := &struct {
 		Index     int
 		Number    int
+		Total     int
 		Meter     float64
 		Kilometer float64
 	}{
-		Index: index,
+		Index:  index,
+		Number: number,
+		Total:  total,
 	}
 	data.Number = data.Index + 1
 	data.Meter = meter
