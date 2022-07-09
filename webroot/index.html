@@ -71,7 +71,8 @@
       </div>
     </nav>
     <div class="row progress" style="height: 4px;">
-      <div v-if="progress > 0" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"  v-bind:style="{ width: progress + '%' }"></div>
+      <div v-if="progress > 0" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+        v-bind:style="{ width: progress + '%' }"></div>
     </div>
     <div v-if="gpxFile" id="options" class="row pt-1 pb-2">
       <div class="col-md-2">
@@ -92,7 +93,7 @@
         </div>
       </div>
       <div class="col-md-2">
-        <label for="symbol" class="form-label">里程航點符號 (&lt;sym&gt;)</label>
+        <label for="symbol" class="form-label">里程航點符號 &lt;sym&gt;</label>
         <div class="input-group">
           <input type="text" class="form-control" id="symbol" required aria-describedby="symbol-addon2"
             v-model="symbol">
@@ -157,6 +158,7 @@
         fits: false,
       },
       mounted() {
+        this.loadCookies();
         this.map = new mapboxgl.Map({
           container: 'map', // container ID
           style: 'mapbox://styles/mapbox/outdoors-v11', // style URL
@@ -339,6 +341,9 @@
           var self = this;
           this.post('gpx', function (response) {
             self.previewed = self.loadGpx(response, !self.previewed);
+            if (self.previewed) {
+              self.saveCookies();
+            }
           });
         },
         download(format) {
@@ -362,6 +367,35 @@
         },
         downloadCsv() {
           this.download('csv');
+        },
+        saveCookies() {
+          self.$cookies.set("milestone_distance", this.distance);
+          this.$cookies.set("milestone_template", this.template);
+          this.$cookies.set("milestone_symbol", this.symbol);
+          this.$cookies.set("milestone_reverse", this.reverse ? 'true' : 'false');
+          this.$cookies.set("milestone_fits", self.fits ? 'true' : 'false');
+        },
+        loadCookies() {
+          var distance = this.$cookies.get("milestone_distance");
+          if (distance) {
+            this.distance = distance;
+          }
+          var template = this.$cookies.get("milestone_template");
+          if (template) {
+            this.template = template;
+          }
+          var symbol = this.$cookies.get("milestone_symbol");
+          if (symbol) {
+            this.symbol = symbol;
+          }
+          var fits = this.$cookies.get("milestone_fits") == 'true';
+          if (fits) {
+            this.fits = fits;
+          }
+          var reverse = this.$cookies.get("milestone_reverse") == 'true';
+          if (reverse) {
+            this.reverse = reverse;
+          }
         },
       }
     });
@@ -408,8 +442,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel"
-    aria-hidden="true">
+  <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -417,7 +450,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
         </div>
         <div class="modal-body">
-          <p>樣版採用 <a href="https://go.dev/play/" target="_blank">Go 語言語法</a>，樣版可使用 <code>printf</code> 函數來調用 <code>fmt.Printf</code>。並提供以下變數：</p>
+          <p>樣版採用 <a href="https://go.dev/play/" target="_blank">Go 語言語法</a>，樣版可使用 <code>printf</code> 函數來調用
+            <code>fmt.Printf</code>。並提供以下變數：
+          </p>
           <ul>
             <li><b>num</b>: 里程號碼，整數，從1開始。</li>
             <li><b>total</b>: 里程航點總數，整數。</li>
@@ -431,8 +466,11 @@
           <p>範例：<code>dist/1000</code><br />產出結果：<b>0.1</b>, <b>0.2</b>, <b>0.3</b>...</p>
           <p>範例：<code>printf("%.0fm", dist)</code><br />產出結果：<b>100m</b>, <b>200m</b>, <b>300m</b>...</p>
           <p>範例：<code>printf("%.1fK", dist/1000)</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
-          <p>範例：<code>printf("%.1fK/%.0fm", dist/1000, elev)</code><br />產出結果：<b>0.1K/2763m</b>, <b>0.2K/2756m</b>, <b>0.3K/2748m</b>...</p>
-          <p>範例：<code></code>printf("SM400 %02d/%d", num, total)</code><br />產出結果：<b>SM400 01/86</b>, <b>SM400 02/86</b>, <b>SM400 03/86</b>...</p>
+          <p>範例：<code>printf("%.1fK/%.0fm", dist/1000, elev)</code><br />產出結果：<b>0.1K/2763m</b>, <b>0.2K/2756m</b>,
+            <b>0.3K/2748m</b>...
+          </p>
+          <p>範例：<code></code>printf("SM400 %02d/%d", num, total)</code><br />產出結果：<b>SM400 01/86</b>, <b>SM400
+              02/86</b>, <b>SM400 03/86</b>...</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
