@@ -21,7 +21,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	template, err := template.New("").Parse(query.Get("template"))
+	tmpl, err := template.New("").Parse(query.Get("template"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse template: %s", err.Error()), 400)
 		return
@@ -45,7 +45,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 			// },
 			&gpxutil.Milestone{
 				Distance:     queryGetFloat64(query, "distance", 100),
-				Template:     template,
+				Template:     tmpl,
 				Reverse:      query.Get("reverse") == "true",
 				Symbol:       queryGetString(query, "symbol", "Milestone"),
 				FitWaypoints: query.Get("fits") == "true",
