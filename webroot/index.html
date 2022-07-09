@@ -98,7 +98,8 @@
         <div class="input-group">
           <input type="text" class="form-control" id="symbol" required aria-describedby="symbol-addon2"
             v-model="symbol">
-          <a class="btn btn-outline-primary" type="button" id="symbol-addon2" href="https://www.gpsrchive.com/BaseCamp/Custom%20Waypoint%20Symbols.html" target="_blank">說明</a>
+          <a class="btn btn-outline-primary" type="button" id="symbol-addon2"
+            href="https://www.gpsrchive.com/BaseCamp/Custom%20Waypoint%20Symbols.html" target="_blank">說明</a>
         </div>
       </div>
       <div class="col-md-3">
@@ -112,7 +113,7 @@
         </div>
         <div>
           <input type="checkbox" class="form-check-input" id="hypotenuse" v-model="hypotenuse">
-          <label class="form-check-label" for="hypotenuse">計算距離時考慮高度</label>
+          <label class="form-check-label" for="hypotenuse">計算距離時考慮高度落差</label>
         </div>
       </div>
     </div>
@@ -139,7 +140,7 @@
         // In PhantomJS the parseerror element doesn't seem to have a special namespace, so we are just guessing here :(
         return parsedDocument.getElementsByTagName("parsererror").length > 0;
       }
-0
+      0
       return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
     };
     mapboxgl.accessToken = 'pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg';
@@ -489,8 +490,8 @@
           <p>範例：<code>dist/1000</code><br />產出結果：<b>0.1</b>, <b>0.2</b>, <b>0.3</b>...</p>
           <p>範例：<code>printf("%.0fm", dist)</code><br />產出結果：<b>100m</b>, <b>200m</b>, <b>300m</b>...</p>
           <p>範例：<code>printf("%.1fK", dist/1000)</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
-          <p>範例：<code>printf("%.1fK/%.0fm", dist/1000, elev)</code><br />產出結果：<b>0.1K/2763m</b>, <b>0.2K/2756m</b>,
-            <b>0.3K/2748m</b>...
+          <p>範例：<code>printf("%.1fK/%.0fh", dist/1000, elev)</code><br />產出結果：<b>0.1K/2763h</b>, <b>0.2K/2756h</b>,
+            <b>0.3K/2748h</b>...
           </p>
           <p>範例：<code></code>printf("SM400 %02d/%d", num, total)</code><br />產出結果：<b>SM400 01/86</b>, <b>SM400
               02/86</b>, <b>SM400 03/86</b>...</p>

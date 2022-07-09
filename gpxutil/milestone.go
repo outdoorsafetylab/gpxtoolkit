@@ -206,6 +206,15 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 				ms.variables.Latitude = ms.waypoint.GetLatitude()
 				ms.variables.Longitude = ms.waypoint.GetLongitude()
 				ms.variables.Elevation = ms.waypoint.GetElevation()
+				if c.Service != nil && ms.variables.Elevation <= 0 {
+					elev, err := elevation.Lookup(c.Service, ms.variables.Latitude, ms.variables.Longitude)
+					if err != nil {
+						return nil, err
+					}
+					if elev != nil && !math.IsNaN(*elev) {
+						ms.variables.Elevation = *elev
+					}
+				}
 				name, err := c.MilestoneName.Eval(ms.variables)
 				if err != nil {
 					return nil, err
