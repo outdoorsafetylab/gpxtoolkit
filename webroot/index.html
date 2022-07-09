@@ -33,6 +33,7 @@
       <div class="container-fluid">
         <div>
           <span v-if="gpxFile" class="navbar-text">{{gpxFile.name}}</span>
+          <button v-if="gpxFile" type="button" class="btn btn-danger" @click="clear()">清除</button>
           <input class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required
             @change="onGpxChosen" style="display:none;">
           <label v-if="!gpxFile" for="gpx-file" class="btn btn-primary position-relative">
@@ -54,7 +55,7 @@
               <button type="button" class="dropdown-item" @click="downloadCsv()">CSV</button>
             </div>
           </div>
-          <button v-if="gpxFile" type="button" class="btn btn-danger" @click="clear()">清除</button>
+          <button v-if="gpxFileContent && previewed" type="button" class="btn btn-danger" @click="restore()">還原</button>
           <div class="btn-group" role="group">
             <button id="btnGroupDrop1" type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown"
               aria-expanded="false">
@@ -145,6 +146,7 @@
         zoom: 14,
         map: null,
         gpxFile: null,
+        gpxFileContent: null,
         progress: 0,
         previewed: false,
         layers: [],
@@ -171,17 +173,18 @@
       },
       methods: {
         onGpxChosen(event) {
-          this.readGpx(event.target.files[0]);
+          this.readGpxFile(event.target.files[0]);
         },
         onGpxDropped(event) {
-          this.readGpx(event.dataTransfer.files[0]);
+          this.readGpxFile(event.dataTransfer.files[0]);
         },
-        readGpx(gpxFile) {
+        readGpxFile(gpxFile) {
           var reader = new FileReader();
           var self = this;
           reader.onload = function (event) {
             if (self.loadGpx(event.target.result)) {
               self.gpxFile = gpxFile;
+              self.gpxFileContent = event.target.result;
             }
           };
           reader.readAsText(gpxFile);
@@ -344,6 +347,9 @@
               self.saveCookies();
             }
           });
+        },
+        restore() {
+          this.loadGpx(this.gpxFileContent, false);
         },
         download(format) {
           var filename = this.gpxFile.name.replace(/\.[^/.]+$/, "") + '(含里程).' + format;
