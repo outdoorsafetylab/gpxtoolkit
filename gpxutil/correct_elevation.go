@@ -3,6 +3,7 @@ package gpxutil
 import (
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
+	"log"
 	"math"
 
 	"google.golang.org/protobuf/proto"
@@ -59,6 +60,7 @@ func correctWayPoints(service elevation.Service, waypoints []*gpx.WayPoint) (int
 		p.Elevation = proto.Float64(math.Round(*elev))
 		n++
 	}
+	log.Printf("Corrected %d way points", n)
 	return n, nil
 }
 
@@ -80,5 +82,6 @@ func correctPoints(service elevation.Service, gpxPoints []*gpx.Point) (int, erro
 		p.Elevation = proto.Float64(math.Round(*elev))
 		n++
 	}
+	log.Printf("Corrected %d points", n)
 	return n, nil
 }
