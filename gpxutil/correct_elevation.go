@@ -54,7 +54,7 @@ func correctWayPoints(service elevation.Service, waypoints []*gpx.WayPoint) (int
 	n := 0
 	for i, p := range waypoints {
 		elev := elevations[i]
-		if elev == nil || math.IsNaN(*elev) {
+		if !elevation.IsValid(elev) {
 			continue
 		}
 		p.Elevation = proto.Float64(math.Round(*elev))
@@ -76,7 +76,7 @@ func correctPoints(service elevation.Service, gpxPoints []*gpx.Point) (int, erro
 	n := 0
 	for i, p := range gpxPoints {
 		elev := elevations[i]
-		if elev == nil || math.IsNaN(*elev) {
+		if !elevation.IsValid(elev) {
 			continue
 		}
 		p.Elevation = proto.Float64(math.Round(*elev))

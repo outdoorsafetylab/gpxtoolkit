@@ -249,12 +249,12 @@ type MilestoneNameVariables struct {
 }
 
 func (v *MilestoneNameVariables) correctElevation(service elevation.Service) error {
-	elev, err := elevation.Lookup(service, v.Latitude, v.Longitude)
+	elev, err := service.Lookup([]*elevation.LatLon{{Lat: v.Latitude, Lon: v.Longitude}})
 	if err != nil {
 		return err
 	}
-	if elevation.IsValid(elev) {
-		v.Elevation = *elev
+	if elevation.IsValid(elev[0]) {
+		v.Elevation = *elev[0]
 	}
 	return nil
 }
