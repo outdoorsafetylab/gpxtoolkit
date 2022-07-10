@@ -1,84 +1,90 @@
 package controller
 
 import (
-	"encoding/csv"
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
-	"gpxtoolkit/milestone"
+	"gpxtoolkit/gpxutil"
 	"net/http"
-	"strconv"
-	"text/template"
 )
 
 type MilestoneController struct {
-	GPXCreator string
-	Service    elevation.Service
+	Service elevation.Service
 }
 
 func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	distance, err := strconv.ParseFloat(query.Get("distance"), 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Invalid distance: %s", err.Error()), 400)
-		return
-	}
-	log, err := gpx.Parse(r.Body)
+	tracklog, err := gpx.Parse(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	tmpl, err := template.New("").Parse(query.Get("name-template"))
+	name := &gpxutil.MilestoneName{
+		Template: query.Get("template"),
+	}
+	_, err = name.Eval(&gpxutil.MilestoneNameVariables{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to parse template: %s", err.Error()), 400)
+		http.Error(w, fmt.Sprintf("Invalid template: %s", err.Error()), 400)
 		return
 	}
-	marker := &milestone.Marker{
-		Distance:     distance,
-		NameTemplate: tmpl,
-		Service:      c.Service,
-		Symbol:       "Milestone",
+	distance := queryGetFloat64(query, "distance", 100)
+	commands := &gpxutil.ChainedCommands{
+		Commands: []gpxutil.Command{
+			gpxutil.RemoveDistanceLessThan(0.1),
+			// gpxutil.RemoveOutlierBySpeed(),
+			// &gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
+			// &gpxutil.Simplify{
+			// 	Epsilon: 10,
+			// 	First:   true,
+			// },
+			// &gpxutil.ReTimestamp{
+			// 	Start: time.Unix(0, 0),
+			// 	Speed: 0.5,
+			// },
+			// &gpxutil.ReSegment{
+			// 	Threshold: 500,
+			// },
+			// &gpxutil.CorrectElevation{
+			// 	Service: c.Service,
+			// },
+			&gpxutil.Milestone{
+				Service:           c.Service,
+				Distance:          distance,
+				MilestoneName:     name,
+				Reverse:           queryGetBool(query, "reverse", false),
+				Symbol:            queryGetString(query, "symbol", "Milestone"),
+				FitWaypoints:      queryGetBool(query, "fits", false),
+				ByTerrainDistance: queryGetBool(query, "terrainDistance", false),
+			},
+		},
 	}
-	if query.Get("reverse") == "true" {
-		marker.Reverse = true
+	_, err = commands.Run(tracklog)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
 	}
 	format := query.Get("format")
 	switch format {
 	case "gpx":
-		err = marker.MarkToGPX(log)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to mark GPX: %s", err.Error()), 500)
-			return
-		}
 		writer := &gpx.Writer{
-			Creator: c.GPXCreator,
+			Creator: r.Host,
 			Writer:  w,
 		}
 		w.Header().Set("Content-Type", "application/gpx+xml")
-		err = writer.Write(log)
+		err = writer.Write(tracklog)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to write GPX: %s", err.Error()), 500)
 			return
 		}
 		return
 	case "csv":
-		records := [][]string{
-			{"航點名稱", "緯度", "經度", "高程"},
-		}
-		records, err = marker.MarkToCSV(records, log)
+		w.Header().Set("Content-Type", "text/csv")
+		csv := gpxutil.NewCSVWayPointWriter(w)
+		_, err = csv.Run(tracklog)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to create CSV: %s", err.Error()), 500)
+			http.Error(w, fmt.Sprintf("Failed to write CSV: %s", err.Error()), 500)
 			return
 		}
-		w.Header().Set("Content-Type", "text/csv")
-		writer := csv.NewWriter(w)
-		for _, record := range records {
-			if err := writer.Write(record); err != nil {
-				http.Error(w, fmt.Sprintf("Failed to write CSV: %s", err.Error()), 500)
-				return
-			}
-		}
-		writer.Flush()
 		return
 	default:
 		http.Error(w, fmt.Sprintf("Unknown format: %s", format), 400)

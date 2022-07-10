@@ -24,6 +24,7 @@ func (t *Track) End() *Point {
 
 func (t *Track) Stat() *TrackStats {
 	st := NewTrackStats()
+	*st.NumSegments = int64(len(t.Segments))
 	for _, s := range t.Segments {
 		st.Merge(s.Stat())
 	}
@@ -36,29 +37,4 @@ func (t *Track) Points() []*Point {
 		points = append(points, s.Points...)
 	}
 	return points
-}
-
-func (t *Track) Filter(vt, ht, slope, alpha float64) int {
-	n := 0
-	for _, s := range t.Segments {
-		n += s.ThresholdFilter(ht, vt, slope)
-		n += s.AlphaFilter(alpha)
-	}
-	return n
-}
-
-func (t *Track) OutlierFilter() int {
-	n := 0
-	for _, s := range t.Segments {
-		n += s.OutlierFilter()
-	}
-	return n
-}
-
-func (t *Track) PointCount() int {
-	n := 0
-	for _, s := range t.Segments {
-		n += len(s.Points)
-	}
-	return n
 }

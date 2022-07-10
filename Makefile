@@ -8,7 +8,7 @@ all: $(PBGO)
 
 test:
 	go test ./gpx
-	go test ./milestone
+	go test ./gpxutil
 
 include .make/golangci-lint.mk
 include .make/protoc.mk

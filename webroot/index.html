@@ -33,6 +33,7 @@
       <div class="container-fluid">
         <div>
           <span v-if="gpxFile" class="navbar-text">{{gpxFile.name}}</span>
+          <button v-if="gpxFile" type="button" class="btn btn-danger" @click="clear()">清除</button>
           <input class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required
             @change="onGpxChosen" style="display:none;">
           <label v-if="!gpxFile" for="gpx-file" class="btn btn-primary position-relative">
@@ -54,7 +55,7 @@
               <button type="button" class="dropdown-item" @click="downloadCsv()">CSV</button>
             </div>
           </div>
-          <button v-if="gpxFile" type="button" class="btn btn-danger" @click="clear()">清除</button>
+          <button v-if="gpxFileContent && previewed" type="button" class="btn btn-danger" @click="restore()">還原</button>
           <div class="btn-group" role="group">
             <button id="btnGroupDrop1" type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown"
               aria-expanded="false">
@@ -70,33 +71,50 @@
         </div>
       </div>
     </nav>
+    <div class="row progress" style="height: 4px;">
+      <div v-if="progress > 0" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+        v-bind:style="{ width: progress + '%' }"></div>
+    </div>
     <div v-if="gpxFile" id="options" class="row pt-1 pb-2">
-      <div class="col-sm-4">
+      <div class="col-md-2">
         <label for="distance" class="form-label">里程間距</label>
         <div class="input-group">
           <input type="number" class="form-control" id="distance" required aria-describedby="distance-addon2"
             v-model="distance">
           <span class="input-group-text" id="distance-addon2">公尺</span>
         </div>
-        <div class="invalid-feedback">
-          請輸入里程間距
-        </div>
       </div>
-      <div class="col-sm-4">
-        <label for="name-template" class="form-label">里程航點名稱樣版</label>
+      <div class="col-md-5">
+        <label for="template" class="form-label">里程航點名稱樣版</label>
         <div class="input-group">
-          <input type="text" class="form-control" id="name-template" required aria-describedby="name-template-addon2"
-            v-model="nameTemplate">
-          <button class="btn btn-outline-primary" type="button" id="name-template-addon2" data-bs-toggle="modal"
-            data-bs-target="#nameTemplateModal">說明</button>
-        </div>
-        <div class="invalid-feedback">
-          請輸入里程航點名稱樣版
+          <input type="text" class="form-control" id="template" required aria-describedby="template-addon2"
+            v-model="template">
+          <button class="btn btn-outline-primary" type="button" id="template-addon2" data-bs-toggle="modal"
+            data-bs-target="#templateModal">說明</button>
         </div>
       </div>
-      <div class="col-sm-4 mt-4">
-        <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
-        <label class="form-check-label" for="reverse">反向產生里程航點</label>
+      <div class="col-md-2">
+        <label for="symbol" class="form-label">里程航點符號 &lt;sym&gt;</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="symbol" required aria-describedby="symbol-addon2"
+            v-model="symbol">
+          <a class="btn btn-outline-primary" type="button" id="symbol-addon2"
+            href="https://www.gpsrchive.com/BaseCamp/Custom%20Waypoint%20Symbols.html" target="_blank">說明</a>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div>
+          <input type="checkbox" class="form-check-input" id="fits" v-model="fits">
+          <label class="form-check-label" for="fits">遷就地標(路標架設用)</label>
+        </div>
+        <div>
+          <input type="checkbox" class="form-check-input" id="reverse" v-model="reverse">
+          <label class="form-check-label" for="reverse">反向產生里程航點</label>
+        </div>
+        <div>
+          <input type="checkbox" class="form-check-input" id="terrainDistance" v-model="terrainDistance">
+          <label class="form-check-label" for="terrainDistance">使用地表距離</label>
+        </div>
       </div>
     </div>
     <div id="map" class="row flex-grow-1" @drop="onGpxDropped"></div>
@@ -122,7 +140,7 @@
         // In PhantomJS the parseerror element doesn't seem to have a special namespace, so we are just guessing here :(
         return parsedDocument.getElementsByTagName("parsererror").length > 0;
       }
-
+      0
       return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
     };
     mapboxgl.accessToken = 'pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg';
@@ -133,15 +151,21 @@
         zoom: 14,
         map: null,
         gpxFile: null,
+        gpxFileContent: null,
+        progress: 0,
         previewed: false,
         layers: [],
         sources: [],
         markers: [],
         distance: '100',
-        nameTemplate: '{{printf "%.1f" .Kilometer}}K',
+        template: 'printf("%.1fK", dist/1000)',
+        symbol: 'Milestone',
         reverse: false,
+        fits: false,
+        terrainDistance: false,
       },
       mounted() {
+        this.loadCookies();
         this.map = new mapboxgl.Map({
           container: 'map', // container ID
           style: 'mapbox://styles/mapbox/outdoors-v11', // style URL
@@ -155,30 +179,46 @@
       },
       methods: {
         onGpxChosen(event) {
-          this.readGpx(event.target.files[0]);
+          this.readGpxFile(event.target.files[0]);
         },
         onGpxDropped(event) {
-          this.readGpx(event.dataTransfer.files[0]);
+          this.readGpxFile(event.dataTransfer.files[0]);
         },
-        readGpx(gpxFile) {
+        readGpxFile(gpxFile) {
           var reader = new FileReader();
           var self = this;
           reader.onload = function (event) {
             if (self.loadGpx(event.target.result)) {
               self.gpxFile = gpxFile;
+              self.gpxFileContent = event.target.result;
             }
           };
           reader.readAsText(gpxFile);
         },
-        loadGpx(gpx) {
+        loadGpx(gpx, fitBounds = true) {
+          this.progress = 100;
           var parser = new DOMParser();
           var doc = parser.parseFromString(gpx, "application/xml");
           if (isDOMParseError(doc)) {
             alert('無法處理的GPX格式');
+            this.progress = 0;
             return false;
           }
           this.clearMap();
           var geojson = toGeoJSON.gpx(doc);
+          var colors = ['#ff0000', '#ff9900', '#ffff00', '#0cad00', '#00ffd5', '#00bbff', '#0040ff', '#d400ff', '#ff0077'];
+          var n = 0;
+          for (var i = 0; i < geojson.features.length; i++) {
+            var feature = geojson.features[i];
+            switch (feature.geometry.type) {
+              case 'LineString':
+              case 'MultiLineString':
+                if (!feature.properties) feature.properties = {};
+                feature.properties.color = colors[n % colors.length];
+                n++;
+                break;
+            }
+          }
           var id = 'gpx';
           this.map.addSource(id, {
             'type': 'geojson',
@@ -195,7 +235,7 @@
               'line-cap': 'round'
             },
             'paint': {
-              'line-color': '#f00',
+              'line-color': ['get', 'color'],
               'line-width': 4
             }
           });
@@ -216,7 +256,7 @@
                 var lngLat = [feature.geometry.coordinates[0], feature.geometry.coordinates[1]];
                 var options = null;
                 var img = document.createElement("img");
-                if (feature.properties.sym == 'Milestone') {
+                if (feature.properties.sym == this.symbol) {
                   img.src = "/images/flag.svg";
                   options = {
                     element: img,
@@ -240,6 +280,20 @@
                 break;
             }
           }
+          // for (var i = 0; i < coordinates.length; i++) {
+          //   var c = coordinates[i];
+          //   var lngLat = [c[0], c[1]];
+          //   var options = null;
+          //   var img = document.createElement("img");
+          //   img.src = "/images/flag.svg";
+          //   options = {
+          //     element: img,
+          //     anchor: 'bottom-left',
+          //   };
+          //   var marker = new mapboxgl.Marker(options)
+          //     .setLngLat(lngLat)
+          //     .addTo(this.map);
+          // }
           id = 'waypoints';
           this.map.addLayer({
             'id': id,
@@ -254,7 +308,7 @@
             }
           });
           this.layers.push(id);
-          if (coordinates.length > 0) {
+          if (fitBounds && coordinates.length > 0) {
             const bounds = new mapboxgl.LngLatBounds(
               coordinates[0],
               coordinates[0],
@@ -267,14 +321,15 @@
               padding: { top: 50, bottom: 150, left: 25, right: 25 }
             });
           }
+          this.progress = 0;
           return true;
         },
         clear() {
           this.gpxFile = null;
-          this.previewed = false;
           this.clearMap();
         },
         clearMap() {
+          this.previewed = false;
           for (var i = 0; i < this.layers.length; i++) {
             this.map.removeLayer(this.layers[i]);
           }
@@ -289,24 +344,53 @@
           this.markers = [];
         },
         post(format, onresponse) {
+          var self = this;
           var xhr = new XMLHttpRequest();
-          var data = { 'distance': this.distance, 'name-template': this.nameTemplate, 'reverse': this.reverse, 'format': format };
+          var data = {
+            'format': format,
+            'distance': this.distance,
+            'template': this.template,
+            'symbol': this.symbol,
+            'reverse': this.reverse,
+            'fits': this.fits,
+            'terrainDistance': this.terrainDistance,
+          };
           xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
           xhr.setRequestHeader("Content-Type", "application/gpx+xml");
           xhr.onload = function () {
+            self.progress = 0;
             if (xhr.status != 200) {
-              console.error(xhr.responseText);
+              alert(xhr.responseText);
             } else {
               onresponse(xhr.response, xhr.getResponseHeader('Content-Type'));
             }
           };
           xhr.send(this.gpxFile);
+          this.progress = 100;
         },
         preview() {
+          if (!this.distance) {
+            alert('請輸入里程間距');
+            return;
+          }
+          if (!this.template) {
+            alert('請輸入里程航點名稱樣版');
+            return;
+          }
+          if (!this.symbol) {
+            alert('請輸入里程航點符號');
+            return;
+          }
           var self = this;
           this.post('gpx', function (response) {
-            self.previewed = self.loadGpx(response);
+            self.previewed = self.loadGpx(response, false);
+            if (self.previewed) {
+              self.saveCookies();
+            }
           });
+        },
+        restore() {
+          this.loadGpx(this.gpxFileContent, false);
         },
         download(format) {
           var filename = this.gpxFile.name.replace(/\.[^/.]+$/, "") + '(含里程).' + format;
@@ -329,6 +413,29 @@
         },
         downloadCsv() {
           this.download('csv');
+        },
+        saveCookies() {
+          var parameters = {
+            distance: this.distance,
+            template: this.template,
+            symbol: this.symbol,
+            fits: this.fits,
+            reverse: this.reverse,
+            terrainDistance: this.terrainDistance,
+          };
+          console.log("Saving parameters:", parameters);
+          this.$cookies.set("milestone.parameters", JSON.stringify(parameters));
+        },
+        loadCookies() {
+          var parameters = this.$cookies.get("milestone.parameters");
+          if (!parameters) return;
+          console.log("Loading parameters:", parameters);
+          this.distance = parameters.distance;
+          this.template = parameters.template;
+          this.symbol = parameters.symbol;
+          this.fits = parameters.fits;
+          this.reverse = parameters.reverse;
+          this.terrainDistance = parameters.terrainDistance;
         },
       }
     });
@@ -375,24 +482,35 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="nameTemplateModal" tabindex="-1" aria-labelledby="nameTemplateModalLabel"
-    aria-hidden="true">
+  <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="nameTemplateModalLabel">里程航點名稱樣版說明</h5>
+          <h5 class="modal-title" id="templateModalLabel">里程航點名稱樣版說明</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
         </div>
         <div class="modal-body">
-          <p>里程航點名稱採用 <a href="https://golang.org/pkg/text/template/" target="_blank">Go 語言樣版語法</a>，並提供以下變數可供使用：</p>
+          <p>樣版採用 <a href="https://go.dev/play/" target="_blank">Go 語言語法</a>，樣版可使用 <code>printf</code> 函數來調用
+            <code>fmt.Printf</code>。並提供以下變數：
+          </p>
           <ul>
-            <li><b>.Index</b>: 里程索引，整數，從0開始。</li>
-            <li><b>.Number</b>: 里程號碼，整數，從1開始。</li>
-            <li><b>.Meter</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
-            <li><b>.Kilometer</b>: 里程距離，浮點數(小數)，以公里計算。</li>
+            <li><b>num</b>: 里程號碼，整數，從1開始。</li>
+            <li><b>total</b>: 里程航點總數，整數。</li>
+            <li><b>dist</b>: 里程距離，浮點數(小數)，以公尺計算。</li>
+            <li><b>lat</b>: 經度，浮點數(小數)，WGS84模型。</li>
+            <li><b>lon</b>: 緯度，浮點數(小數)，WGS84模型。</li>
+            <li><b>elev</b>: 標高，浮點數(小數)，以公尺計算。</li>
           </ul>
-          <p>範例：<code>5{{printf "%02d" .Index}}</code><br />產出結果：<b>500</b>, <b>501</b>, <b>502</b>...</p>
-          <p>範例：<code>{{printf "%.1f" .Kilometer}}K</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
+          <p>若需要轉換為英呎或英哩，可使用數學運算符號。例如 <code>dist*0.000621371192</code> 即將公尺轉換為英哩。</p>
+          <p>範例：<code>dist</code><br />產出結果：<b>100</b>, <b>200</b>, <b>300</b>...</p>
+          <p>範例：<code>dist/1000</code><br />產出結果：<b>0.1</b>, <b>0.2</b>, <b>0.3</b>...</p>
+          <p>範例：<code>printf("%.0fm", dist)</code><br />產出結果：<b>100m</b>, <b>200m</b>, <b>300m</b>...</p>
+          <p>範例：<code>printf("%.1fK", dist/1000)</code><br />產出結果：<b>0.1K</b>, <b>0.2K</b>, <b>0.3K</b>...</p>
+          <p>範例：<code>printf("%.1fK/%.0fh", dist/1000, elev)</code><br />產出結果：<b>0.1K/2763h</b>, <b>0.2K/2756h</b>,
+            <b>0.3K/2748h</b>...
+          </p>
+          <p>範例：<code></code>printf("SM400 %02d/%d", num, total)</code><br />產出結果：<b>SM400 01/86</b>, <b>SM400
+              02/86</b>, <b>SM400 03/86</b>...</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>

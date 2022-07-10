@@ -11,6 +11,9 @@ func NewTrackStats() *TrackStats {
 		NanoDuration:  new(int64),
 		ElevationGain: new(float64),
 		ElevationLoss: new(float64),
+		NumTracks:     new(int64),
+		NumSegments:   new(int64),
+		NumPoints:     new(int64),
 	}
 }
 
@@ -51,4 +54,7 @@ func (s *TrackStats) Merge(o *TrackStats) {
 			*s.ElevationMin = math.Min(*s.ElevationMin, *o.ElevationMin)
 		}
 	}
+	*s.NumTracks += *o.NumTracks
+	*s.NumSegments += *o.NumSegments
+	*s.NumPoints += *o.NumPoints
 }

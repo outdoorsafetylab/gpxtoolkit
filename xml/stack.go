@@ -18,9 +18,7 @@ func (s *Stack) Contains(a *Stack) bool {
 
 func (s *Stack) Clone() *Stack {
 	c := &Stack{slice: make([]string, len(s.slice))}
-	for i, e := range s.slice {
-		c.slice[i] = e
-	}
+	copy(c.slice, s.slice)
 	return c
 }
 

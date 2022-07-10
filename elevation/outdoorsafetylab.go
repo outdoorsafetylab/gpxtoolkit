@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"time"
 )
 
 type OutdoorSafetyLab struct {
@@ -15,6 +17,10 @@ type OutdoorSafetyLab struct {
 }
 
 func (s *OutdoorSafetyLab) Lookup(latLons []*LatLon) ([]*float64, error) {
+	start := time.Now()
+	defer func() {
+		log.Printf("Looked up %d points in %v", len(latLons), time.Since(start))
+	}()
 	points := make([][]float64, len(latLons))
 	for i, latlon := range latLons {
 		points[i] = []float64{latlon.Lon, latlon.Lat}
