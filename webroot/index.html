@@ -415,38 +415,27 @@
           this.download('csv');
         },
         saveCookies() {
-          self.$cookies.set("milestone.distance", this.distance);
-          this.$cookies.set("milestone.template", this.template);
-          this.$cookies.set("milestone.symbol", this.symbol);
-          this.$cookies.set("milestone.reverse", this.reverse ? 'true' : 'false');
-          this.$cookies.set("milestone.fits", self.fits ? 'true' : 'false');
-          this.$cookies.set("milestone.terrainDistance", self.fits ? 'true' : 'false');
+          var parameters = {
+            distance: this.distance,
+            template: this.template,
+            symbol: this.symbol,
+            fits: this.fits,
+            reverse: this.reverse,
+            terrainDistance: this.terrainDistance,
+          };
+          console.log("Saving parameters:", parameters);
+          this.$cookies.set("milestone.parameters", JSON.stringify(parameters));
         },
         loadCookies() {
-          var distance = this.$cookies.get("milestone.distance");
-          if (distance) {
-            this.distance = distance;
-          }
-          var template = this.$cookies.get("milestone.template");
-          if (template) {
-            this.template = template;
-          }
-          var symbol = this.$cookies.get("milestone.symbol");
-          if (symbol) {
-            this.symbol = symbol;
-          }
-          var fits = this.$cookies.get("milestone.fits") == 'true';
-          if (fits) {
-            this.fits = fits;
-          }
-          var reverse = this.$cookies.get("milestone.reverse") == 'true';
-          if (reverse) {
-            this.reverse = reverse;
-          }
-          var terrainDistance = this.$cookies.get("milestone.terrainDistance") == 'true';
-          if (terrainDistance) {
-            this.terrainDistance = terrainDistance;
-          }
+          var parameters = this.$cookies.get("milestone.parameters");
+          if (!parameters) return;
+          console.log("Loading parameters:", parameters);
+          this.distance = parameters.distance;
+          this.template = parameters.template;
+          this.symbol = parameters.symbol;
+          this.fits = parameters.fits;
+          this.reverse = parameters.reverse;
+          this.terrainDistance = parameters.terrainDistance;
         },
       }
     });
