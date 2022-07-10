@@ -2,13 +2,11 @@ package gpxutil
 
 import (
 	"fmt"
-	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"log"
 )
 
 type ProjectWaypoints struct {
-	Service      elevation.Service
 	DistanceFunc DistanceFunc
 	Threshold    float64
 }
@@ -24,7 +22,7 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold, c.Service)
+	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold)
 	if err != nil {
 		return 0, err
 	}
@@ -114,7 +112,7 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 	return segments
 }
 
-func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints []*gpx.WayPoint, exclusive float64, service elevation.Service) (projections, error) {
+func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints []*gpx.WayPoint, threshold float64) (projections, error) {
 	lines := getLines(distanceFunc, points)
 	projections := make(projections, len(waypoints))
 	for i, w := range waypoints {
@@ -122,9 +120,9 @@ func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints 
 		projections[i] = prj
 		p := w.GetPoint()
 		for _, l := range lines {
-			pp := l.closestPoint(distanceFunc, p, service)
-			dist := HorizontalDistance(p, pp)
-			if dist > exclusive {
+			pp := l.closestPoint(distanceFunc, p)
+			dist := horizontalDistance(p, pp)
+			if dist > threshold {
 				continue
 			}
 			// d1 := p.DistanceTo(l.a)

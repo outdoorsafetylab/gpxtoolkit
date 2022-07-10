@@ -12,13 +12,14 @@ import (
 )
 
 type Milestone struct {
-	Service       elevation.Service
-	DistanceFunc  DistanceFunc
-	Distance      float64
-	MilestoneName *MilestoneName
-	Symbol        string
-	Reverse       bool
-	FitWaypoints  bool
+	Service           elevation.Service
+	Distance          float64
+	MilestoneName     *MilestoneName
+	Symbol            string
+	Reverse           bool
+	FitWaypoints      bool
+	ByTerrainDistance bool
+	distanceFunc      DistanceFunc
 }
 
 func (c *Milestone) Name() string {
@@ -26,6 +27,11 @@ func (c *Milestone) Name() string {
 }
 
 func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
+	if c.ByTerrainDistance {
+		c.distanceFunc = terrainDistance
+	} else {
+		c.distanceFunc = horizontalDistance
+	}
 	n := 0
 	for _, t := range tracklog.Tracks {
 		for _, seg := range t.Segments {
@@ -36,6 +42,16 @@ func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 					points[len(seg.Points)-1-i] = p
 				}
 			}
+			if c.ByTerrainDistance && c.Service != nil {
+				// we don't alter the original points
+				corrected := make([]*gpx.Point, len(points))
+				copy(corrected, points)
+				_, err := correctPoints(c.Service, corrected)
+				if err != nil {
+					return 0, err
+				}
+				points = corrected
+			}
 			waypoints := tracklog.WayPoints
 			if !c.FitWaypoints {
 				waypoints = nil
@@ -45,24 +61,6 @@ func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 				return 0, err
 			}
 			n += len(milestones)
-			if c.Service != nil {
-				points := make([]*elevation.LatLon, 0)
-				for _, p := range milestones {
-					points = append(points, &elevation.LatLon{Lat: p.GetLatitude(), Lon: p.GetLongitude()})
-				}
-				elevations, err := c.Service.Lookup(points)
-				if err != nil {
-					return 0, err
-				}
-				for i, p := range milestones {
-					elev := elevations[i]
-					if elev == nil || math.IsNaN(*elev) {
-						continue
-					}
-					p.Elevation = proto.Float64(math.Round(*elev))
-					n++
-				}
-			}
 			log.Printf("Appending %d milestones", len(milestones))
 			tracklog.WayPoints = append(tracklog.WayPoints, milestones...)
 		}
@@ -85,7 +83,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		total := 0.0
 		for i, b := range points[1:] {
 			a := points[i]
-			dist := c.DistanceFunc(a, b)
+			dist := c.distanceFunc(a, b)
 			distances[i] = dist
 			total += dist
 		}
@@ -103,7 +101,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		log.Printf("Total %d points: %.1fm with %d milestones", len(points), total, len(milestones))
 		return c.create(points, milestones, distances)
 	} else {
-		projections, err := projectWaypoints(c.DistanceFunc, points, waypoints, c.Distance/2, c.Service)
+		projections, err := projectWaypoints(c.distanceFunc, points, waypoints, c.Distance/2)
 		if err != nil {
 			return nil, err
 		}
@@ -122,7 +120,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 			distances[i] = make([]float64, len(segment.points)-1)
 			for j, b := range segment.points[1:] {
 				a := segment.points[j]
-				dist := c.DistanceFunc(a, b)
+				dist := c.distanceFunc(a, b)
 				distances[i][j] = dist
 				distance += dist
 			}
@@ -145,17 +143,6 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		markers := make([]*gpx.WayPoint, 0)
 		n := 0
 		for i, segment := range segments {
-			// start := end
-			// distances := make([]float64, len(segment.points)-1)
-			// for j, b := range segment.points[1:] {
-			// 	a := segment.points[j]
-			// 	dist := a.DistanceTo(b)
-			// 	distances[j] = dist
-			// 	// log.Printf("Distance %d: %f", j, dist)
-			// 	end += dist
-			// }
-			// num := int(math.Round((end - start) / c.Distance))
-			// length := (end - start)
 			milestones := make([]*milestone, numMilestones[i])
 			distance := lengths[i] / float64(len(milestones))
 			for j := range milestones {
@@ -192,7 +179,7 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 		if distances != nil {
 			dist = distances[i]
 		} else {
-			dist = c.DistanceFunc(a, b)
+			dist = c.distanceFunc(a, b)
 		}
 		end := start + dist
 		// log.Printf("Current distance: %f", end)
@@ -206,13 +193,10 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 				ms.variables.Latitude = ms.waypoint.GetLatitude()
 				ms.variables.Longitude = ms.waypoint.GetLongitude()
 				ms.variables.Elevation = ms.waypoint.GetElevation()
-				if c.Service != nil && ms.variables.Elevation <= 0 {
-					elev, err := elevation.Lookup(c.Service, ms.variables.Latitude, ms.variables.Longitude)
+				if c.Service != nil {
+					err := ms.variables.correctElevation(c.Service)
 					if err != nil {
 						return nil, err
-					}
-					if elev != nil && !math.IsNaN(*elev) {
-						ms.variables.Elevation = *elev
 					}
 				}
 				name, err := c.MilestoneName.Eval(ms.variables)
@@ -225,7 +209,13 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 					ms.waypoint.Name = proto.String(name)
 				}
 			} else {
-				p := interpolate(a, b, (ms.distance-start)/dist, c.Service)
+				p := interpolate(a, b, (ms.distance-start)/dist)
+				if c.Service != nil {
+					_, err := correctPoints(c.Service, []*gpx.Point{p})
+					if err != nil {
+						return nil, err
+					}
+				}
 				ms.variables.Latitude = p.GetLatitude()
 				ms.variables.Longitude = p.GetLongitude()
 				ms.variables.Elevation = p.GetElevation()
@@ -256,6 +246,17 @@ type MilestoneNameVariables struct {
 	Distance            float64
 	Latitude, Longitude float64
 	Elevation           float64
+}
+
+func (v *MilestoneNameVariables) correctElevation(service elevation.Service) error {
+	elev, err := elevation.Lookup(service, v.Latitude, v.Longitude)
+	if err != nil {
+		return err
+	}
+	if elevation.IsValid(elev) {
+		v.Elevation = *elev
+	}
+	return nil
 }
 
 type MilestoneName struct {

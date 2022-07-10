@@ -28,12 +28,6 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Invalid template: %s", err.Error()), 400)
 		return
 	}
-	var distanceFunc gpxutil.DistanceFunc
-	if queryGetBool(query, "hypotenuse", false) {
-		distanceFunc = gpxutil.HypotenuseDistance
-	} else {
-		distanceFunc = gpxutil.HorizontalDistance
-	}
 	distance := queryGetFloat64(query, "distance", 100)
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
@@ -55,19 +49,14 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 			// &gpxutil.CorrectElevation{
 			// 	Service: c.Service,
 			// },
-			&gpxutil.Interpolate{
-				Service:      c.Service,
-				DistanceFunc: distanceFunc,
-				Distance:     distance / 5,
-			},
 			&gpxutil.Milestone{
-				Service:       c.Service,
-				DistanceFunc:  distanceFunc,
-				Distance:      distance,
-				MilestoneName: name,
-				Reverse:       queryGetBool(query, "reverse", false),
-				Symbol:        queryGetString(query, "symbol", "Milestone"),
-				FitWaypoints:  queryGetBool(query, "fits", false),
+				Service:           c.Service,
+				Distance:          distance,
+				MilestoneName:     name,
+				Reverse:           queryGetBool(query, "reverse", false),
+				Symbol:            queryGetString(query, "symbol", "Milestone"),
+				FitWaypoints:      queryGetBool(query, "fits", false),
+				ByTerrainDistance: queryGetBool(query, "terrainDistance", false),
 			},
 		},
 	}

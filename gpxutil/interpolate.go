@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
+	"log"
 	"math"
 	"time"
 
@@ -11,9 +12,10 @@ import (
 )
 
 type Interpolate struct {
-	Service      elevation.Service
-	DistanceFunc DistanceFunc
-	Distance     float64
+	Service           elevation.Service
+	Distance          float64
+	ByTerrainDistance bool
+	distanceFunc      DistanceFunc
 }
 
 func (c *Interpolate) Name() string {
@@ -21,6 +23,11 @@ func (c *Interpolate) Name() string {
 }
 
 func (c *Interpolate) Run(tracklog *gpx.TrackLog) (int, error) {
+	if c.ByTerrainDistance {
+		c.distanceFunc = terrainDistance
+	} else {
+		c.distanceFunc = horizontalDistance
+	}
 	n := 0
 	for _, t := range tracklog.Tracks {
 		for _, seg := range t.Segments {
@@ -28,6 +35,12 @@ func (c *Interpolate) Run(tracklog *gpx.TrackLog) (int, error) {
 			points, err := c.interpolate(seg.Points)
 			if err != nil {
 				return 0, err
+			}
+			if c.ByTerrainDistance && c.Service != nil {
+				_, err := correctPoints(c.Service, seg.Points)
+				if err != nil {
+					return 0, err
+				}
 			}
 			n += (len(points) - num)
 			seg.Points = points
@@ -37,7 +50,8 @@ func (c *Interpolate) Run(tracklog *gpx.TrackLog) (int, error) {
 }
 
 func (c *Interpolate) interpolate(points []*gpx.Point) ([]*gpx.Point, error) {
-	lines := getLines(c.DistanceFunc, points)
+	interpolated := make([]*gpx.Point, 0)
+	lines := getLines(c.distanceFunc, points)
 	res := make([]*gpx.Point, 0)
 	for _, line := range lines {
 		res = append(res, line.a)
@@ -46,24 +60,29 @@ func (c *Interpolate) interpolate(points []*gpx.Point) ([]*gpx.Point, error) {
 			continue
 		}
 		for i := 1; i < num; i++ {
-			p := interpolate(line.a, line.b, float64(i)/float64(num), c.Service)
+			p := interpolate(line.a, line.b, float64(i)/float64(num))
+			interpolated = append(interpolated, p)
 			res = append(res, p)
 		}
 	}
+	if c.Service != nil {
+		_, err := correctPoints(c.Service, interpolated)
+		if err != nil {
+			return nil, err
+		}
+	}
+	log.Printf("Interpolated %d points", len(interpolated))
 	res = append(res, lines[len(lines)-1].b)
 	return res, nil
 }
 
-func interpolate(a, b *gpx.Point, ratio float64, service elevation.Service) *gpx.Point {
+func interpolate(a, b *gpx.Point, ratio float64) *gpx.Point {
 	lat1 := a.GetLatitude()
 	lat2 := b.GetLatitude()
 	lon1 := a.GetLongitude()
 	lon2 := b.GetLongitude()
 	dlat := lat2 - lat1
 	dlon := lon2 - lon1
-	ele1 := a.GetElevation()
-	ele2 := b.GetElevation()
-	dele := ele2 - ele1
 	t1 := a.Time()
 	t2 := b.Time()
 	dt := t2.Sub(t1)
@@ -73,13 +92,9 @@ func interpolate(a, b *gpx.Point, ratio float64, service elevation.Service) *gpx
 		Latitude:  proto.Float64(lat),
 		Longitude: proto.Float64(lon),
 	}
-	if service != nil {
-		elev, err := elevation.Lookup(service, p.GetLatitude(), p.GetLongitude())
-		if err != nil && elevation.IsValid(elev) {
-			p.Elevation = proto.Float64(*elev)
-		}
-	}
-	if p.Elevation == nil && a.Elevation != nil && b.Elevation != nil {
+	if a.Elevation != nil && b.Elevation != nil {
+		ele1 := a.GetElevation()
+		dele := b.GetElevation() - ele1
 		p.Elevation = proto.Float64(ele1 + dele*ratio)
 	}
 	if a.NanoTime != nil && b.NanoTime != nil {

@@ -7,7 +7,7 @@ import (
 
 func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 	return &RemoveByCriteria{
-		distanceFunc: HorizontalDistance,
+		distanceFunc: horizontalDistance,
 		shouldRemove: func(line *line) bool {
 			return line.dist < distance
 		},
@@ -16,7 +16,7 @@ func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 
 func RemoveDurationLessThan(duration time.Duration) *RemoveByCriteria {
 	return &RemoveByCriteria{
-		distanceFunc: HorizontalDistance,
+		distanceFunc: horizontalDistance,
 		shouldRemove: func(line *line) bool {
 			if line.duration == nil {
 				return false

@@ -112,8 +112,8 @@
           <label class="form-check-label" for="reverse">反向產生里程航點</label>
         </div>
         <div>
-          <input type="checkbox" class="form-check-input" id="hypotenuse" v-model="hypotenuse">
-          <label class="form-check-label" for="hypotenuse">計算距離時考慮高度落差</label>
+          <input type="checkbox" class="form-check-input" id="terrainDistance" v-model="terrainDistance">
+          <label class="form-check-label" for="terrainDistance">使用地表距離</label>
         </div>
       </div>
     </div>
@@ -162,7 +162,7 @@
         symbol: 'Milestone',
         reverse: false,
         fits: false,
-        hypotenuse: false,
+        terrainDistance: false,
       },
       mounted() {
         this.loadCookies();
@@ -340,7 +340,7 @@
             'symbol': this.symbol,
             'reverse': this.reverse,
             'fits': this.fits,
-            'hypotenuse': this.hypotenuse,
+            'terrainDistance': this.terrainDistance,
           };
           xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
           xhr.setRequestHeader("Content-Type", "application/gpx+xml");
@@ -407,7 +407,7 @@
           this.$cookies.set("milestone.symbol", this.symbol);
           this.$cookies.set("milestone.reverse", this.reverse ? 'true' : 'false');
           this.$cookies.set("milestone.fits", self.fits ? 'true' : 'false');
-          this.$cookies.set("milestone.hypotenuse", self.fits ? 'true' : 'false');
+          this.$cookies.set("milestone.terrainDistance", self.fits ? 'true' : 'false');
         },
         loadCookies() {
           var distance = this.$cookies.get("milestone.distance");
@@ -430,9 +430,9 @@
           if (reverse) {
             this.reverse = reverse;
           }
-          var hypotenuse = this.$cookies.get("milestone.hypotenuse") == 'true';
-          if (hypotenuse) {
-            this.hypotenuse = hypotenuse;
+          var terrainDistance = this.$cookies.get("milestone.terrainDistance") == 'true';
+          if (terrainDistance) {
+            this.terrainDistance = terrainDistance;
           }
         },
       }

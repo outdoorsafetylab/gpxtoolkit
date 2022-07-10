@@ -1,7 +1,6 @@
 package gpxutil
 
 import (
-	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"math"
 	"time"
@@ -9,12 +8,13 @@ import (
 
 type DistanceFunc func(a, b *gpx.Point) float64
 
-var HorizontalDistance DistanceFunc = func(a, b *gpx.Point) float64 {
+var horizontalDistance DistanceFunc = func(a, b *gpx.Point) float64 {
 	return gpx.GeoDistance(a.GetLatitude(), a.GetLongitude(), b.GetLatitude(), b.GetLongitude())
 }
 
-var HypotenuseDistance DistanceFunc = func(a, b *gpx.Point) float64 {
-	h := HorizontalDistance(a, b)
+var terrainDistance DistanceFunc = func(a, b *gpx.Point) float64 {
+	// FIXME: might be another better solution...
+	h := horizontalDistance(a, b)
 	v := a.GetElevation() - b.GetElevation()
 	return math.Sqrt(h*h + v*v)
 }
@@ -28,7 +28,7 @@ type line struct {
 }
 
 // https://stackoverflow.com/a/6853926
-func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point, service elevation.Service) *gpx.Point {
+func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point) *gpx.Point {
 	pp := &gpx.Point{
 		Latitude:  l.a.Latitude,
 		Longitude: l.b.Longitude,
@@ -52,7 +52,7 @@ func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point, service ele
 		dist1 := distanceFunc(p, l.a)
 		dist2 := distanceFunc(p, l.b)
 		dist := dist1 + dist2
-		return interpolate(l.a, l.b, dist1/dist, service)
+		return interpolate(l.a, l.b, dist1/dist)
 	}
 	// x := p.GetLatitude()
 	// y := p.GetLongitude()
