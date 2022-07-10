@@ -20,7 +20,7 @@ steps:
   - go
   - test
   - ./gpx
-  - ./milestone
+  - ./gpxutil
   env:
   - 'CGO_ENABLED=0'
 - name: gcr.io/cloud-builders/docker
