@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+func RemoveDuplicated() *RemoveByCriteria {
+	return &RemoveByCriteria{
+		distanceFunc: horizontalDistance,
+		shouldRemove: func(line *line) bool {
+			return line.a.Equals(line.b)
+		},
+	}
+}
+
 func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 	return &RemoveByCriteria{
 		distanceFunc: horizontalDistance,
@@ -45,21 +54,21 @@ func (r *RemoveByCriteria) Name() string {
 func (r *RemoveByCriteria) Run(tracklog *gpx.TrackLog) (int, error) {
 	n := 0
 	for _, t := range tracklog.Tracks {
-		for i, seg := range t.Segments {
+		for _, seg := range t.Segments {
 			num := len(seg.Points)
-			removed, err := r.remove(seg)
+			removed, err := r.remove(seg.Points)
 			if err != nil {
 				return 0, err
 			}
-			n += (num - len(removed.Points))
-			t.Segments[i] = removed
+			n += (num - len(removed))
+			seg.Points = removed
 		}
 	}
 	return n, nil
 }
 
-func (r *RemoveByCriteria) remove(seg *gpx.Segment) (*gpx.Segment, error) {
-	lines := getLines(r.distanceFunc, seg.Points)
+func (r *RemoveByCriteria) remove(points []*gpx.Point) ([]*gpx.Point, error) {
+	lines := getLines(r.distanceFunc, points)
 	accepted := make([]*line, 0)
 	for _, line := range lines {
 		if r.shouldRemove(line) {
@@ -68,7 +77,5 @@ func (r *RemoveByCriteria) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 		accepted = append(accepted, line)
 	}
 
-	return &gpx.Segment{
-		Points: joinLines(accepted),
-	}, nil
+	return joinLines(accepted), nil
 }

@@ -77,7 +77,11 @@ func getLines(distanceFunc DistanceFunc, points []*gpx.Point) []*line {
 			if *line.duration != 0 {
 				*line.speed = line.dist / (*line.duration).Seconds()
 				// log.Printf("Line[%d]: speed=%f", i, *line.speed)
+				// } else {
+				// log.Printf("Line[%d]: zero duration", i)
 			}
+			// } else {
+			// log.Printf("Line[%d]: missing time", i)
 		}
 		lines[i] = line
 	}
@@ -86,13 +90,10 @@ func getLines(distanceFunc DistanceFunc, points []*gpx.Point) []*line {
 
 func joinLines(lines []*line) []*gpx.Point {
 	points := make([]*gpx.Point, 0)
-	for i, line := range lines {
-		if i == 0 || points[len(points)-1] != line.a {
-			points = append(points, line.a)
-		}
-		if points[len(points)-1] != line.b {
-			points = append(points, line.b)
-		}
+	for _, line := range lines {
+		points = append(points, line.a)
 	}
+	last := lines[len(lines)-1]
+	points = append(points, last.b)
 	return points
 }

@@ -2,6 +2,7 @@ package gpxutil
 
 import (
 	"fmt"
+	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/simpleline"
 	"time"
@@ -10,6 +11,7 @@ import (
 )
 
 type Simplify struct {
+	Service elevation.Service
 	Epsilon float64
 	First   bool
 }
@@ -18,14 +20,24 @@ func (s *Simplify) Name() string {
 	return fmt.Sprintf("Simplify with Epsilon %f", s.Epsilon)
 }
 
-func (s *Simplify) Run(tracklog *gpx.TrackLog) (int, error) {
+func (c *Simplify) Run(tracklog *gpx.TrackLog) (int, error) {
 	n := 0
 	for _, t := range tracklog.Tracks {
 		for _, seg := range t.Segments {
 			num := len(seg.Points)
-			points, err := s.simplify(seg.Points)
+			points, err := c.simplify(seg.Points)
 			if err != nil {
 				return 0, err
+			}
+			if c.Service != nil {
+				// we don't alter the original points
+				corrected := make([]*gpx.Point, len(points))
+				copy(corrected, points)
+				_, err := correctPoints(c.Service, corrected)
+				if err != nil {
+					return 0, err
+				}
+				points = corrected
 			}
 			n += (num - len(points))
 			seg.Points = points
@@ -34,7 +46,7 @@ func (s *Simplify) Run(tracklog *gpx.TrackLog) (int, error) {
 	return n, nil
 }
 
-func (s *Simplify) simplify(points []*gpx.Point) ([]*gpx.Point, error) {
+func (c *Simplify) simplify(points []*gpx.Point) ([]*gpx.Point, error) {
 	dataPoints := make([]simpleline.Point, len(points))
 	for i, p := range points {
 		dataPoints[i] = &simpleline.Point3d{
@@ -43,9 +55,9 @@ func (s *Simplify) simplify(points []*gpx.Point) ([]*gpx.Point, error) {
 			Z: float64(p.Time().Unix()),
 		}
 	}
-	simplified, err := simpleline.RDP(dataPoints, s.Epsilon, func(p1, p2 simpleline.Point) float64 {
+	simplified, err := simpleline.RDP(dataPoints, c.Epsilon, func(p1, p2 simpleline.Point) float64 {
 		return gpx.GeoDistance(p1.Vector()[0], p1.Vector()[1], p2.Vector()[0], p2.Vector()[1])
-	}, s.First)
+	}, c.First)
 	if err != nil {
 		return nil, err
 	}

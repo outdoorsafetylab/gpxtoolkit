@@ -22,11 +22,11 @@ func (t *Track) End() *Point {
 	return nil
 }
 
-func (t *Track) Stat() *TrackStats {
+func (t *Track) Stat(alpha float64) *TrackStats {
 	st := NewTrackStats()
 	*st.NumSegments = int64(len(t.Segments))
 	for _, s := range t.Segments {
-		st.Merge(s.Stat())
+		st.Merge(s.Stat(alpha))
 	}
 	return st
 }

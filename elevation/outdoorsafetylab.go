@@ -52,10 +52,13 @@ func (s *OutdoorSafetyLab) lookup(points [][]float64) ([]*float64, error) {
 	dec := json.NewDecoder(bytes.NewBuffer(data))
 	err = dec.Decode(&alts)
 	if err != nil {
-		return nil, fmt.Errorf("%s", data)
+		log.Printf("Failed to decode elevations: %s", err.Error())
+		return nil, err
 	}
 	if len(alts) != len(points) {
-		return nil, fmt.Errorf("Unepxected number of result: expect=%d, was=%d", len(points), len(alts))
+		err = fmt.Errorf("Unepxected number of result: expect=%d, was=%d", len(points), len(alts))
+		log.Printf("%s", err.Error())
+		return nil, err
 	}
 	return alts, nil
 }

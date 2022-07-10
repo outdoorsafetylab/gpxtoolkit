@@ -23,7 +23,7 @@ func (s *Segment) End() *Point {
 	}
 }
 
-func (s *Segment) Stat() *TrackStats {
+func (s *Segment) Stat(alpha float64) *TrackStats {
 	st := NewTrackStats()
 	*st.NumPoints = int64(len(s.Points))
 	for i, b := range s.Points {
@@ -51,6 +51,7 @@ func (s *Segment) Stat() *TrackStats {
 		st.AddTime(b.Time().Sub(a.Time()))
 		if a.Elevation != nil && b.Elevation != nil {
 			delta := b.GetElevation() - a.GetElevation()
+			delta *= alpha
 			if delta > 0 {
 				*st.ElevationGain += delta
 			} else if delta < 0 {

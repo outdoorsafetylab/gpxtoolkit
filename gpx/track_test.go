@@ -19,7 +19,7 @@ func TestStats(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	st := log.Stat()
+	st := log.Stat(1.0)
 	if math.Round(*st.ElevationGain) != 464 {
 		t.Fatalf("Unexpected elevation gain: %v", *st.ElevationGain)
 	}

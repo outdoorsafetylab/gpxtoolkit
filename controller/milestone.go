@@ -5,6 +5,7 @@ import (
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/gpxutil"
+	"log"
 	"net/http"
 )
 
@@ -19,6 +20,8 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
+	alpha := 1.0
+	stats := tracklog.Stat(alpha)
 	name := &gpxutil.MilestoneName{
 		Template: query.Get("template"),
 	}
@@ -31,22 +34,6 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
 			gpxutil.RemoveDistanceLessThan(0.1),
-			// gpxutil.RemoveOutlierBySpeed(),
-			// &gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
-			// &gpxutil.Simplify{
-			// 	Epsilon: 10,
-			// 	First:   true,
-			// },
-			// &gpxutil.ReTimestamp{
-			// 	Start: time.Unix(0, 0),
-			// 	Speed: 0.5,
-			// },
-			// &gpxutil.ReSegment{
-			// 	Threshold: 500,
-			// },
-			// &gpxutil.CorrectElevation{
-			// 	Service: c.Service,
-			// },
 			&gpxutil.Milestone{
 				Service:           c.Service,
 				Distance:          distance,
@@ -63,6 +50,8 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	log.Printf("Before %v", stats)
+	log.Printf("After %v", tracklog.Stat(alpha))
 	format := query.Get("format")
 	switch format {
 	case "gpx":

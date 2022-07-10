@@ -19,17 +19,17 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	before := tracklog.Stat()
-	excluded := 0
+	alpha := 1.0
+	stats := tracklog.Stat(alpha)
 
 	query := r.URL.Query()
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
-			gpxutil.RemoveDistanceLessThan(0.1),
+			gpxutil.RemoveDuplicated(),
 			gpxutil.RemoveOutlierBySpeed(),
 			&gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
 			&gpxutil.Simplify{
-				Epsilon: 10,
+				Epsilon: 35,
 				First:   true,
 			},
 			&gpxutil.CorrectElevation{
@@ -43,10 +43,8 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	after := tracklog.Stat()
-	log.Printf("Before: %v", before)
-	log.Printf("After: %v", after)
-	log.Printf("Excluded: %v", excluded)
+	log.Printf("Before %v", stats)
+	log.Printf("After %v", tracklog.Stat(alpha))
 
 	switch queryGetString(query, "format", "gpx") {
 	case "gpx":

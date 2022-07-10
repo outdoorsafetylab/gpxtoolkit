@@ -49,7 +49,9 @@ func (r *RemoveOutlier) Run(tracklog *gpx.TrackLog) (int, error) {
 			if err != nil {
 				return 0, err
 			}
-			n += (num - len(removed.Points))
+			numRemoved := (num - len(removed.Points))
+			log.Printf("Removed %d points", numRemoved)
+			n += numRemoved
 			t.Segments[i] = removed
 		}
 	}
@@ -58,7 +60,7 @@ func (r *RemoveOutlier) Run(tracklog *gpx.TrackLog) (int, error) {
 
 func (r *RemoveOutlier) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 	lines := getLines(r.distanceFunc, seg.Points)
-	var sum, avg, std float64
+	sum := 0.0
 	num := 0
 	for _, line := range lines {
 		value := r.value(line)
@@ -67,9 +69,10 @@ func (r *RemoveOutlier) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 			num++
 		}
 	}
-	avg = sum / float64(num)
+	avg := sum / float64(num)
 	log.Printf("Average: %f %s", avg, r.unit)
 
+	std := 0.0
 	for _, line := range lines {
 		value := r.value(line)
 		if value != nil {
@@ -85,9 +88,12 @@ func (r *RemoveOutlier) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 	accepted := make([]*line, 0)
 	for _, line := range lines {
 		value := r.value(line)
-		if value != nil && math.Abs(*value-avg) > std3 {
-			log.Printf("Discarding %v %s", *value, r.unit)
-			continue
+		if value != nil {
+			// log.Printf("Speed %v", *value)
+			if math.Abs(*value)-avg > std3 {
+				log.Printf("Discarding %v %s", *value, r.unit)
+				continue
+			}
 		}
 		accepted = append(accepted, line)
 	}
