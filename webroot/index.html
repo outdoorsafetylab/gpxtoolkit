@@ -423,13 +423,11 @@
             reverse: this.reverse,
             terrainDistance: this.terrainDistance,
           };
-          console.log("Saving parameters:", parameters);
           this.$cookies.set("milestone.parameters", JSON.stringify(parameters));
         },
         loadCookies() {
           var parameters = this.$cookies.get("milestone.parameters");
           if (!parameters) return;
-          console.log("Loading parameters:", parameters);
           this.distance = parameters.distance;
           this.template = parameters.template;
           this.symbol = parameters.symbol;
@@ -509,8 +507,7 @@
           <p>範例：<code>printf("%.1fK/%.0fh", dist/1000, elev)</code><br />產出結果：<b>0.1K/2763h</b>, <b>0.2K/2756h</b>,
             <b>0.3K/2748h</b>...
           </p>
-          <p>範例：<code></code>printf("SM400 %02d/%d", num, total)</code><br />產出結果：<b>SM400 01/86</b>, <b>SM400
-              02/86</b>, <b>SM400 03/86</b>...</p>
+          <p>範例：<code>printf("%02d/%d", num, total)</code><br />產出結果：<b>01/86</b>, <b>02/86</b>, <b>03/86</b>...</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
