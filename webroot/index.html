@@ -206,6 +206,19 @@
           }
           this.clearMap();
           var geojson = toGeoJSON.gpx(doc);
+          var colors = ['#ff0000', '#ff9900', '#ffff00', '#0cad00', '#00ffd5', '#00bbff', '#0040ff', '#d400ff', '#ff0077'];
+          var n = 0;
+          for (var i = 0; i < geojson.features.length; i++) {
+            var feature = geojson.features[i];
+            switch (feature.geometry.type) {
+              case 'LineString':
+              case 'MultiLineString':
+                if (!feature.properties) feature.properties = {};
+                feature.properties.color = colors[n % colors.length];
+                n++;
+                break;
+            }
+          }
           var id = 'gpx';
           this.map.addSource(id, {
             'type': 'geojson',
@@ -222,7 +235,7 @@
               'line-cap': 'round'
             },
             'paint': {
-              'line-color': '#f00',
+              'line-color': ['get', 'color'],
               'line-width': 4
             }
           });
