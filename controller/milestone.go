@@ -9,8 +9,7 @@ import (
 )
 
 type MilestoneController struct {
-	GPXCreator string
-	Service    elevation.Service
+	Service elevation.Service
 }
 
 func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +30,6 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	distance := queryGetFloat64(query, "distance", 100)
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
-			// &gpxutil.Deduplicate{},
 			gpxutil.RemoveDistanceLessThan(0.1),
 			// gpxutil.RemoveOutlierBySpeed(),
 			// &gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
@@ -69,7 +67,7 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 	switch format {
 	case "gpx":
 		writer := &gpx.Writer{
-			Creator: c.GPXCreator,
+			Creator: r.Host,
 			Writer:  w,
 		}
 		w.Header().Set("Content-Type", "application/gpx+xml")

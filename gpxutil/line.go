@@ -54,32 +54,6 @@ func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point) *gpx.Point 
 		dist := dist1 + dist2
 		return interpolate(l.a, l.b, dist1/dist)
 	}
-	// x := p.GetLatitude()
-	// y := p.GetLongitude()
-	// x1 := l.a.GetLatitude()
-	// y1 := l.a.GetLongitude()
-	// x2 := l.b.GetLatitude()
-	// y2 := l.b.GetLongitude()
-	// A := x - x1
-	// B := y - y1
-	// C := x2 - x1
-	// D := y2 - y1
-
-	// dot := A*C + B*D
-	// len_sq := C*C + D*D
-	// param := -1.0
-	// if len_sq != 0 { //in case of 0 length line
-	// 	param = dot / len_sq
-	// }
-
-	// if param > 0 && param <= 1 {
-	// 	dist1 := distanceFunc(p, l.a)
-	// 	dist2 := distanceFunc(p, l.b)
-	// 	dist := dist1 + dist2
-	// 	return Interpolate(l.a, l.b, dist1/dist)
-	// } else {
-	// 	return nil
-	// }
 }
 
 func getLines(distanceFunc DistanceFunc, points []*gpx.Point) []*line {

@@ -167,7 +167,7 @@ type Server struct {
 }
 
 func (s *Server) Run() error {
-	r := router.NewRouter(s.webroot, progname, service)
+	r := router.NewRouter(s.webroot, service)
 	log.Printf("Listening port %d...", s.port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
 	if err != nil {

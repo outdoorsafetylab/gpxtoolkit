@@ -10,8 +10,7 @@ import (
 )
 
 type CorrectController struct {
-	GPXCreator string
-	Service    elevation.Service
+	Service elevation.Service
 }
 
 func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +51,7 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 	switch queryGetString(query, "format", "gpx") {
 	case "gpx":
 		writer := &gpx.Writer{
-			Creator: c.GPXCreator,
+			Creator: r.Host,
 			Writer:  w,
 		}
 		w.Header().Set("Content-Type", "application/gpx+xml")
