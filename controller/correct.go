@@ -19,22 +19,27 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
-	alpha := 1.0
+	alpha := 0.7
 	stats := tracklog.Stat(alpha)
 
 	query := r.URL.Query()
 	commands := &gpxutil.ChainedCommands{
 		Commands: []gpxutil.Command{
-			gpxutil.RemoveDuplicated(),
-			gpxutil.RemoveOutlierBySpeed(),
-			&gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
-			&gpxutil.Simplify{
-				Epsilon: 35,
-				First:   true,
+			// gpxutil.RemoveDuplicated(),
+			// gpxutil.RemoveOutlierBySpeed(),
+			// &gpxutil.RemoveOutlierByEIF{Threshold: 0.7},
+			&gpxutil.Interpolate{
+				Service:  c.Service,
+				Distance: 100,
 			},
-			&gpxutil.CorrectElevation{
-				Service: c.Service,
-			},
+			// &gpxutil.Simplify{
+			// 	Service: c.Service,
+			// 	Epsilon: 35,
+			// 	First:   true,
+			// },
+			// &gpxutil.CorrectElevation{
+			// 	Service: c.Service,
+			// },
 		},
 	}
 	_, err = commands.Run(tracklog)

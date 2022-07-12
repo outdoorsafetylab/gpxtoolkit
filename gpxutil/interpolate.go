@@ -36,12 +36,6 @@ func (c *Interpolate) Run(tracklog *gpx.TrackLog) (int, error) {
 			if err != nil {
 				return 0, err
 			}
-			if c.ByTerrainDistance && c.Service != nil {
-				_, err := correctPoints(c.Service, seg.Points)
-				if err != nil {
-					return 0, err
-				}
-			}
 			n += (len(points) - num)
 			seg.Points = points
 		}
@@ -59,8 +53,8 @@ func (c *Interpolate) interpolate(points []*gpx.Point) ([]*gpx.Point, error) {
 		if num < 0 {
 			continue
 		}
-		for i := 1; i < num; i++ {
-			p := interpolate(line.a, line.b, float64(i)/float64(num))
+		for i := 1; i <= num; i++ {
+			p := interpolate(line.a, line.b, float64(i)/float64(num+1))
 			interpolated = append(interpolated, p)
 			res = append(res, p)
 		}

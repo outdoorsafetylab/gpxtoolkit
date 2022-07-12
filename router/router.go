@@ -19,6 +19,6 @@ func NewRouter(webroot string, service elevation.Service) http.Handler {
 		Service: service,
 	}
 	sub.HandleFunc("/correct", correct.Handler).Methods("POST")
-	r.NotFoundHandler = http.FileServer(http.Dir(webroot))
+	r.NotFoundHandler = NoCache(http.FileServer(http.Dir(webroot)))
 	return r
 }
