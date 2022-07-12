@@ -9,7 +9,9 @@ RUN mkdir -p /src/
 COPY . /src/
 WORKDIR /src/
 
-RUN go build -o gpxtoolkit .
+ARG GIT_HASH
+ARG GIT_TAG
+RUN go build -ldflags="-X main.GitHash=${GIT_HASH} -X main.GitTag=${GIT_TAG}" -o gpxtoolkit .
 
 FROM alpine
 

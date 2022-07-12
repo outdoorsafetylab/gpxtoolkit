@@ -8,9 +8,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewRouter(webroot string, service elevation.Service) http.Handler {
+func NewRouter(commit, tag, webroot string, service elevation.Service) http.Handler {
 	r := mux.NewRouter()
 	sub := r.PathPrefix("/cgi").Subrouter()
+	version := &controller.VersionController{
+		Commit: commit,
+		Tag:    tag,
+	}
+	sub.HandleFunc("/version", version.Handler).Methods("GET")
 	milestone := &controller.MilestoneController{
 		Service: service,
 	}

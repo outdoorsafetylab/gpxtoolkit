@@ -17,6 +17,11 @@ import (
 	"strconv"
 )
 
+var (
+	GitHash string
+	GitTag  string
+)
+
 var progname string
 var service elevation.Service
 var command = &Command{
@@ -167,7 +172,7 @@ type Server struct {
 }
 
 func (s *Server) Run() error {
-	r := router.NewRouter(s.webroot, service)
+	r := router.NewRouter(GitHash, GitTag, s.webroot, service)
 	log.Printf("Listening port %d...", s.port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
 	if err != nil {
