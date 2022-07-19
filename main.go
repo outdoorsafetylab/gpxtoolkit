@@ -32,7 +32,7 @@ var command = &Command{
 	format:   "gpx",
 }
 var server = &Server{
-	webroot: "./webroot",
+	webroot: "./webroot2/dist",
 	port:    8080,
 }
 

@@ -217,7 +217,6 @@
         // In PhantomJS the parseerror element doesn't seem to have a special namespace, so we are just guessing here :(
         return parsedDocument.getElementsByTagName("parsererror").length > 0;
       }
-      0
       return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
     };
     mapboxgl.accessToken = 'pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg';
