@@ -8,17 +8,14 @@ export default createRouter({
   routes: [
     {
       path: '/',
-      name: 'milestone',
       component: MileStone
     },
     {
       path: '/milestone',
-      name: 'milestone',
       component: MileStone
     },
     {
       path: '/hello',
-      name: 'hello',
       component: HelloWorld
     },
   ]

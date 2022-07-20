@@ -27,7 +27,7 @@ var command = &Command{
 	format:   "gpx",
 }
 var server = &Server{
-	webroot: "./webroot2/dist",
+	webroot: "./webroot/dist",
 	port:    8080,
 }
 

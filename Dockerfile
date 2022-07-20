@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine as builder
+FROM golang:1.16-alpine as go-builder
 
 RUN apk update \
     && apk upgrade \
@@ -13,6 +13,15 @@ ARG GIT_HASH
 ARG GIT_TAG
 RUN go build -ldflags="-X version.GitHash=${GIT_HASH} -X version.GitTag=${GIT_TAG}" -o gpxtoolkit .
 
+FROM node:alpine as npm-builder
+
+RUN mkdir -p /src/
+COPY ./webroot /src/
+WORKDIR /src/
+
+RUN npm install
+RUN npm run build
+
 FROM alpine
 
 RUN apk update \
@@ -20,9 +29,9 @@ RUN apk update \
     && apk add --no-cache \
     && rm -rf /var/cache/apk/* /tmp/*
 
-COPY --from=builder /src/gpxtoolkit /usr/sbin/
+COPY --from=go-builder /src/gpxtoolkit /usr/sbin/
 RUN mkdir -p /var/www/html/
-COPY --from=builder /src/webroot/ /var/www/html/
+COPY --from=npm-builder /src/dist/ /var/www/html/
 
 ENV ELEVATION_URL=
 ENV ELEVATION_TOKEN=

@@ -5,8 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 )
@@ -16,9 +14,9 @@ type notFoundHandler struct {
 }
 
 func (h *notFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Cache-Control", "no-cache")
-	w.Header().Add("Cache-Control", "no-store")
-	w.Header().Set("Pragma", "no-cache")
+	// w.Header().Add("Cache-Control", "no-cache")
+	// w.Header().Add("Cache-Control", "no-store")
+	// w.Header().Set("Pragma", "no-cache")
 	path := fmt.Sprintf("%s%s", h.webroot, r.URL.Path)
 	_, err := os.Stat(path)
 	if err == nil {
@@ -34,26 +32,27 @@ func (h *notFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		http.FileServer(http.Dir(h.webroot)).ServeHTTP(w, r)
 	} else {
-		var data []byte
-		f, err := os.Open(fmt.Sprintf("%s/index.html", h.webroot))
-		if err != nil {
-			log.Printf("Failed to open index page: %s", err.Error())
-			w.WriteHeader(500)
-			return
-		}
-		data, err = ioutil.ReadAll(f)
-		if err != nil {
-			log.Printf("Failed to read index page: %s", err.Error())
-			w.WriteHeader(500)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html")
-		_, err = w.Write(data)
-		if err != nil {
-			log.Printf("Failed to write index page: %s", err.Error())
-			w.WriteHeader(500)
-			return
-		}
+		http.ServeFile(w, r, fmt.Sprintf("%s/index.html", h.webroot))
+		// var data []byte
+		// f, err := os.Open(fmt.Sprintf("%s/index.html", h.webroot))
+		// if err != nil {
+		// 	log.Printf("Failed to open index page: %s", err.Error())
+		// 	w.WriteHeader(500)
+		// 	return
+		// }
+		// data, err = ioutil.ReadAll(f)
+		// if err != nil {
+		// 	log.Printf("Failed to read index page: %s", err.Error())
+		// 	w.WriteHeader(500)
+		// 	return
+		// }
+		// w.Header().Set("Content-Type", "text/html")
+		// _, err = w.Write(data)
+		// if err != nil {
+		// 	log.Printf("Failed to write index page: %s", err.Error())
+		// 	w.WriteHeader(500)
+		// 	return
+		// }
 	}
 }
 
