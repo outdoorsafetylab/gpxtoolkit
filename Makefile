@@ -6,7 +6,7 @@ GIT_TAG ?= $(shell git describe --tags --exact-match 2>/dev/null || echo "")
 IMAGE_NAME := outdoorsafetylab/gpxtoolkit
 
 all: $(PBGO)
-	go build -ldflags="-X main.GitHash=$(GIT_HASH) -X main.GitTag=$(GIT_TAG)" -o gpxtoolkit .
+	go build -ldflags="-X version.GitHash=$(GIT_HASH) -X version.GitTag=$(GIT_TAG)" -o gpxtoolkit .
 
 test:
 	go test ./gpx
