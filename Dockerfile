@@ -11,7 +11,7 @@ WORKDIR /src/
 
 ARG GIT_HASH
 ARG GIT_TAG
-RUN go build -ldflags="-X main.GitHash=${GIT_HASH} -X main.GitTag=${GIT_TAG}" -o gpxtoolkit .
+RUN go build -ldflags="-X version.GitHash=${GIT_HASH} -X version.GitTag=${GIT_TAG}" -o gpxtoolkit .
 
 FROM alpine
 

@@ -1,29 +1,17 @@
 <template>
-  <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
-  <!-- <HelloWorld msg="Welcome to Your Vue.js App 2"/> -->
   <router-view />
-  <!-- <MileStone /> -->
 </template>
-
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
-// import MileStone from './components/MileStone.vue'
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap";
+import mapboxgl from "mapbox-gl";
+
+mapboxgl.accessToken = "pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg";
 
 export default {
   name: 'App',
-  components: {
-    // MileStone
-  }
+  components: {}
 }
 </script>
-
 <style>
-/* #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-} */
 </style>

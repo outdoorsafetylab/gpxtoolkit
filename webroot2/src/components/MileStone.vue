@@ -1,52 +1,67 @@
 <template>
   <div class="container-fluid min-vh-100 d-flex flex-column" @dragover.prevent @drop.prevent>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark row">
-      <div class="container-fluid">
-        <div>
-          <span v-if="gpxFile" class="navbar-text">{{ gpxFile.name }}</span>
-          <button v-if="gpxFile" type="button" class="btn btn-danger" @click="clear()">清除</button>
-          <input class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required
-            @change="onGpxChosen" style="display:none;">
-          <label v-if="!gpxFile" for="gpx-file" class="btn btn-primary position-relative">
-            選擇GPX檔案...
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-              或拖放到地圖上
-            </span>
-          </label>
-        </div>
-        <div>
-          <button v-if="gpxFile" type="button" class="btn btn-primary" @click="preview()">預覽</button>
-          <div v-if="previewed" class="btn-group" role="group">
-            <button id="btnGroupDrop1" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              下載
-            </button>
-            <div class="dropdown-menu">
-              <button type="button" class="dropdown-item" @click="downloadGpx()">GPX</button>
-              <button type="button" class="dropdown-item" @click="downloadCsv()">CSV</button>
+    <div class="row">
+      <div id="navbar-col" class="col">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container-fluid">
+            <div v-if="gpxFile" class="btn-group" role="group">
+              <span class="navbar-text dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                {{ gpxFileName }}
+              </span>
+              <div class="dropdown-menu">
+                <button type="button" class="dropdown-item" @click="clear()">清除</button>
+                <button v-if="gpxFileContent && previewed" type="button" class="dropdown-item"
+                  @click="restore()">還原</button>
+              </div>
+            </div>
+            <div v-else>
+              <input class="form-control" type="file" id="gpx-file" name="gpx-file" accept=".gpx" required
+                @change="onGpxChosen" style="display:none;">
+              <label for="gpx-file" class="btn btn-primary position-relative">
+                選擇GPX檔案...
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  或拖放到地圖上
+                </span>
+              </label>
+            </div>
+            <div>
+              <button v-if="gpxFile" type="button" class="btn btn-primary me-1" @click="preview()">預覽</button>
+              <div v-if="previewed" class="btn-group" role="group">
+                <button type="button" class="btn btn-success dropdown-toggle me-1" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  下載
+                </button>
+                <div class="dropdown-menu">
+                  <button type="button" class="dropdown-item" @click="downloadGpx()">GPX</button>
+                  <button type="button" class="dropdown-item" @click="downloadCsv()">CSV</button>
+                </div>
+              </div>
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  關於
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                    data-bs-target="#introModal">簡介及源起</button>
+                  <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                    data-bs-target="#notesModal">注意事項</button>
+                </div>
+              </div>
+              <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#options"
+                aria-controls="options" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
             </div>
           </div>
-          <button v-if="gpxFileContent && previewed" type="button" class="btn btn-danger" @click="restore()">還原</button>
-          <div class="btn-group" role="group">
-            <button id="btnGroupDrop1" type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              關於
-            </button>
-            <div class="dropdown-menu dropdown-menu-end">
-              <button type="button" class="dropdown-item" data-bs-toggle="modal"
-                data-bs-target="#introModal">簡介及源起</button>
-              <button type="button" class="dropdown-item" data-bs-toggle="modal"
-                data-bs-target="#notesModal">注意事項</button>
-            </div>
-          </div>
-        </div>
+        </nav>
       </div>
-    </nav>
+    </div>
     <div class="row progress" style="height: 4px;">
       <div v-if="progress > 0" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
         v-bind:style="{ width: progress + '%' }"></div>
     </div>
-    <div v-if="gpxFile" id="options" class="row pt-1 pb-2">
+    <div v-if="gpxFile" id="options" class="row pt-1 pb-2 collapse">
       <div class="col-md-2">
         <label for="distance" class="form-label">里程間距</label>
         <div class="input-group">
@@ -169,8 +184,6 @@
   </div>
 </template>
 <script>
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
@@ -184,6 +197,7 @@ function encodeQueryData(data) {
   }
   return ret.join('&');
 }
+
 function isDOMParseError(parsedDocument) {
   // parser and parsererrorNS could be cached on startup for efficiency
   let parser = new DOMParser(),
@@ -197,10 +211,11 @@ function isDOMParseError(parsedDocument) {
   return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
 }
 
-mapboxgl.accessToken = "pk.eyJ1Ijoib3V0ZG9vcnNhZmV0eWxhYiIsImEiOiJjbDU1Y2N1eW0wbTViM2VwYmlrYzFkN20yIn0.pGuXQe015sVOtzEGrLsCGg";
+function truncate(str, n) {
+  return (str.length > n) ? str.substr(0, n - 1) + '…' : str;
+}
 
 export default {
-  name: "MileStone",
   data() {
     return {
       version: null,
@@ -221,6 +236,11 @@ export default {
       fits: false,
       terrainDistance: false,
     };
+  },
+  computed: {
+    gpxFileName() {
+      return truncate(this.gpxFile.name, 20);
+    },
   },
   setup() {
     const { cookies } = useCookies();
@@ -536,3 +556,10 @@ export default {
   },
 };
 </script>
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+#navbar-col {
+  padding-left: 0;
+  padding-right: 0;
+}
+</style>
