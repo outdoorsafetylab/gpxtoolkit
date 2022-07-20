@@ -2,7 +2,7 @@
   <div class="container-fluid min-vh-100 d-flex flex-column" @dragover.prevent @drop.prevent>
     <div class="row">
       <div id="navbar-col" class="col">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar navbar-dark bg-dark">
           <div class="container-fluid">
             <div v-if="gpxFile" class="btn-group" role="group">
               <span class="navbar-text dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -48,7 +48,7 @@
                     data-bs-target="#notesModal">注意事項</button>
                 </div>
               </div>
-              <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#options"
+              <button v-if="gpxFile" class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#options"
                 aria-controls="options" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
