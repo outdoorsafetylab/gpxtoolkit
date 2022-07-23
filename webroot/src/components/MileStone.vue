@@ -184,8 +184,8 @@
   </div>
 </template>
 <script>
-import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import mapboxgl from "mapbox-gl";
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import toGeoJSON from "@mapbox/togeojson";
 import { useCookies } from "vue3-cookies";
