@@ -11,7 +11,7 @@ WORKDIR /src/
 
 ARG GIT_HASH
 ARG GIT_TAG
-RUN go build -ldflags="-X version.GitHash=${GIT_HASH} -X version.GitTag=${GIT_TAG}" -o gpxtoolkit .
+RUN go build -ldflags="-X gpxtoolkit/version.GitHash=${GIT_HASH} -X gpxtoolkit/version.GitTag=${GIT_TAG}" -o gpxtoolkit .
 
 FROM node:alpine as npm-builder
 
