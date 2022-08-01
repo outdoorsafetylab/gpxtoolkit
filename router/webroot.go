@@ -9,15 +9,15 @@ import (
 	"os"
 )
 
-type notFoundHandler struct {
-	webroot string
+type weboortHandler struct {
+	path string
 }
 
-func (h *notFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	path := fmt.Sprintf("%s%s", h.webroot, r.URL.Path)
+func (h *weboortHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := fmt.Sprintf("%s%s", h.path, r.URL.Path)
 	st, err := os.Stat(path)
 	if err != nil || st.IsDir() {
-		path = fmt.Sprintf("%s/index.html", h.webroot)
+		path = fmt.Sprintf("%s/index.html", h.path)
 	}
 	sum, err := sha1sum(path)
 	if err != nil {

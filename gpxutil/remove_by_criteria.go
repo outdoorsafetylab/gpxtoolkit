@@ -7,7 +7,7 @@ import (
 
 func RemoveDuplicated() *RemoveByCriteria {
 	return &RemoveByCriteria{
-		distanceFunc: horizontalDistance,
+		distanceFunc: HaversinDistance,
 		shouldRemove: func(line *line) bool {
 			return line.a.Equals(line.b)
 		},
@@ -16,7 +16,7 @@ func RemoveDuplicated() *RemoveByCriteria {
 
 func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 	return &RemoveByCriteria{
-		distanceFunc: horizontalDistance,
+		distanceFunc: HaversinDistance,
 		shouldRemove: func(line *line) bool {
 			return line.dist < distance
 		},
@@ -25,7 +25,7 @@ func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 
 func RemoveDurationLessThan(duration time.Duration) *RemoveByCriteria {
 	return &RemoveByCriteria{
-		distanceFunc: horizontalDistance,
+		distanceFunc: HaversinDistance,
 		shouldRemove: func(line *line) bool {
 			if line.duration == nil {
 				return false

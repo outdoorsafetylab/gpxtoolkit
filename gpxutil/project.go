@@ -110,7 +110,7 @@ func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints 
 		p := w.GetPoint()
 		for _, l := range lines {
 			pp := l.closestPoint(distanceFunc, p)
-			dist := horizontalDistance(p, pp)
+			dist := HaversinDistance(p, pp)
 			if dist > threshold {
 				continue
 			}

@@ -48,8 +48,8 @@
                     data-bs-target="#notesModal">注意事項</button>
                 </div>
               </div>
-              <button v-if="gpxFile" class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#options"
-                aria-controls="options" aria-expanded="false" aria-label="Toggle navigation">
+              <button v-if="gpxFile" class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse"
+                data-bs-target="#options" aria-controls="options" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
             </div>
@@ -252,7 +252,23 @@ export default {
     this.getVersion();
     this.map = new mapboxgl.Map({
       container: "map", // container ID
-      style: "mapbox://styles/mapbox/outdoors-v11", // style URL
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ["https://rudy-tiles-taiwan-mgl7xqygta-de.a.run.app/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: 'Map tiles by <a target="_top" rel="noopener" href="https://tile.openstreetmap.org/">OpenStreetMap tile servers</a>, under the <a target="_top" rel="noopener" href="https://operations.osmfoundation.org/policies/tiles/">tile usage policy</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>'
+          }
+        },
+        layers: [{
+          id: 'osm',
+          type: 'raster',
+          source: 'osm',
+        }],
+      },
+      // style: "mapbox://styles/mapbox/outdoors-v11", // style URL
       center: this.center, // starting position [lng, lat]
       zoom: this.zoom, // starting zoom
       projection: "globe", // display the map as a 3D globe

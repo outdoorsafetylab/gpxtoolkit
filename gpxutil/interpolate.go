@@ -24,9 +24,9 @@ func (c *Interpolate) Name() string {
 
 func (c *Interpolate) Run(tracklog *gpx.TrackLog) (int, error) {
 	if c.ByTerrainDistance {
-		c.distanceFunc = terrainDistance
+		c.distanceFunc = TerrainDistance
 	} else {
-		c.distanceFunc = horizontalDistance
+		c.distanceFunc = HaversinDistance
 	}
 	n := 0
 	for _, t := range tracklog.Tracks {

@@ -8,13 +8,13 @@ import (
 
 type DistanceFunc func(a, b *gpx.Point) float64
 
-var horizontalDistance DistanceFunc = func(a, b *gpx.Point) float64 {
+func HaversinDistance(a, b *gpx.Point) float64 {
 	return gpx.GeoDistance(a.GetLatitude(), a.GetLongitude(), b.GetLatitude(), b.GetLongitude())
 }
 
-var terrainDistance DistanceFunc = func(a, b *gpx.Point) float64 {
+func TerrainDistance(a, b *gpx.Point) float64 {
 	// FIXME: might be another better solution...
-	h := horizontalDistance(a, b)
+	h := HaversinDistance(a, b)
 	v := a.GetElevation() - b.GetElevation()
 	return math.Sqrt(h*h + v*v)
 }

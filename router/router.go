@@ -11,8 +11,9 @@ import (
 func NewRouter(webroot string, service elevation.Service) http.Handler {
 	r := mux.NewRouter()
 	sub := r.PathPrefix("/cgi").Subrouter()
+	sub.Use(Dump)
 	version := &controller.VersionController{}
-	sub.HandleFunc("/version", version.Handler).Methods("GET")
+	sub.HandleFunc("/version", version.Get).Methods("GET")
 	milestone := &controller.MilestoneController{
 		Service: service,
 	}
@@ -21,8 +22,8 @@ func NewRouter(webroot string, service elevation.Service) http.Handler {
 		Service: service,
 	}
 	sub.HandleFunc("/correct", correct.Handler).Methods("POST")
-	r.NotFoundHandler = &notFoundHandler{
-		webroot: webroot,
+	r.NotFoundHandler = &weboortHandler{
+		path: webroot,
 	}
 	return r
 }

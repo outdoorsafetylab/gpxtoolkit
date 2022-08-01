@@ -13,7 +13,7 @@ func (c *RemoveOutlier) Name() string {
 
 func RemoveOutlierBySpeed() *RemoveOutlier {
 	return &RemoveOutlier{
-		distanceFunc: horizontalDistance,
+		distanceFunc: HaversinDistance,
 		metric:       "Speed",
 		unit:         "m/s",
 		value: func(line *line) *float64 {
@@ -24,7 +24,7 @@ func RemoveOutlierBySpeed() *RemoveOutlier {
 
 func RemoveOutlierByDistance() *RemoveOutlier {
 	return &RemoveOutlier{
-		distanceFunc: horizontalDistance,
+		distanceFunc: HaversinDistance,
 		metric:       "Distance",
 		unit:         "m",
 		value: func(line *line) *float64 {
