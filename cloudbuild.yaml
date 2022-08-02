@@ -3,7 +3,7 @@ steps:
   args:
   - sh
   - -c
-  - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /workspace v1.40.1
+  - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /workspace v1.47.3
 - name: golang:1.18-alpine
   args:
   - go
