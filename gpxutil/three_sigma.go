@@ -2,9 +2,10 @@ package gpxutil
 
 import (
 	"fmt"
-	"gpxtoolkit/gpx"
-	"log"
 	"math"
+
+	"gpxtoolkit/gpx"
+	"gpxtoolkit/log"
 )
 
 func (c *RemoveOutlier) Name() string {
@@ -50,7 +51,7 @@ func (r *RemoveOutlier) Run(tracklog *gpx.TrackLog) (int, error) {
 				return 0, err
 			}
 			numRemoved := (num - len(removed.Points))
-			log.Printf("Removed %d points", numRemoved)
+			log.Debugf("Removed %d points", numRemoved)
 			n += numRemoved
 			t.Segments[i] = removed
 		}
@@ -70,7 +71,7 @@ func (r *RemoveOutlier) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 		}
 	}
 	avg := sum / float64(num)
-	log.Printf("Average: %f %s", avg, r.unit)
+	log.Debugf("Average: %f %s", avg, r.unit)
 
 	std := 0.0
 	for _, line := range lines {
@@ -80,18 +81,18 @@ func (r *RemoveOutlier) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 		}
 	}
 	std = math.Sqrt(std / float64(num))
-	log.Printf("Standard deviation: %f %s", std, r.unit)
+	log.Debugf("Standard deviation: %f %s", std, r.unit)
 
 	std3 := 3 * std // three sigma
-	log.Printf("3-Sigma: %f %s", std3, r.unit)
+	log.Debugf("3-Sigma: %f %s", std3, r.unit)
 
 	accepted := make([]*line, 0)
 	for _, line := range lines {
 		value := r.value(line)
 		if value != nil {
-			// log.Printf("Speed %v", *value)
+			// log.Debugf("Speed %v", *value)
 			if math.Abs(*value)-avg > std3 {
-				log.Printf("Discarding %v %s", *value, r.unit)
+				log.Debugf("Discarding %v %s", *value, r.unit)
 				continue
 			}
 		}

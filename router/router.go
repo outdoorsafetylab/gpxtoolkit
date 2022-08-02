@@ -1,9 +1,11 @@
 package router
 
 import (
+	"net/http"
+
 	"gpxtoolkit/controller"
 	"gpxtoolkit/elevation"
-	"net/http"
+	"gpxtoolkit/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -11,7 +13,8 @@ import (
 func NewRouter(webroot string, service elevation.Service) http.Handler {
 	r := mux.NewRouter()
 	sub := r.PathPrefix("/cgi").Subrouter()
-	sub.Use(Dump)
+	sub.Use(middleware.Dump)
+	sub.Use(middleware.NoCache)
 	version := &controller.VersionController{}
 	sub.HandleFunc("/version", version.Get).Methods("GET")
 	milestone := &controller.MilestoneController{

@@ -2,8 +2,9 @@ package gpxutil
 
 import (
 	"fmt"
+
 	"gpxtoolkit/gpx"
-	"log"
+	"gpxtoolkit/log"
 )
 
 type ProjectWaypoints struct {
@@ -30,7 +31,7 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 	for i, p := range projections {
 		wpt := tracklog.WayPoints[i]
 		if p.point == nil {
-			log.Printf("No projection: %s", wpt.GetName())
+			log.Infof("No projection: %s", wpt.GetName())
 			continue
 		}
 		wpt.Latitude = p.point.Latitude
@@ -97,7 +98,7 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 	}
 	seg.points = append(seg.points, points[len(points)-1])
 	segments = append(segments, seg)
-	log.Printf("Sliced %d segments", len(segments))
+	log.Debugf("Sliced %d segments", len(segments))
 	return segments
 }
 

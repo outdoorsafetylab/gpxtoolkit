@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"gpxtoolkit/version"
 	"net/http"
+
+	"gpxtoolkit/version"
 )
 
 type VersionController struct{}

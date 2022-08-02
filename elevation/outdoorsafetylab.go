@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
+
+	"gpxtoolkit/log"
 )
 
 type OutdoorSafetyLab struct {
@@ -19,7 +20,7 @@ type OutdoorSafetyLab struct {
 func (s *OutdoorSafetyLab) Lookup(latLons []*LatLon) ([]*float64, error) {
 	start := time.Now()
 	defer func() {
-		log.Printf("Looked up %d points in %v", len(latLons), time.Since(start))
+		log.Debugf("Looked up %d points in %v", len(latLons), time.Since(start))
 	}()
 	points := make([][]float64, len(latLons))
 	for i, latlon := range latLons {
@@ -52,12 +53,12 @@ func (s *OutdoorSafetyLab) lookup(points [][]float64) ([]*float64, error) {
 	dec := json.NewDecoder(bytes.NewBuffer(data))
 	err = dec.Decode(&alts)
 	if err != nil {
-		log.Printf("Failed to decode elevations: %s", err.Error())
+		log.Errorf("Failed to decode elevations: %s", err.Error())
 		return nil, err
 	}
 	if len(alts) != len(points) {
 		err = fmt.Errorf("Unepxected number of result: expect=%d, was=%d", len(points), len(alts))
-		log.Printf("%s", err.Error())
+		log.Errorf("%s", err.Error())
 		return nil, err
 	}
 	return alts, nil

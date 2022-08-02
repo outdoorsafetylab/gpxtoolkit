@@ -2,11 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
+
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/gpxutil"
-	"log"
-	"net/http"
+	"gpxtoolkit/log"
 )
 
 type CorrectController struct {
@@ -48,8 +49,8 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Before %v", stats)
-	log.Printf("After %v", tracklog.Stat(alpha))
+	log.Debugf("Before %v", stats)
+	log.Debugf("After %v", tracklog.Stat(alpha))
 
 	switch queryGetString(query, "format", "gpx") {
 	case "gpx":

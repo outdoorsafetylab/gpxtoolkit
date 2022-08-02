@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gpxtoolkit/cmd"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"gpxtoolkit/cmd"
 )
 
 var args = &struct {

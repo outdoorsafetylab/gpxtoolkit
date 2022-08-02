@@ -36,4 +36,4 @@ COPY --from=npm-builder /src/dist/ /var/www/html/
 ENV ELEVATION_URL=
 ENV ELEVATION_TOKEN=
 
-ENTRYPOINT [ "/usr/sbin/gpxtoolkit", "-D", "-w", "/var/www/html" ]
+ENTRYPOINT [ "/usr/sbin/gpxtoolkit", "-w", "/var/www/html" ]

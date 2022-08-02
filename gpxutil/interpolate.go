@@ -2,11 +2,12 @@ package gpxutil
 
 import (
 	"fmt"
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/gpx"
-	"log"
 	"math"
 	"time"
+
+	"gpxtoolkit/elevation"
+	"gpxtoolkit/gpx"
+	"gpxtoolkit/log"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -65,7 +66,7 @@ func (c *Interpolate) interpolate(points []*gpx.Point) ([]*gpx.Point, error) {
 			return nil, err
 		}
 	}
-	log.Printf("Interpolated %d points", len(interpolated))
+	log.Debugf("Interpolated %d points", len(interpolated))
 	res = append(res, lines[len(lines)-1].b)
 	return res, nil
 }

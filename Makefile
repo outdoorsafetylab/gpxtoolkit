@@ -18,7 +18,7 @@ include .make/protoc-gen-go.mk
 include .make/watcher.mk
 
 watch: $(WATCHER)
-	$(realpath $(WATCHER)) -D
+	$(realpath $(WATCHER)) -d
 
 lint: $(GOLANGCI_LINT)
 	$(realpath $(GOLANGCI_LINT)) run
