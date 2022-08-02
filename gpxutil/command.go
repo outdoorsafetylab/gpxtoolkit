@@ -2,7 +2,7 @@ package gpxutil
 
 import (
 	"gpxtoolkit/gpx"
-	"log"
+	"gpxtoolkit/log"
 )
 
 type Command interface {
@@ -21,12 +21,12 @@ func (c *ChainedCommands) Name() string {
 func (c *ChainedCommands) Run(tracklog *gpx.TrackLog) (int, error) {
 	n := 0
 	for _, c := range c.Commands {
-		log.Printf("Running: %s", c.Name())
+		log.Debugf("Running: %s", c.Name())
 		m, err := c.Run(tracklog)
 		if err != nil {
 			return n, err
 		}
-		log.Printf("Processed %d points", m)
+		log.Debugf("Processed %d points", m)
 		n += m
 	}
 	return n, nil

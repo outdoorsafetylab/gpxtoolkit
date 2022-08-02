@@ -1,14 +1,14 @@
 package controller
 
 import (
-	"encoding/json"
-	"gpxtoolkit/version"
 	"net/http"
+
+	"gpxtoolkit/version"
 )
 
 type VersionController struct{}
 
-func (c *VersionController) Handler(w http.ResponseWriter, r *http.Request) {
+func (c *VersionController) Get(w http.ResponseWriter, r *http.Request) {
 	version := &struct {
 		Commit string `json:"commit"`
 		Tag    string `json:"tag"`
@@ -16,9 +16,5 @@ func (c *VersionController) Handler(w http.ResponseWriter, r *http.Request) {
 		Commit: version.GitHash,
 		Tag:    version.GitTag,
 	}
-	enc := json.NewEncoder(w)
-	err := enc.Encode(version)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-	}
+	writeJSON(w, r, version)
 }

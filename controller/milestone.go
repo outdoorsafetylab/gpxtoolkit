@@ -2,11 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
+
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/gpxutil"
-	"log"
-	"net/http"
+	"gpxtoolkit/log"
 )
 
 type MilestoneController struct {
@@ -50,8 +51,8 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	log.Printf("Before %v", stats)
-	log.Printf("After %v", tracklog.Stat(alpha))
+	log.Debugf("Before %v", stats)
+	log.Debugf("After %v", tracklog.Stat(alpha))
 	format := query.Get("format")
 	switch format {
 	case "gpx":

@@ -48,8 +48,8 @@
                     data-bs-target="#notesModal">注意事項</button>
                 </div>
               </div>
-              <button v-if="gpxFile" class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#options"
-                aria-controls="options" aria-expanded="false" aria-label="Toggle navigation">
+              <button v-if="gpxFile" class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse"
+                data-bs-target="#options" aria-controls="options" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
             </div>

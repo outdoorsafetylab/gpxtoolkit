@@ -2,10 +2,11 @@ package gpxutil
 
 import (
 	"fmt"
+	"math"
+
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
-	"log"
-	"math"
+	"gpxtoolkit/log"
 
 	"github.com/maja42/goval"
 	"google.golang.org/protobuf/proto"
@@ -28,9 +29,9 @@ func (c *Milestone) Name() string {
 
 func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 	if c.ByTerrainDistance {
-		c.distanceFunc = terrainDistance
+		c.distanceFunc = TerrainDistance
 	} else {
-		c.distanceFunc = horizontalDistance
+		c.distanceFunc = HaversinDistance
 	}
 	n := 0
 	for _, t := range tracklog.Tracks {
@@ -61,7 +62,7 @@ func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 				return 0, err
 			}
 			n += len(milestones)
-			log.Printf("Appending %d milestones", len(milestones))
+			log.Debugf("Appending %d milestones", len(milestones))
 			tracklog.WayPoints = append(tracklog.WayPoints, milestones...)
 		}
 	}
@@ -98,7 +99,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 				distance: float64(i+1) * c.Distance,
 			}
 		}
-		log.Printf("Total %d points: %.1fm with %d milestones", len(points), total, len(milestones))
+		log.Debugf("Total %d points: %.1fm with %d milestones", len(points), total, len(milestones))
 		return c.create(points, milestones, distances)
 	} else {
 		projections, err := projectWaypoints(c.distanceFunc, points, waypoints, c.Distance/2)
@@ -106,7 +107,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 			return nil, err
 		}
 		segments := projections.slice(points)
-		log.Printf("Sliced %d points to %d segments", len(points), len(segments))
+		log.Debugf("Sliced %d points to %d segments", len(points), len(segments))
 		lengths := make([]float64, len(segments))
 		distances := make([][]float64, len(segments))
 		numMilestones := make([]int, len(segments))
@@ -114,7 +115,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		numPoints := 0
 		distance := 0.0
 		for i, segment := range segments {
-			log.Printf("Segment %d: %d points", i, len(segment.points))
+			log.Debugf("Segment %d: %d points", i, len(segment.points))
 			numPoints += len(segment.points)
 			start := distance
 			distances[i] = make([]float64, len(segment.points)-1)
@@ -134,12 +135,12 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 			if segment.b.waypoint != nil {
 				b = segment.b.waypoint.GetName()
 			}
-			log.Printf("Segment %d: from %s @ %.1fm to %s @ %.1fm: %f meters with %d milestones", i, a, start, b, distance, length, numMilestone)
+			log.Debugf("Segment %d: from %s @ %.1fm to %s @ %.1fm: %f meters with %d milestones", i, a, start, b, distance, length, numMilestone)
 			lengths[i] = length
 			numMilestones[i] = numMilestone
 			totalMilestones += numMilestone
 		}
-		log.Printf("Total %d points: %.1fm with %d milestones", numPoints, distance, totalMilestones)
+		log.Debugf("Total %d points: %.1fm with %d milestones", numPoints, distance, totalMilestones)
 		markers := make([]*gpx.WayPoint, 0)
 		n := 0
 		for i, segment := range segments {
@@ -170,7 +171,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 }
 
 func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distances []float64) ([]*gpx.WayPoint, error) {
-	log.Printf("Creating %d milestones from %d points ", len(milestones), len(points))
+	log.Debugf("Creating %d milestones from %d points ", len(milestones), len(points))
 	markers := make([]*gpx.WayPoint, 0)
 	start := 0.0
 	for i, b := range points[1:] {
