@@ -63,6 +63,9 @@ func Errorf(fmtstr string, args ...interface{}) {
 }
 
 func Write(lv Level, payload interface{}) {
+	if logger == nil {
+		return
+	}
 	var writer func(string, ...zap.Field)
 	logger := logger.WithOptions(zap.AddCallerSkip(3))
 	switch lv {
