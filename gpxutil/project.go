@@ -2,14 +2,18 @@ package gpxutil
 
 import (
 	"fmt"
+	"os"
 
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/log"
+
+	"google.golang.org/protobuf/proto"
 )
 
 type ProjectWaypoints struct {
 	DistanceFunc DistanceFunc
 	Threshold    float64
+	KeepOriginal bool
 }
 
 func (c *ProjectWaypoints) Name() string {
@@ -34,10 +38,19 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 			log.Infof("No projection: %s", wpt.GetName())
 			continue
 		}
-		wpt.Latitude = p.point.Latitude
-		wpt.Longitude = p.point.Longitude
-		wpt.Elevation = p.point.Elevation
-		wpt.NanoTime = p.point.NanoTime
+		if c.KeepOriginal {
+			tracklog.WayPoints = append(tracklog.WayPoints, &gpx.WayPoint{
+				Name:      proto.String(fmt.Sprintf("%s'", wpt.GetName())),
+				Latitude:  p.point.Latitude,
+				Longitude: p.point.Longitude,
+				Elevation: p.point.Elevation,
+			})
+		} else {
+			wpt.Latitude = p.point.Latitude
+			wpt.Longitude = p.point.Longitude
+			wpt.Elevation = p.point.Elevation
+			wpt.NanoTime = p.point.NanoTime
+		}
 		n++
 	}
 	return n, nil
@@ -110,10 +123,13 @@ func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints 
 		projections[i] = prj
 		p := w.GetPoint()
 		for _, l := range lines {
-			pp := l.closestPoint(distanceFunc, p)
+			pp := l.closestPoint(p)
 			dist := HaversinDistance(p, pp)
 			if dist > threshold {
 				continue
+			}
+			if w.GetName() == "光頭山" {
+				fmt.Fprintf(os.Stderr, "%f\n", dist)
 			}
 			if prj.point == nil || dist < prj.distance {
 				prj.point = pp

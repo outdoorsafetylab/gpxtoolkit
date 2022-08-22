@@ -28,29 +28,25 @@ type line struct {
 }
 
 // https://stackoverflow.com/a/6853926
-func (l *line) closestPoint(distanceFunc DistanceFunc, p *gpx.Point) *gpx.Point {
-	pp := &gpx.Point{
-		Latitude:  l.a.Latitude,
-		Longitude: l.b.Longitude,
-	}
-	A := distanceFunc(p, l.a)
-	B := distanceFunc(p, l.b)
-	C := distanceFunc(pp, l.b)
-	D := distanceFunc(pp, l.a)
+func (l *line) closestPoint(p *gpx.Point) *gpx.Point {
+	A := p.GetLatitude() - l.a.GetLatitude()
+	B := p.GetLongitude() - l.b.GetLongitude()
+	C := l.b.GetLatitude() - l.a.GetLatitude()
+	D := l.b.GetLongitude() - l.a.GetLongitude()
 
-	dot := A*C + B*D
 	len_sq := C*C + D*D
 	param := -1.0
 	if len_sq != 0 { //in case of 0 length line
+		dot := A*C + B*D
 		param = dot / len_sq
 	}
 	if param < 0 {
 		return l.a
-	} else if param > 0 {
+	} else if param > 1 {
 		return l.b
 	} else {
-		dist1 := distanceFunc(p, l.a)
-		dist2 := distanceFunc(p, l.b)
+		dist1 := HaversinDistance(p, l.a)
+		dist2 := HaversinDistance(p, l.b)
 		dist := dist1 + dist2
 		return interpolate(l.a, l.b, dist1/dist)
 	}

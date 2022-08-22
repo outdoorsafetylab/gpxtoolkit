@@ -26,6 +26,7 @@ func (s *Segment) End() *Point {
 func (s *Segment) Stat(alpha float64) *TrackStats {
 	st := NewTrackStats()
 	*st.NumPoints = int64(len(s.Points))
+	var filter *AlphaFilter
 	for i, b := range s.Points {
 		if st.NanoTime == nil && b.NanoTime != nil {
 			st.NanoTime = b.NanoTime
@@ -42,6 +43,16 @@ func (s *Segment) Stat(alpha float64) *TrackStats {
 			} else {
 				st.ElevationMin = proto.Float64(math.Min(st.GetElevationMin(), elev))
 			}
+			if filter == nil {
+				filter = &AlphaFilter{Alpha: alpha, Value: elev}
+			} else {
+				delta := filter.Accumulate(elev - filter.Value)
+				if delta > 0 {
+					*st.ElevationGain += delta
+				} else if delta < 0 {
+					*st.ElevationLoss += -delta
+				}
+			}
 		}
 		if i == 0 {
 			continue
@@ -49,15 +60,6 @@ func (s *Segment) Stat(alpha float64) *TrackStats {
 		a := s.Points[i-1]
 		*st.Distance += a.distanceTo(b)
 		st.AddTime(b.Time().Sub(a.Time()))
-		if a.Elevation != nil && b.Elevation != nil {
-			delta := b.GetElevation() - a.GetElevation()
-			delta *= alpha
-			if delta > 0 {
-				*st.ElevationGain += delta
-			} else if delta < 0 {
-				*st.ElevationLoss += -delta
-			}
-		}
 	}
 	return st
 }
