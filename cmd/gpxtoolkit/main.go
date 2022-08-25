@@ -25,7 +25,6 @@ var commands = map[string]cmd.Command{
 	"time":    &cmd.RewriteTime{GPXCommand: baseCommand},
 	"stat":    &cmd.Statistics{GPXCommand: baseCommand},
 	"elev":    &cmd.CorrectElevation{GPXCommand: baseCommand},
-	"slice":   &cmd.SliceByWaypoints{GPXCommand: baseCommand},
 	"project": &cmd.ProjectWaypoints{GPXCommand: baseCommand},
 }
 

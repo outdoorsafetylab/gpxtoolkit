@@ -1,18 +1,77 @@
 package gpxutil
 
-import "gpxtoolkit/gpx"
+import (
+	"errors"
+	"fmt"
+	"gpxtoolkit/gpx"
+
+	"google.golang.org/protobuf/proto"
+)
 
 type Slice struct {
 	Start, End *gpx.WayPoint
 	Points     []*gpx.Point
 }
 
-func SliceByWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints []*gpx.WayPoint, threshold float64) ([]*Slice, error) {
-	projections, err := projectWaypoints(distanceFunc, points, waypoints, threshold)
+type SliceByWaypoints struct {
+	DistanceFunc DistanceFunc
+	Threshold    float64
+	Waypoints    []*gpx.WayPoint
+}
+
+func (c *SliceByWaypoints) Name() string {
+	return fmt.Sprintf("Slice by Waypoints with Threshold %fm", c.Threshold)
+}
+
+func (c *SliceByWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
+	switch len(tracklog.Tracks) {
+	case 0:
+		return 0, errors.New("no track in the gpx")
+	case 1:
+		break
+	default:
+		return 0, errors.New("more than 1 track in the gpx")
+	}
+	switch len(tracklog.Tracks[0].Segments) {
+	case 0:
+		return 0, errors.New("no segment in the gpx")
+	case 1:
+		break
+	default:
+		return 0, errors.New("more than 1 segment in the track")
+	}
+	points := tracklog.Tracks[0].Segments[0].Points
+	slices, err := c.slice(points)
+	if err != nil {
+		return 0, err
+	}
+	tracklog.Tracks = make([]*gpx.Track, len(slices))
+	for i := range tracklog.Tracks {
+		slice := slices[i]
+		track := &gpx.Track{
+			Segments: []*gpx.Segment{
+				{Points: slice.Points},
+			},
+		}
+		if slice.Start != nil {
+			if slice.End != nil {
+				track.Name = proto.String(fmt.Sprintf("%s→%s", slice.Start.GetName(), slice.End.GetName()))
+			} else {
+				track.Name = proto.String(fmt.Sprintf("%s→", slice.Start.GetName()))
+			}
+		} else if slice.End != nil {
+			track.Name = proto.String(fmt.Sprintf("→%s", slice.End.GetName()))
+		}
+		tracklog.Tracks[i] = track
+	}
+	return len(points), nil
+}
+
+func (c *SliceByWaypoints) slice(points []*gpx.Point) ([]*Slice, error) {
+	segments, err := sliceByWaypoints(c.DistanceFunc, points, c.Waypoints, c.Threshold)
 	if err != nil {
 		return nil, err
 	}
-	segments := projections.slice(points)
 	slices := make([]*Slice, len(segments))
 	for i, seg := range segments {
 		slice := &Slice{
