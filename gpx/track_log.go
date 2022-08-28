@@ -39,11 +39,15 @@ func (log *TrackLog) End() *Point {
 	return nil
 }
 
-func (log *TrackLog) Stat(alpha float64) *TrackStats {
+func (log *TrackLog) Stat(alpha float64) (*TrackStats, error) {
 	st := NewTrackStats()
 	*st.NumTracks = int64(len(log.Tracks))
 	for _, t := range log.Tracks {
-		st.Merge(t.Stat(alpha))
+		_st, err := t.Stat(alpha)
+		if err != nil {
+			return nil, err
+		}
+		st.Merge(_st)
 	}
-	return st
+	return st, nil
 }

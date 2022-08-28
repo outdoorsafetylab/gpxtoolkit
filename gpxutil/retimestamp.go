@@ -36,10 +36,13 @@ func (c *ReTimestamp) Run(tracklog *gpx.TrackLog) (int, error) {
 
 func (c *ReTimestamp) timestamp(points []*gpx.Point, start time.Time) (time.Time, error) {
 	lines := getLines(c.DistanceFunc, points)
-	for _, line := range lines {
+	for i, line := range lines {
 		line.a.NanoTime = proto.Int64(start.UnixNano())
 		duration := time.Duration(line.dist/c.Speed) * time.Second
-		start = line.a.Time().Add(duration)
+		start = start.Add(duration)
+		if i == len(lines)-1 {
+			line.b.NanoTime = proto.Int64(start.UnixNano())
+		}
 	}
 	return start, nil
 }

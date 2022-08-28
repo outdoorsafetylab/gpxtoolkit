@@ -1,43 +1,48 @@
+/*
+Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+
+*/
 package cmd
 
 import (
 	"fmt"
 	"gpxtoolkit/gpxutil"
-	"io"
+	"os"
+
+	"github.com/spf13/cobra"
 )
 
-type ProjectWaypoints struct {
-	GPXCommand
+var (
+	projectThreshold    float64 = 30
+	projectKeepOriginal bool
+)
+
+// projectCmd represents the project command
+var projectCmd = &cobra.Command{
+	Use:   "project",
+	Short: "Project waypoints onto tracks",
+	Long:  `Project waypoints onto tracks.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		trackLog, err := loadGpx()
+		if err != nil {
+			return err
+		}
+		project := &gpxutil.ProjectWaypoints{
+			DistanceFunc: gpxutil.HaversinDistance,
+			Threshold:    projectThreshold,
+			KeepOriginal: projectKeepOriginal,
+		}
+		n, err := project.Run(trackLog)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "Projected %d waypoints\n", n)
+		return dumpGpx(trackLog)
+	},
 }
 
-func (c *ProjectWaypoints) Usage(w io.Writer, progname, cmdname string) {
-	fmt.Fprintf(w, "%s %s <gpxfile> <threshold>\n", progname, cmdname)
-}
-
-func (c *ProjectWaypoints) MinArguments() int {
-	return 2
-}
-
-func (c *ProjectWaypoints) Run(progname, cmdname string, args []string) error {
-	gpxLog, err := c.openGpx(args, 0)
-	if err != nil {
-		return err
-	}
-	cmd := &gpxutil.ProjectWaypoints{
-		DistanceFunc: gpxutil.TerrainDistance,
-		KeepOriginal: true,
-	}
-	cmd.Threshold, err = c.floatArg(args, 1)
-	if err != nil {
-		return err
-	}
-	_, err = cmd.Run(gpxLog)
-	if err != nil {
-		return err
-	}
-	err = c.writeGpx(gpxLog, progname)
-	if err != nil {
-		return err
-	}
-	return nil
+func init() {
+	rootCmd.AddCommand(projectCmd)
+	projectCmd.Flags().BoolVarP(&projectKeepOriginal, "keep", "k", projectKeepOriginal, "Keep the original waypoints")
+	projectCmd.Flags().Float64VarP(&projectThreshold, "threshold", "t", projectThreshold, "Distance threshold of waypoints. Waypoints farer than this threshold won't be used for projection.")
 }

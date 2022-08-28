@@ -1,6 +1,7 @@
 package gpx
 
 import (
+	"fmt"
 	"math"
 
 	"google.golang.org/protobuf/proto"
@@ -23,43 +24,46 @@ func (s *Segment) End() *Point {
 	}
 }
 
-func (s *Segment) Stat(alpha float64) *TrackStats {
+func (s *Segment) Stat(alpha float64) (*TrackStats, error) {
 	st := NewTrackStats()
 	*st.NumPoints = int64(len(s.Points))
 	var filter *AlphaFilter
-	for i, b := range s.Points {
+	for i, b := range s.Points[1:] {
+		a := s.Points[i]
+		if a.Elevation == nil {
+			return nil, fmt.Errorf("missing elevation in point[%d]", i)
+		}
+		if b.Elevation == nil {
+			return nil, fmt.Errorf("missing elevation in point[%d]", i+1)
+		}
 		if st.NanoTime == nil && b.NanoTime != nil {
 			st.NanoTime = b.NanoTime
 		}
-		if b.Elevation != nil {
-			elev := b.GetElevation()
-			if st.ElevationMax == nil {
-				st.ElevationMax = proto.Float64(elev)
-			} else {
-				st.ElevationMax = proto.Float64(math.Max(st.GetElevationMax(), elev))
-			}
-			if st.ElevationMin == nil {
-				st.ElevationMin = proto.Float64(elev)
-			} else {
-				st.ElevationMin = proto.Float64(math.Min(st.GetElevationMin(), elev))
-			}
-			if filter == nil {
-				filter = &AlphaFilter{Alpha: alpha, Value: elev}
-			} else {
-				delta := filter.Accumulate(elev - filter.Value)
-				if delta > 0 {
-					*st.ElevationGain += delta
-				} else if delta < 0 {
-					*st.ElevationLoss += -delta
-				}
+		elev := b.GetElevation()
+		if st.ElevationMax == nil {
+			st.ElevationMax = proto.Float64(elev)
+		} else {
+			st.ElevationMax = proto.Float64(math.Max(st.GetElevationMax(), elev))
+		}
+		if st.ElevationMin == nil {
+			st.ElevationMin = proto.Float64(elev)
+		} else {
+			st.ElevationMin = proto.Float64(math.Min(st.GetElevationMin(), elev))
+		}
+		if filter == nil {
+			filter = &AlphaFilter{Alpha: alpha, Value: elev}
+		} else {
+			delta := filter.Accumulate(elev - filter.Value)
+			if delta > 0 {
+				*st.ElevationGain += delta
+			} else if delta < 0 {
+				*st.ElevationLoss += -delta
 			}
 		}
-		if i == 0 {
-			continue
-		}
-		a := s.Points[i-1]
-		*st.Distance += a.distanceTo(b)
+		dist := a.distanceTo(b)
+		*st.Distance += dist
+		*st.ElevationDistance += (a.GetElevation() + b.GetElevation()) / 2 * dist
 		st.AddTime(b.Time().Sub(a.Time()))
 	}
-	return st
+	return st, nil
 }

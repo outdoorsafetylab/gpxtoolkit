@@ -7,13 +7,14 @@ import (
 
 func NewTrackStats() *TrackStats {
 	return &TrackStats{
-		Distance:      new(float64),
-		NanoDuration:  new(int64),
-		ElevationGain: new(float64),
-		ElevationLoss: new(float64),
-		NumTracks:     new(int64),
-		NumSegments:   new(int64),
-		NumPoints:     new(int64),
+		Distance:          new(float64),
+		NanoDuration:      new(int64),
+		ElevationGain:     new(float64),
+		ElevationLoss:     new(float64),
+		ElevationDistance: new(float64),
+		NumTracks:         new(int64),
+		NumSegments:       new(int64),
+		NumPoints:         new(int64),
 	}
 }
 
@@ -36,6 +37,7 @@ func (s *TrackStats) Merge(o *TrackStats) {
 	}
 	*s.Distance += *o.Distance
 	*s.NanoDuration += *o.NanoDuration
+	*s.ElevationDistance += *o.ElevationDistance
 	*s.ElevationGain += *o.ElevationGain
 	*s.ElevationLoss += *o.ElevationLoss
 	if o.ElevationMax != nil {

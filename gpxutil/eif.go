@@ -43,6 +43,7 @@ func (r *RemoveOutlierByEIF) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 		Points: make([]*gpx.Point, 0),
 	}
 	f := eif.NewForest(points, eif.WithMaxTreeDepth(12), eif.WithTrees(100))
+	// f := eif.NewForest(points)
 	for i, p := range points {
 		score := f.Score(p)
 		if score > r.Threshold {

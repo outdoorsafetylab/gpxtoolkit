@@ -1,7 +1,6 @@
 package gpxutil
 
 import (
-	"errors"
 	"fmt"
 	"gpxtoolkit/gpx"
 
@@ -24,47 +23,37 @@ func (c *SliceByWaypoints) Name() string {
 }
 
 func (c *SliceByWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
-	switch len(tracklog.Tracks) {
-	case 0:
-		return 0, errors.New("no track in the gpx")
-	case 1:
-		break
-	default:
-		return 0, errors.New("more than 1 track in the gpx")
-	}
-	switch len(tracklog.Tracks[0].Segments) {
-	case 0:
-		return 0, errors.New("no segment in the gpx")
-	case 1:
-		break
-	default:
-		return 0, errors.New("more than 1 segment in the track")
-	}
-	points := tracklog.Tracks[0].Segments[0].Points
-	slices, err := c.slice(points)
-	if err != nil {
-		return 0, err
-	}
-	tracklog.Tracks = make([]*gpx.Track, len(slices))
-	for i := range tracklog.Tracks {
-		slice := slices[i]
-		track := &gpx.Track{
-			Segments: []*gpx.Segment{
-				{Points: slice.Points},
-			},
-		}
-		if slice.Start != nil {
-			if slice.End != nil {
-				track.Name = proto.String(fmt.Sprintf("%s→%s", slice.Start.GetName(), slice.End.GetName()))
-			} else {
-				track.Name = proto.String(fmt.Sprintf("%s→", slice.Start.GetName()))
+	num := 0
+	tracks := make([]*gpx.Track, 0)
+	for _, t := range tracklog.Tracks {
+		for _, s := range t.Segments {
+			points := s.Points
+			slices, err := c.slice(points)
+			if err != nil {
+				return 0, err
 			}
-		} else if slice.End != nil {
-			track.Name = proto.String(fmt.Sprintf("→%s", slice.End.GetName()))
+			for _, slice := range slices {
+				track := &gpx.Track{
+					Segments: []*gpx.Segment{
+						{Points: slice.Points},
+					},
+				}
+				if slice.Start != nil {
+					if slice.End != nil {
+						track.Name = proto.String(fmt.Sprintf("%s→%s", slice.Start.GetName(), slice.End.GetName()))
+					} else {
+						track.Name = proto.String(fmt.Sprintf("%s→", slice.Start.GetName()))
+					}
+				} else if slice.End != nil {
+					track.Name = proto.String(fmt.Sprintf("→%s", slice.End.GetName()))
+				}
+				tracks = append(tracks, track)
+			}
+			num += len(points)
 		}
-		tracklog.Tracks[i] = track
 	}
-	return len(points), nil
+	tracklog.Tracks = tracks
+	return num, nil
 }
 
 func (c *SliceByWaypoints) slice(points []*gpx.Point) ([]*Slice, error) {
