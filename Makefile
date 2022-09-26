@@ -15,10 +15,12 @@ test:
 include .make/golangci-lint.mk
 include .make/protoc.mk
 include .make/protoc-gen-go.mk
-include .make/watcher.mk
 
-watch: $(WATCHER)
-	$(realpath $(WATCHER)) serve -d
+serve:
+	go run . serve -d
+
+watch: $(WATCHER) # To install 'nodemon': npm install -g nodemon
+	nodemon -e go --signal SIGTERM --exec 'make serve'
 
 lint: $(GOLANGCI_LINT)
 	$(realpath $(GOLANGCI_LINT)) run
