@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -45,7 +45,7 @@ func (s *OutdoorSafetyLab) lookup(points [][]float64) ([]*float64, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	data, err = ioutil.ReadAll(res.Body)
+	data, err = io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
