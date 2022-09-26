@@ -21,7 +21,11 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	alpha := 0.7
-	stats := tracklog.Stat(alpha)
+	stats, err := tracklog.Stat(alpha)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
 
 	query := r.URL.Query()
 	commands := &gpxutil.ChainedCommands{
@@ -48,9 +52,13 @@ func (c *CorrectController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
+	_stats, err := tracklog.Stat(alpha)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	log.Debugf("Before %v", stats)
-	log.Debugf("After %v", tracklog.Stat(alpha))
+	log.Debugf("After %v", _stats)
 
 	switch queryGetString(query, "format", "gpx") {
 	case "gpx":

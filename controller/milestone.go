@@ -22,7 +22,11 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	alpha := 1.0
-	stats := tracklog.Stat(alpha)
+	stats, err := tracklog.Stat(alpha)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
 	name := &gpxutil.MilestoneName{
 		Template: query.Get("template"),
 	}
@@ -51,8 +55,13 @@ func (c *MilestoneController) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	_stats, err := tracklog.Stat(alpha)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	log.Debugf("Before %v", stats)
-	log.Debugf("After %v", tracklog.Stat(alpha))
+	log.Debugf("After %v", _stats)
 	format := query.Get("format")
 	switch format {
 	case "gpx":

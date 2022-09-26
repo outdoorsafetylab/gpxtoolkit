@@ -12,8 +12,9 @@ func (c *RemoveOutlier) Name() string {
 	return fmt.Sprintf("Remove Outliers by %s", c.metric)
 }
 
-func RemoveOutlierBySpeed() *RemoveOutlier {
+func RemoveOutlierBySpeed(sigma int) *RemoveOutlier {
 	return &RemoveOutlier{
+		sigma:        sigma,
 		distanceFunc: HaversinDistance,
 		metric:       "Speed",
 		unit:         "m/s",
@@ -23,8 +24,9 @@ func RemoveOutlierBySpeed() *RemoveOutlier {
 	}
 }
 
-func RemoveOutlierByDistance() *RemoveOutlier {
+func RemoveOutlierByDistance(sigma int) *RemoveOutlier {
 	return &RemoveOutlier{
+		sigma:        sigma,
 		distanceFunc: HaversinDistance,
 		metric:       "Distance",
 		unit:         "m",
@@ -35,6 +37,7 @@ func RemoveOutlierByDistance() *RemoveOutlier {
 }
 
 type RemoveOutlier struct {
+	sigma        int
 	distanceFunc DistanceFunc
 	metric       string
 	unit         string
@@ -83,15 +86,15 @@ func (r *RemoveOutlier) remove(seg *gpx.Segment) (*gpx.Segment, error) {
 	std = math.Sqrt(std / float64(num))
 	log.Debugf("Standard deviation: %f %s", std, r.unit)
 
-	std3 := 3 * std // three sigma
-	log.Debugf("3-Sigma: %f %s", std3, r.unit)
+	sigma := float64(r.sigma) * std // three sigma
+	log.Debugf("%d-Sigma: %f %s", r.sigma, sigma, r.unit)
 
 	accepted := make([]*line, 0)
 	for _, line := range lines {
 		value := r.value(line)
 		if value != nil {
 			// log.Debugf("Speed %v", *value)
-			if math.Abs(*value)-avg > std3 {
+			if math.Abs(*value)-avg > sigma {
 				log.Debugf("Discarding %v %s", *value, r.unit)
 				continue
 			}

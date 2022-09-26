@@ -2,7 +2,7 @@ package gpxutil
 
 import (
 	"fmt"
-	"os"
+	"sort"
 
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/log"
@@ -27,40 +27,34 @@ func (c *ProjectWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold)
-	if err != nil {
-		return 0, err
-	}
-	n := 0
-	for i, p := range projections {
-		wpt := tracklog.WayPoints[i]
-		if p.point == nil {
-			log.Infof("No projection: %s", wpt.GetName())
-			continue
-		}
+	lines := getLines(c.DistanceFunc, points)
+	projections := projectWaypoints(c.DistanceFunc, lines, tracklog.WayPoints, c.Threshold)
+	waypoints := make([]*gpx.WayPoint, 0)
+	for _, p := range projections {
+		wpt := proto.Clone(p.waypoint).(*gpx.WayPoint)
 		if c.KeepOriginal {
-			tracklog.WayPoints = append(tracklog.WayPoints, &gpx.WayPoint{
-				Name:      proto.String(fmt.Sprintf("%s'", wpt.GetName())),
-				Latitude:  p.point.Latitude,
-				Longitude: p.point.Longitude,
-				Elevation: p.point.Elevation,
-			})
-		} else {
-			wpt.Latitude = p.point.Latitude
-			wpt.Longitude = p.point.Longitude
-			wpt.Elevation = p.point.Elevation
-			wpt.NanoTime = p.point.NanoTime
+			wpt.Name = proto.String(fmt.Sprintf("%s'", wpt.GetName()))
 		}
-		n++
+		wpt.Latitude = p.point.Latitude
+		wpt.Longitude = p.point.Longitude
+		wpt.Elevation = p.point.Elevation
+		wpt.NanoTime = p.point.NanoTime
+		waypoints = append(waypoints, wpt)
 	}
-	return n, nil
+	if c.KeepOriginal {
+		tracklog.WayPoints = append(tracklog.WayPoints, waypoints...)
+	} else {
+		tracklog.WayPoints = waypoints
+	}
+	return len(waypoints), nil
 }
 
 type projection struct {
-	waypoint *gpx.WayPoint
-	point    *gpx.Point
-	line     *line
-	distance float64
+	waypoint       *gpx.WayPoint
+	point          *gpx.Point
+	line           *line
+	distanceToLine float64
+	mileage        float64
 }
 
 type projections []*projection
@@ -73,19 +67,68 @@ type segment struct {
 	points []*gpx.Point
 }
 
-func (projections projections) slice(points []*gpx.Point) []*segment {
+func projectWaypoints(distanceFunc DistanceFunc, lines []*line, waypoints []*gpx.WayPoint, threshold float64) projections {
+	projections := make(projections, 0)
+	for _, w := range waypoints {
+		p := w.GetPoint()
+		mileage := 0.0
+		var closest *projection
+		for _, l := range lines {
+			mileage += l.dist
+			pp := l.closestPoint(p)
+			dist := HaversinDistance(p, pp)
+			if threshold > 0 && dist > threshold {
+				if closest != nil {
+					projections = append(projections, closest)
+					closest = nil
+				}
+				continue
+			}
+			if closest == nil || dist < closest.distanceToLine {
+				prj := &projection{}
+				prj.point = pp
+				prj.waypoint = w
+				prj.line = l
+				prj.distanceToLine = dist
+				prj.mileage = mileage + distanceFunc(l.a, prj.point)
+				closest = prj
+			}
+		}
+		if closest != nil {
+			projections = append(projections, closest)
+		}
+	}
+	sort.Slice(projections, func(i, j int) bool {
+		return projections[i].mileage < projections[j].mileage
+	})
+	// for _, p := range projections {
+	// 	fmt.Fprintf(os.Stderr, "%s: %f @ %f\n", p.waypoint.GetName(), p.distanceToLine, p.mileage)
+	// }
+	return projections
+}
+
+func sliceByWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints []*gpx.WayPoint, threshold float64) ([]*segment, error) {
+	lines := getLines(distanceFunc, points)
+	projections := projectWaypoints(distanceFunc, lines, waypoints, threshold)
 	segments := make([]*segment, 0)
 	seg := &segment{
 		points: make([]*gpx.Point, 0),
 	}
-	for i, b := range points[1:] {
-		a := points[i]
-		seg.points = append(seg.points, a)
-		for _, prj := range projections {
-			if prj.point == nil {
-				continue
-			}
-			if prj.line.a == a && prj.line.b == b {
+	for _, prj := range projections {
+		for i, l := range lines {
+			seg.points = append(seg.points, l.a)
+			if prj.line == l {
+				lines = lines[i+1:]
+				if i == 0 {
+					seg.a = struct {
+						waypoint *gpx.WayPoint
+						point    *gpx.Point
+					}{
+						waypoint: prj.waypoint,
+						point:    prj.point,
+					}
+					break
+				}
 				seg.points = append(seg.points, prj.point)
 				seg.b = struct {
 					waypoint *gpx.WayPoint
@@ -94,50 +137,44 @@ func (projections projections) slice(points []*gpx.Point) []*segment {
 					waypoint: prj.waypoint,
 					point:    prj.point,
 				}
-				segments = append(segments, seg)
-				seg = &segment{
-					a: struct {
-						waypoint *gpx.WayPoint
-						point    *gpx.Point
-					}{
-						waypoint: prj.waypoint,
-						point:    prj.point,
-					},
-					points: make([]*gpx.Point, 0),
+				if len(lines) > 0 {
+					segments = append(segments, seg)
+					seg = &segment{
+						a: struct {
+							waypoint *gpx.WayPoint
+							point    *gpx.Point
+						}{
+							waypoint: prj.waypoint,
+							point:    prj.point,
+						},
+						points: make([]*gpx.Point, 0),
+					}
+					seg.points = append(seg.points, prj.point)
 				}
-				seg.points = append(seg.points, prj.point)
+				seg.points = append(seg.points, l.b)
+				break
 			}
 		}
 	}
-	seg.points = append(seg.points, points[len(points)-1])
+	for i, l := range lines {
+		seg.points = append(seg.points, l.a)
+		if i == len(lines)-1 {
+			seg.points = append(seg.points, l.b)
+		}
+	}
 	segments = append(segments, seg)
 	log.Debugf("Sliced %d segments", len(segments))
-	return segments
-}
-
-func projectWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints []*gpx.WayPoint, threshold float64) (projections, error) {
-	lines := getLines(distanceFunc, points)
-	projections := make(projections, len(waypoints))
-	for i, w := range waypoints {
-		prj := &projection{}
-		projections[i] = prj
-		p := w.GetPoint()
-		for _, l := range lines {
-			pp := l.closestPoint(p)
-			dist := HaversinDistance(p, pp)
-			if dist > threshold {
-				continue
-			}
-			if w.GetName() == "光頭山" {
-				fmt.Fprintf(os.Stderr, "%f\n", dist)
-			}
-			if prj.point == nil || dist < prj.distance {
-				prj.point = pp
-				prj.waypoint = w
-				prj.line = l
-				prj.distance = dist
-			}
-		}
-	}
-	return projections, nil
+	// fmt.Fprintf(os.Stderr, "sliced %d segments\n", len(segments))
+	// for i, s := range segments {
+	// 	from := ""
+	// 	to := ""
+	// 	if s.a.waypoint != nil {
+	// 		from = s.a.waypoint.GetName()
+	// 	}
+	// 	if s.b.waypoint != nil {
+	// 		to = s.b.waypoint.GetName()
+	// 	}
+	// fmt.Fprintf(os.Stderr, "segment %d: %d points (%s => %s)\n", i, len(s.points), from, to)
+	// }
+	return segments, nil
 }

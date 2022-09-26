@@ -27,29 +27,30 @@ type line struct {
 	speed    *float64
 }
 
-// https://stackoverflow.com/a/6853926
-func (l *line) closestPoint(p *gpx.Point) *gpx.Point {
-	A := p.GetLatitude() - l.a.GetLatitude()
-	B := p.GetLongitude() - l.b.GetLongitude()
-	C := l.b.GetLatitude() - l.a.GetLatitude()
-	D := l.b.GetLongitude() - l.a.GetLongitude()
-
-	len_sq := C*C + D*D
-	param := -1.0
-	if len_sq != 0 { //in case of 0 length line
-		dot := A*C + B*D
-		param = dot / len_sq
+func (l *line) closestPoint(c *gpx.Point) *gpx.Point {
+	xa, ya := toWebMercator(l.a.GetLatitude(), l.a.GetLongitude())
+	xb, yb := toWebMercator(l.b.GetLatitude(), l.b.GetLongitude())
+	xc, yc := toWebMercator(c.GetLatitude(), c.GetLongitude())
+	ab := &vector{
+		x: xb - xa,
+		y: yb - ya,
 	}
-	if param < 0 {
+	ac := &vector{
+		x: xc - xa,
+		y: yc - ya,
+	}
+	dotProduct := ab.x*ac.x + ab.y*ac.y
+	abLengthSquare := ab.x*ab.x + ab.y*ab.y
+	if abLengthSquare == 0 {
 		return l.a
-	} else if param > 1 {
-		return l.b
-	} else {
-		dist1 := HaversinDistance(p, l.a)
-		dist2 := HaversinDistance(p, l.b)
-		dist := dist1 + dist2
-		return interpolate(l.a, l.b, dist1/dist)
 	}
+	ratio := dotProduct / abLengthSquare
+	if ratio <= 0 {
+		return l.a
+	} else if ratio >= 1 {
+		return l.b
+	}
+	return interpolate(l.a, l.b, ratio)
 }
 
 func getLines(distanceFunc DistanceFunc, points []*gpx.Point) []*line {

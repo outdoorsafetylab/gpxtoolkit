@@ -22,13 +22,17 @@ func (t *Track) End() *Point {
 	return nil
 }
 
-func (t *Track) Stat(alpha float64) *TrackStats {
+func (t *Track) Stat(alpha float64) (*TrackStats, error) {
 	st := NewTrackStats()
 	*st.NumSegments = int64(len(t.Segments))
 	for _, s := range t.Segments {
-		st.Merge(s.Stat(alpha))
+		_st, err := s.Stat(alpha)
+		if err != nil {
+			return nil, err
+		}
+		st.Merge(_st)
 	}
-	return st
+	return st, nil
 }
 
 func (t *Track) Points() []*Point {

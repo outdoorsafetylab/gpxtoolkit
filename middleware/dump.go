@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"runtime/debug"
 	"strings"
@@ -40,13 +40,13 @@ func (d *responseDumper) WriteHeader(statusCode int) {
 func Dump(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("Handling: %s %s", r.Method, r.RequestURI)
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to read request body: %s", err.Error()), 500)
 			return
 		}
 		if data != nil {
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+			r.Body = io.NopCloser(bytes.NewBuffer(data))
 		}
 		dumper := &responseDumper{w: w}
 		handler.ServeHTTP(dumper, r)

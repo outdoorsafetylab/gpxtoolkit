@@ -3,7 +3,6 @@ package gpxutil
 import (
 	"fmt"
 	"math"
-	"os"
 
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
@@ -103,11 +102,10 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 		log.Debugf("Total %d points: %.1fm with %d milestones", len(points), total, len(milestones))
 		return c.create(points, milestones, distances)
 	} else {
-		projections, err := projectWaypoints(c.distanceFunc, points, waypoints, c.Distance/2)
+		segments, err := sliceByWaypoints(c.distanceFunc, points, waypoints, c.Distance/2)
 		if err != nil {
 			return nil, err
 		}
-		segments := projections.slice(points)
 		log.Debugf("Sliced %d points to %d segments", len(points), len(segments))
 		lengths := make([]float64, len(segments))
 		distances := make([][]float64, len(segments))
@@ -127,10 +125,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 				distance += dist
 			}
 			length := (distance - start)
-			numMilestone := int(math.Round((distance - start) / c.Distance))
-			if segment.a.waypoint != nil && segment.a.waypoint.GetName() == "牡丹池岔路" {
-				fmt.Fprintf(os.Stderr, "numMilestone: %d", numMilestone)
-			}
+			numMilestone := int(math.Round(length / c.Distance))
 			a := "start"
 			if segment.a.waypoint != nil {
 				a = segment.a.waypoint.GetName()

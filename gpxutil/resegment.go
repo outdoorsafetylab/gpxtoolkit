@@ -23,11 +23,10 @@ func (c *ReSegment) Run(tracklog *gpx.TrackLog) (int, error) {
 			points = append(points, seg.Points...)
 		}
 	}
-	projections, err := projectWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold)
+	segments, err := sliceByWaypoints(c.DistanceFunc, points, tracklog.WayPoints, c.Threshold)
 	if err != nil {
 		return 0, err
 	}
-	segments := projections.slice(points)
 	tracklog.Tracks = make([]*gpx.Track, len(segments))
 	for i, seg := range segments {
 		name := ""
