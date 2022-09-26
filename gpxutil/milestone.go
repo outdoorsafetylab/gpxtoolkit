@@ -125,7 +125,7 @@ func (c *Milestone) milestone(points []*gpx.Point, waypoints []*gpx.WayPoint) ([
 				distance += dist
 			}
 			length := (distance - start)
-			numMilestone := int(math.Round((distance - start) / c.Distance))
+			numMilestone := int(math.Round(distance/c.Distance) - math.Round(start/c.Distance))
 			a := "start"
 			if segment.a.waypoint != nil {
 				a = segment.a.waypoint.GetName()
