@@ -51,3 +51,14 @@ func (log *TrackLog) Stat(alpha float64) (*TrackStats, error) {
 	}
 	return st, nil
 }
+
+func (log *TrackLog) BoundingBox() *BoundingBox {
+	bbox := &BoundingBox{}
+	for _, t := range log.Tracks {
+		bbox.Merge(t.BoundingBox())
+	}
+	for _, p := range log.WayPoints {
+		bbox.Add(p.GetLatitude(), p.GetLongitude())
+	}
+	return bbox
+}

@@ -67,3 +67,14 @@ func (s *Segment) Stat(alpha float64) (*TrackStats, error) {
 	}
 	return st, nil
 }
+
+func (s *Segment) BoundingBox() *BoundingBox {
+	bbox := &BoundingBox{}
+	for _, p := range s.Points {
+		if p.Latitude == nil || p.Longitude == nil {
+			continue
+		}
+		bbox.Add(p.GetLatitude(), p.GetLongitude())
+	}
+	return bbox
+}
