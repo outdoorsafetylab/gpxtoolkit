@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -9,7 +8,6 @@ import (
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/log"
-	"io"
 	"net/http"
 	"os"
 
@@ -17,7 +15,7 @@ import (
 )
 
 var (
-	file           string
+	files          []string
 	elevationURL   string
 	elevationToken string
 )
@@ -42,23 +40,43 @@ func Execute() {
 }
 
 func loadGpx() (*gpx.TrackLog, error) {
-	var f io.ReadCloser
-	var err error
-	parser := &gpx.Parser{}
-	if file != "" {
-		f, err = os.Open(file)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		f = os.Stdin
-	}
-	gpxLog, err := parser.Parse(f)
+	logs, err := loadTrackLogs()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open GPX '%s': %s\n", file, err.Error())
 		return nil, err
 	}
-	return gpxLog, nil
+	if len(logs) != 1 {
+		err := fmt.Errorf("More than 1 GPX is provided %v", files)
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		return nil, err
+	}
+	return logs[0], nil
+}
+
+func loadTrackLogs() ([]*gpx.TrackLog, error) {
+	logs := make([]*gpx.TrackLog, 0)
+	parser := &gpx.Parser{}
+	if len(files) <= 0 {
+		log, err := parser.Parse(os.Stdin)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to parse GPX from stdin: %s\n", err.Error())
+			return nil, err
+		}
+		logs = append(logs, log)
+	} else {
+		for _, file := range files {
+			f, err := os.Open(file)
+			if err != nil {
+				return nil, err
+			}
+			log, err := parser.Parse(f)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to parse GPX from '%s': %s\n", file, err.Error())
+				return nil, err
+			}
+			logs = append(logs, log)
+		}
+	}
+	return logs, nil
 }
 
 func dumpGpx(gpxLog *gpx.TrackLog) error {
@@ -102,7 +120,7 @@ func getElevationService() elevation.Service {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&file, "file", "f", "", "GPX file name; will read from stdin if this is not specified")
+	rootCmd.PersistentFlags().StringArrayVarP(&files, "file", "f", files, "GPX file name; will read from stdin if this is not specified")
 	rootCmd.PersistentFlags().StringVar(&elevationURL, "elevation-url", "", "URL for elevation service")
 	rootCmd.PersistentFlags().StringVar(&elevationToken, "elevation-token", "", "auth token of elevation service")
 }

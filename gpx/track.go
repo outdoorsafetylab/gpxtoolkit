@@ -42,3 +42,11 @@ func (t *Track) Points() []*Point {
 	}
 	return points
 }
+
+func (t *Track) BoundingBox() *BoundingBox {
+	bbox := &BoundingBox{}
+	for _, s := range t.Segments {
+		bbox.Merge(s.BoundingBox())
+	}
+	return bbox
+}
