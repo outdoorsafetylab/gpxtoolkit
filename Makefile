@@ -12,9 +12,9 @@ test:
 	go test ./gpx
 	go test ./gpxutil
 
-include .make/golangci-lint.mk
-include .make/protoc.mk
-include .make/protoc-gen-go.mk
+include scripts/golangci-lint.mk
+include scripts/protoc.mk
+include scripts/protoc-gen-go.mk
 
 serve:
 	go run . serve -d

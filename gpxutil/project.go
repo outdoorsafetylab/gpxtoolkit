@@ -90,7 +90,7 @@ func projectWaypoints(distanceFunc DistanceFunc, lines []*line, waypoints []*gpx
 				prj.waypoint = w
 				prj.line = l
 				prj.distanceToLine = dist
-				prj.mileage = mileage + distanceFunc(l.a, prj.point)
+				prj.mileage = mileage - l.dist + distanceFunc(l.a, prj.point)
 				closest = prj
 			}
 		}
@@ -115,11 +115,13 @@ func sliceByWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints 
 		points: make([]*gpx.Point, 0),
 	}
 	for _, prj := range projections {
+		//fmt.Fprintf(os.Stderr, "%s: %f @ %f => (%f,%f) %p\n", prj.waypoint.GetName(), prj.distanceToLine, prj.mileage, prj.point.GetLatitude(), prj.point.GetLongitude(), prj.line)
 		for i, l := range lines {
+			//fmt.Fprintf(os.Stderr, "line %d %p: (%f,%f) to (%f,%f)\n", i, l, l.a.GetLatitude(), l.a.GetLongitude(), l.b.GetLatitude(), l.b.GetLongitude())
 			seg.points = append(seg.points, l.a)
 			if prj.line == l {
 				lines = lines[i+1:]
-				if i == 0 {
+				if seg.a.point == nil {
 					seg.a = struct {
 						waypoint *gpx.WayPoint
 						point    *gpx.Point
@@ -152,6 +154,27 @@ func sliceByWaypoints(distanceFunc DistanceFunc, points []*gpx.Point, waypoints 
 					seg.points = append(seg.points, prj.point)
 				}
 				seg.points = append(seg.points, l.b)
+				break
+			} else if l.a == prj.point {
+				seg.points = append(seg.points, prj.point)
+				seg.b = struct {
+					waypoint *gpx.WayPoint
+					point    *gpx.Point
+				}{
+					waypoint: prj.waypoint,
+					point:    prj.point,
+				}
+				segments = append(segments, seg)
+				seg = &segment{
+					a: struct {
+						waypoint *gpx.WayPoint
+						point    *gpx.Point
+					}{
+						waypoint: prj.waypoint,
+						point:    prj.point,
+					},
+					points: make([]*gpx.Point, 0),
+				}
 				break
 			}
 		}

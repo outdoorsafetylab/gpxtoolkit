@@ -44,8 +44,10 @@ func (c *SliceByWaypoints) Run(tracklog *gpx.TrackLog) (int, error) {
 					} else {
 						track.Name = proto.String(fmt.Sprintf("%s→", slice.Start.GetName()))
 					}
+					//tracklog.WayPoints = append(tracklog.WayPoints, slice.Start)
 				} else if slice.End != nil {
 					track.Name = proto.String(fmt.Sprintf("→%s", slice.End.GetName()))
+					//tracklog.WayPoints = append(tracklog.WayPoints, slice.Start)
 				}
 				tracks = append(tracks, track)
 			}
