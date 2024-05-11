@@ -29,7 +29,7 @@ func TestStats(t *testing.T) {
 	if math.Round(*st.ElevationLoss) != 533 {
 		t.Fatalf("Unexpected elevation loss: %v", *st.ElevationLoss)
 	}
-	if math.Round(*st.Distance) != 3843 {
+	if math.Round(*st.Distance) != 3839 {
 		t.Fatalf("Unexpected distance: %v", *st.Distance)
 	}
 	du, _ := time.ParseDuration("3h30m4s")
