@@ -1,6 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -21,7 +18,7 @@ var mergeCmd = &cobra.Command{
 			return err
 		}
 		if len(trackLogs) < 2 {
-			err := fmt.Errorf("At least 2 GPX files must be provided")
+			err := fmt.Errorf("at least 2 GPX files must be provided")
 			return err
 		}
 		merged := &gpx.TrackLog{}

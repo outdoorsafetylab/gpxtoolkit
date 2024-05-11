@@ -57,7 +57,7 @@ func (s *OutdoorSafetyLab) lookup(points [][]float64) ([]*float64, error) {
 		return nil, err
 	}
 	if len(alts) != len(points) {
-		err = fmt.Errorf("Unepxected number of result: expect=%d, was=%d", len(points), len(alts))
+		err = fmt.Errorf("unepxected number of result: expect=%d, was=%d", len(points), len(alts))
 		log.Errorf("%s", err.Error())
 		return nil, err
 	}

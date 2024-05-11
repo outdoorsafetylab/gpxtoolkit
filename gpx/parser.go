@@ -95,7 +95,7 @@ func (p *Parser) Parse(r io.Reader) (*TrackLog, error) {
 		*pt.Elevation = elev
 		return nil
 	}).OnText("//gpx/trk/trkseg/trkpt/time", true, func(text string) error {
-		tm, err := time.Parse(time.RFC3339, text)
+		tm, err := time.Parse("2006-01-02T15:04:05.999Z07:00", text)
 		if err != nil {
 			return err
 		}

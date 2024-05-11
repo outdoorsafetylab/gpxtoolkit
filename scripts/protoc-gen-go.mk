@@ -3,11 +3,11 @@ PROTOC_GEN_GO := $(TOOLCHAIN)/bin/protoc-gen-go
 
 $(PROTOC_GEN_GO):
 	mkdir -p $(dir $@)
-	GOPATH=$(realpath $(TOOLCHAIN)) \
+	GOPATH="$(realpath $(TOOLCHAIN))" \
 		go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 %.pb.go: %.proto $(PROTOC) $(PROTOC_GEN_GO)
-	PATH=$(realpath $(TOOLCHAIN))/bin:$(PATH) \
+	PATH="$(realpath $(TOOLCHAIN))/bin":"$(PATH)" \
 		protoc --go_out=. $<
 
 clean/protoc-gen-go:

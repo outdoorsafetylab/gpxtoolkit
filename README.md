@@ -25,13 +25,13 @@ Check for all options:
 #### Run as a Command Line Tool
 
 ```shell
-./gpxtoolkit test.gpx
+./gpxtoolkit
 ```
 
 #### Run as a HTTP server
 
 ```shell
-./gpxtoolkit -D
+./gpxtoolkit serve
 ```
 
 ### Build as Docker

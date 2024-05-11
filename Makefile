@@ -19,7 +19,7 @@ include scripts/protoc-gen-go.mk
 serve:
 	go run . serve -d
 
-watch: $(WATCHER) # To install 'nodemon': npm install -g nodemon
+watch: # To install 'nodemon': npm install -g nodemon
 	nodemon -e go --signal SIGTERM --exec 'make serve'
 
 lint: $(GOLANGCI_LINT)

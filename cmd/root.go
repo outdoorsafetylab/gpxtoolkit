@@ -1,6 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -15,9 +12,10 @@ import (
 )
 
 var (
-	files          []string
-	elevationURL   string
-	elevationToken string
+	files                 []string
+	elevationURL          string
+	elevationToken        string
+	googleElevationAPIKey string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -45,7 +43,7 @@ func loadGpx() (*gpx.TrackLog, error) {
 		return nil, err
 	}
 	if len(logs) != 1 {
-		err := fmt.Errorf("More than 1 GPX is provided %v", files)
+		err := fmt.Errorf("more than 1 GPX is provided %v", files)
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return nil, err
 	}
@@ -93,6 +91,17 @@ func dumpGpx(gpxLog *gpx.TrackLog) error {
 }
 
 func getElevationService() elevation.Service {
+	if googleElevationAPIKey == "" {
+		googleElevationAPIKey = os.Getenv("GOOGLE_ELEVATION_API_KEY")
+		if googleElevationAPIKey != "" {
+			log.Infof("Using Google elevation API key from environment variable: %s", googleElevationAPIKey)
+		}
+	} else if googleElevationAPIKey != "" {
+		log.Infof("Using Google elevation API key: %s", googleElevationAPIKey)
+	}
+	if googleElevationAPIKey != "" {
+		return &elevation.Google{APIKey: googleElevationAPIKey}
+	}
 	if elevationURL == "" {
 		elevationURL = os.Getenv("ELEVATION_URL")
 		if elevationURL != "" {
@@ -123,4 +132,5 @@ func init() {
 	rootCmd.PersistentFlags().StringArrayVarP(&files, "file", "f", files, "GPX file name; will read from stdin if this is not specified")
 	rootCmd.PersistentFlags().StringVar(&elevationURL, "elevation-url", "", "URL for elevation service")
 	rootCmd.PersistentFlags().StringVar(&elevationToken, "elevation-token", "", "auth token of elevation service")
+	rootCmd.PersistentFlags().StringVar(&googleElevationAPIKey, "elevation-api-key", "", "API key of Google Elevation API")
 }

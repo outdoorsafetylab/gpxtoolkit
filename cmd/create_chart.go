@@ -21,10 +21,10 @@ type CreateChart struct {
 
 func (c *CreateChart) Run() error {
 	if c.Width <= 0 {
-		return fmt.Errorf("Invalid width: %d", c.Width)
+		return fmt.Errorf("invalid width: %d", c.Width)
 	}
 	if c.Height <= 0 {
-		return fmt.Errorf("Invalid height: %d", c.Height)
+		return fmt.Errorf("invalid height: %d", c.Height)
 	}
 	// log, err := gpx.Open(c.InputFile)
 	// if err != nil {
