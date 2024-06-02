@@ -103,7 +103,22 @@
         </div>
       </div>
     </div>
-    <div id="map" class="row flex-grow-1" @drop="onGpxDropped"></div>
+    <div id="map_container" class="row flex-grow-1">
+      <div id="menu" class="d-flex justify-content-start">
+        <div>
+          <label class="visually-hidden" for="inlineFormSelectStyle">底圖</label>
+          <select class="form-select form-select-sm border-0 bg-transparent" id="inlineFormSelectStyle" v-model="style">
+            <option v-for="style in styles" :key="style.name" :value="style.value">{{ style.name }}</option>
+          </select>
+        </div>
+        <div class="form-control-sm">
+          <input id="terrain" type="checkbox" v-model="terrain" class="form-check-input me-1">
+          <label for="terrain" class="form-check-label me-1">3D地型</label>
+        </div>
+        <!-- <span v-if="location">({{location.lat.toFixed(6)}},{{location.lng.toFixed(6)}})</span> -->
+      </div>
+      <div id="map" @drop="onGpxDropped"></div>
+    </div>
     <div class="modal fade" id="introModal" tabindex="-1" aria-labelledby="introModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -183,10 +198,19 @@
     </div>
   </div>
 </template>
+<style>
+#menu {
+  position: absolute;
+  background: #efefef80;
+  padding: 5px;
+  font-family: 'Open Sans', sans-serif;
+  z-index: 1;
+}
+</style>
 <script>
 import "mapbox-gl/dist/mapbox-gl.css";
 import mapboxgl from "mapbox-gl";
-import MapboxLanguage from "@mapbox/mapbox-gl-language";
+// import MapboxLanguage from "@mapbox/mapbox-gl-language";
 import toGeoJSON from "@mapbox/togeojson";
 import { useCookies } from "vue3-cookies";
 
@@ -222,6 +246,40 @@ export default {
       center: [120.957283, 23.47],
       zoom: 14,
       map: null,
+      styles: [
+        {
+          name: '戶外地圖',
+          value: 'mapbox://styles/mapbox/outdoors-v11',
+        },
+        {
+          name: '魯地圖',
+          value: {
+            'version': 8,
+            'sources': {
+              'raster-tiles': {
+                'type': 'raster',
+                'tiles': ['http://tile.happyman.idv.tw/map/moi_osm/{z}/{x}/{y}.png'],
+                'tileSize': 256,
+                'attribution':
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              }
+            },
+            'layers': [
+              {
+                'id': 'simple-tiles',
+                'type': 'raster',
+                'source': 'raster-tiles',
+              }
+            ]
+          },
+        },
+        { 
+          name: '衛星地圖',
+          value: 'mapbox://styles/mapbox/satellite-v9',
+        },
+      ],
+      style: 'mapbox://styles/mapbox/outdoors-v11',
+      terrain: false,
       gpxFile: null,
       gpxFileContent: null,
       progress: 0,
@@ -252,18 +310,45 @@ export default {
     this.getVersion();
     this.map = new mapboxgl.Map({
       container: "map", // container ID
-      style: "mapbox://styles/mapbox/outdoors-v11", // style URL
+      style: this.style,
       center: this.center, // starting position [lng, lat]
       zoom: this.zoom, // starting zoom
       projection: "globe", // display the map as a 3D globe
     });
-    this.map.addControl(
-      new MapboxLanguage({
-        defaultLanguage: "zh-Hant",
+    this.map.on('style.load', () => {
+      this.map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512,
+        'maxzoom': 14
       })
-    );
+      this.setTerrain()
+    })
+    this.map.addControl(new mapboxgl.NavigationControl())
+    this.map.addControl(new mapboxgl.ScaleControl({ position: 'bottom-right' }))
+    // this.map.addControl(
+    //   new MapboxLanguage({
+    //     defaultLanguage: "zh-Hant",
+    //   })
+    // )
+  },
+  watch: {
+    style(style) {
+      this.map.setStyle(style)
+    },
+    terrain() {
+      this.setTerrain()
+    },
   },
   methods: {
+    setTerrain: function () {
+      if (this.terrain) {
+        // add the DEM source as a terrain layer with exaggerated height
+        this.map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1 });
+      } else {
+        this.map.setTerrain()
+      }
+    },
     onGpxChosen(event) {
       this.readGpxFile(event.target.files[0]);
     },
@@ -351,13 +436,13 @@ export default {
             break;
           }
           case "Point": {
-            let lngLat = [
-              feature.geometry.coordinates[0],
-              feature.geometry.coordinates[1],
-            ];
+            const {geometry: geo, properties: props} = feature;
+            const [lng, lat] = geo.coordinates;
+            const {ele, name, cmt, desc, sym} = props;
+            let lngLat = [lng, lat];
             let options = null;
             let img = document.createElement("img");
-            if (feature.properties.sym == this.symbol) {
+            if (sym == this.symbol) {
               img.src = "/images/flag.svg";
               options = {
                 element: img,
@@ -370,8 +455,19 @@ export default {
                 anchor: "bottom",
               };
             }
+            var html = `<b>${name}</b></br>${lat},${lng}</br>`
+            if (ele) {
+              html = html + `(${ele}m)</br>`
+            }
+            if (cmt) {
+              html = html + `${cmt}</br>`
+            }
+            if (desc) {
+              html = html + `<i>${desc}</i>`
+            }
             let marker = new mapboxgl.Marker(options)
               .setLngLat(lngLat)
+              .setPopup(new mapboxgl.Popup({offset: 25}).setHTML(html))
               .addTo(this.map);
             this.markers.push(marker);
             coordinates.push(lngLat);
