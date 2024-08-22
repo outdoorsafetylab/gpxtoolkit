@@ -2,6 +2,7 @@ package gpxutil
 
 import (
 	"gpxtoolkit/gpx"
+	"log"
 	"time"
 )
 
@@ -18,7 +19,11 @@ func RemoveDistanceLessThan(distance float64) *RemoveByCriteria {
 	return &RemoveByCriteria{
 		distanceFunc: HaversinDistance,
 		shouldRemove: func(line *line) bool {
-			return line.dist < distance
+			ret := line.dist < distance
+			if ret {
+				log.Printf("dist=%f, threshold=%f", line.dist, distance)
+			}
+			return ret
 		},
 	}
 }
@@ -56,6 +61,9 @@ func (r *RemoveByCriteria) Run(tracklog *gpx.TrackLog) (int, error) {
 	for _, t := range tracklog.Tracks {
 		for _, seg := range t.Segments {
 			num := len(seg.Points)
+			if num <= 1 {
+				continue
+			}
 			removed, err := r.remove(seg.Points)
 			if err != nil {
 				return 0, err
@@ -76,6 +84,5 @@ func (r *RemoveByCriteria) remove(points []*gpx.Point) ([]*gpx.Point, error) {
 		}
 		accepted = append(accepted, line)
 	}
-
 	return joinLines(accepted), nil
 }

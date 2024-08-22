@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"gpxtoolkit/gpx"
+	"gpxtoolkit/twd97"
 	"io"
 )
 
@@ -26,7 +27,7 @@ func NewCSVWayPointWriter(writer io.Writer) *CSVWayPointWriter {
 		Writer: csv.NewWriter(writer),
 		Columns: []CSVWayPointColumn{
 			{
-				Name: "Name",
+				Name: "名稱",
 				Value: func(index int, point *gpx.WayPoint) string {
 					if point.Name != nil {
 						return point.GetName()
@@ -35,27 +36,41 @@ func NewCSVWayPointWriter(writer io.Writer) *CSVWayPointWriter {
 				},
 			},
 			{
-				Name: "Time",
+				Name: "時間",
 				Value: func(index int, point *gpx.WayPoint) string {
 					return fmt.Sprintf("%v", point.Time())
 				},
 			},
 			{
-				Name: "Latitude",
+				Name: "緯度",
 				Value: func(index int, point *gpx.WayPoint) string {
-					return fmt.Sprintf("%v", point.GetLatitude())
+					return fmt.Sprintf("%.6f", point.GetLatitude())
 				},
 			},
 			{
-				Name: "Longitude",
+				Name: "經度",
 				Value: func(index int, point *gpx.WayPoint) string {
-					return fmt.Sprintf("%v", point.GetLongitude())
+					return fmt.Sprintf("%.6f", point.GetLongitude())
 				},
 			},
 			{
-				Name: "Elevation",
+				Name: "TWD97東距",
 				Value: func(index int, point *gpx.WayPoint) string {
-					return fmt.Sprintf("%v", point.GetElevation())
+					x, _ := twd97.FromWGS84(point.GetLongitude(), point.GetLatitude(), false)
+					return fmt.Sprintf("%.0f", x)
+				},
+			},
+			{
+				Name: "TWD97北距",
+				Value: func(index int, point *gpx.WayPoint) string {
+					_, y := twd97.FromWGS84(point.GetLongitude(), point.GetLatitude(), false)
+					return fmt.Sprintf("%.0f", y)
+				},
+			},
+			{
+				Name: "高程",
+				Value: func(index int, point *gpx.WayPoint) string {
+					return fmt.Sprintf("%.1f", point.GetElevation())
 				},
 			},
 		},

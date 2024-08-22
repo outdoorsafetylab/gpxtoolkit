@@ -36,6 +36,9 @@ func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 	n := 0
 	for _, t := range tracklog.Tracks {
 		for _, seg := range t.Segments {
+			if len(seg.Points) <= 1 {
+				continue
+			}
 			points := seg.Points
 			if c.Reverse {
 				points = make([]*gpx.Point, len(seg.Points))
@@ -63,6 +66,7 @@ func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
 			}
 			n += len(milestones)
 			log.Debugf("Appending %d milestones", len(milestones))
+			tracklog.RemoveWayPoints(milestones...)
 			tracklog.WayPoints = append(tracklog.WayPoints, milestones...)
 		}
 	}
@@ -208,6 +212,7 @@ func (c *Milestone) create(points []*gpx.Point, milestones []*milestone, distanc
 				} else {
 					ms.waypoint.Name = proto.String(name)
 				}
+				markers = append(markers, ms.waypoint)
 			} else {
 				p := interpolate(a, b, (ms.distance-start)/dist)
 				if c.Service != nil {

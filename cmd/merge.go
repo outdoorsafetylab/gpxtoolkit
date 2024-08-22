@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"gpxtoolkit/gpx"
 
 	"github.com/spf13/cobra"
@@ -15,10 +14,6 @@ var mergeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		trackLogs, err := loadTrackLogs()
 		if err != nil {
-			return err
-		}
-		if len(trackLogs) < 2 {
-			err := fmt.Errorf("at least 2 GPX files must be provided")
 			return err
 		}
 		merged := &gpx.TrackLog{}

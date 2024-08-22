@@ -12,7 +12,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ()
+var (
+	gpx2csvTWD97 = false
+)
 
 // gpx2csvCmd represents the gpx2csv command
 var gpx2csvCmd = &cobra.Command{
@@ -27,10 +29,8 @@ var gpx2csvCmd = &cobra.Command{
 		service := getElevationService()
 		if len(trackLog.Tracks) > 0 {
 			return convertTracksToCSV(trackLog.Tracks, service)
-		} else if len(trackLog.WayPoints) > 0 {
-			return convertWaypointsToCSV(trackLog.WayPoints, service)
 		} else {
-			return fmt.Errorf("no tracks or waypoints")
+			return fmt.Errorf("no tracks in the GPX file")
 		}
 	},
 }
@@ -182,67 +182,9 @@ func convertTracksToCSV(tracks []*gpx.Track, service elevation.Service) error {
 	return nil
 }
 
-func convertWaypointsToCSV(waypoints []*gpx.WayPoint, service elevation.Service) error {
-	w := csv.NewWriter(os.Stdout)
-	headers := []string{
-		"Waypoint Name",
-		"Waypoint Index",
-		"Time (UTC)",
-		"Latitude",
-		"Longitude",
-		"Elevation (m)",
-		"Description",
-		"Comment",
-		"Symbol",
-	}
-	if service != nil {
-		headers = append(headers, "Elevation (Calibrated) (m)")
-	}
-	err := w.Write(headers)
-	if err != nil {
-		return err
-	}
-	var elevs []*float64
-	if service != nil {
-		latLons := make([]*elevation.LatLon, len(waypoints))
-		for k, p := range waypoints {
-			latLons[k] = &elevation.LatLon{
-				Lat: p.GetLatitude(),
-				Lon: p.GetLongitude(),
-			}
-		}
-		elevs, err = service.Lookup(latLons)
-		if err != nil {
-			return err
-		}
-	}
-	for i, p := range waypoints {
-		values := []string{
-			p.GetName(),
-			fmt.Sprintf("%d", i),
-			p.Time().Format("2006-01-02 15:04:05.999"),
-			fmt.Sprintf("%f", p.GetLatitude()),
-			fmt.Sprintf("%f", p.GetLongitude()),
-			fmt.Sprintf("%f", p.GetElevation()),
-			p.GetDescription(),
-			p.GetComment(),
-			p.GetSymbol(),
-		}
-		if service != nil {
-			values = append(values,
-				fmt.Sprintf("%f", *elevs[i]))
-		}
-		err := w.Write(values)
-		if err != nil {
-			return err
-		}
-	}
-	w.Flush()
-	return nil
-}
-
 func init() {
 	rootCmd.AddCommand(gpx2csvCmd)
+	gpx2csvCmd.Flags().BoolVarP(&gpx2csvTWD97, "twd97", "", gpx2csvTWD97, "Add TWD97 coordinates")
 }
 
 func durationToHMSs(d time.Duration) string {

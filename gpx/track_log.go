@@ -2,6 +2,7 @@ package gpx
 
 import (
 	"io"
+	"slices"
 	"time"
 )
 
@@ -61,4 +62,23 @@ func (log *TrackLog) BoundingBox() *BoundingBox {
 		bbox.Add(p.GetLatitude(), p.GetLongitude())
 	}
 	return bbox
+}
+
+func (log *TrackLog) RemoveWayPoints(wpts ...*WayPoint) {
+	for _, wpt := range wpts {
+		log.removeWayPoint(wpt)
+	}
+}
+
+func (log *TrackLog) removeWayPoint(wpt *WayPoint) {
+	i := -1
+	for j, w := range log.WayPoints {
+		if w == wpt {
+			i = j
+			break
+		}
+	}
+	if i >= 0 {
+		log.WayPoints = slices.Delete(log.WayPoints, i, i+1)
+	}
 }
