@@ -16,6 +16,7 @@ var (
 	elevationURL          string
 	elevationToken        string
 	googleElevationAPIKey string
+	keepCreator           bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -82,6 +83,9 @@ func dumpGpx(gpxLog *gpx.TrackLog) error {
 		Creator: rootCmd.Use,
 		Writer:  os.Stdout,
 	}
+	if keepCreator && gpxLog.Creator != nil {
+		writer.Creator = *gpxLog.Creator
+	}
 	err := writer.Write(gpxLog)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to write GPX: %s\n", err.Error())
@@ -133,4 +137,5 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&elevationURL, "elevation-url", "", "URL for elevation service")
 	rootCmd.PersistentFlags().StringVar(&elevationToken, "elevation-token", "", "auth token of elevation service")
 	rootCmd.PersistentFlags().StringVar(&googleElevationAPIKey, "elevation-api-key", "", "API key of Google Elevation API")
+	rootCmd.PersistentFlags().BoolVar(&keepCreator, "keep-creator", keepCreator, "Keep the creator of the original GPX")
 }

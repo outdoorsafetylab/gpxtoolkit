@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="gpxtoolkit" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>玉山後四峰既有距離指示設施盤點(坐標統一 加照片名稱 加97坐標).xlsx - 工作表1.csv</name>
+  </metadata>
+  <wpt lat="23.465870" lon="120.954870">
+    <name>←排雲山莊1.0K→圓峰山屋1.2K</name>
+  </wpt>
+  <wpt lat="23.461700" lon="120.954820">
+    <name>←排雲山莊1.5K→圓峰山屋0.7K</name>
+  </wpt>
+  <wpt lat="23.459080" lon="120.953680">
+    <name>←圓峰山屋0.3K&#xA;→排雲山莊1.9K</name>
+  </wpt>
+  <wpt lat="23.458030" lon="120.954340">
+    <name>←排雲山莊2.0K→圓峰山屋0.2K</name>
+  </wpt>
+  <wpt lat="23.456660" lon="120.954850">
+    <name>南玉山5.5k→&#xA;南峰1.7k→&#xA;←排雲山莊2.2k</name>
+  </wpt>
+  <wpt lat="23.448520" lon="120.954350">
+    <name>←南玉山4.5k &#xA;→圓峰山屋1.0k</name>
+  </wpt>
+  <wpt lat="23.447230" lon="120.953230">
+    <name>南玉山4.2km→ &#xA;←圓峰山屋1.3km</name>
+  </wpt>
+  <wpt lat="23.446780" lon="120.951720">
+    <name>←南玉山4.0k &#xA;→圓峰山屋1.5k</name>
+  </wpt>
+  <wpt lat="23.445190" lon="120.947950">
+    <name>←南玉山3.5k &#xA;→圓峰山屋2.0k</name>
+  </wpt>
+  <wpt lat="23.442290" lon="120.944630">
+    <name>←南玉山3.0k &#xA;→圓峰山屋2.5k</name>
+  </wpt>
+  <wpt lat="23.443470" lon="120.941450">
+    <name>圓峰山屋2.9km→ &#xA;←南玉山2.6k</name>
+  </wpt>
+  <wpt lat="23.442790" lon="120.940420">
+    <name>←南玉山2.5k &#xA;→圓峰山屋3.0k</name>
+  </wpt>
+  <wpt lat="23.439810" lon="120.937180">
+    <name>小南山→ &#xA;圓峰山屋3.5k&#xA;南玉山2.0k</name>
+  </wpt>
+  <wpt lat="23.437340" lon="120.934300">
+    <name>←南玉山1.5k &#xA;→圓峰山屋4.0k</name>
+  </wpt>
+  <wpt lat="23.435240" lon="120.930780">
+    <name>←南玉山1.0k &#xA;→圓峰山屋4.5k</name>
+  </wpt>
+  <wpt lat="23.432060" lon="120.927380">
+    <name>←南玉山0.5k &#xA;→圓峰山屋5.0k</name>
+  </wpt>
+  <wpt lat="23.452530" lon="120.955170">
+    <name>←圓峰山屋0.5k &#xA;→東小南1.9k</name>
+  </wpt>
+  <wpt lat="23.450220" lon="120.955250">
+    <name>→圓峰山屋0.8k &#xA;←東小南山1.6k&#xA;南玉山4.7k→</name>
+  </wpt>
+  <wpt lat="23.448580" lon="120.955170">
+    <name>←圓峰山屋1.0k &#xA;→東小南1.4k</name>
+  </wpt>
+  <wpt lat="23.446580" lon="120.957470">
+    <name>圓峰山屋1.4k→</name>
+  </wpt>
+  <wpt lat="23.445600" lon="120.958300">
+    <name>←東小南山0.9K&#xA;南峰0.2k→&#xA;圓峰山屋1.5K→&#xA;←鹿山</name>
+  </wpt>
+  <wpt lat="23.441530" lon="120.959710">
+    <name>←圓峰山屋2.0k &#xA;→東小南0.4k</name>
+  </wpt>
+  <wpt lat="23.439160" lon="120.962230">
+    <name>圓峰山屋2.3k→&#xA;←東小南山0.1k&#xA;←鹿山</name>
+  </wpt>
+  <wpt lat="23.444740" lon="120.960890">
+    <name>→排雲山莊4.4k &#xA;←東小南山&#xA;鹿山3.6k→</name>
+  </wpt>
+  <wpt lat="23.446050" lon="120.963280">
+    <name>→鹿山3.2&#xA;←排雲山莊4.8</name>
+  </wpt>
+  <wpt lat="23.447390" lon="120.966320">
+    <name>→鹿山2.7&#xA;←排雲山莊5.3</name>
+  </wpt>
+  <wpt lat="23.448230" lon="120.969720">
+    <name>→鹿山2.2&#xA;←排雲山莊5.8</name>
+  </wpt>
+  <wpt lat="23.448500" lon="120.973060">
+    <name>→鹿山1.7&#xA;←排雲山莊6.3</name>
+  </wpt>
+  <wpt lat="23.449320" lon="120.976890">
+    <name>→鹿山1.2&#xA;←排雲山莊6.8</name>
+  </wpt>
+  <wpt lat="23.449720" lon="120.981970">
+    <name>←4.8km圓峰山屋&#xA;0.7km→鹿山</name>
+  </wpt>
+  <wpt lat="23.450800" lon="120.986860">
+    <name>←5.3km圓峰山屋&#xA;0.2km→鹿山</name>
+  </wpt>
+</gpx>

@@ -15,6 +15,7 @@ type Create struct {
 	TileWidth   int
 	TileHeight  int
 	Background  string
+	FontSize    float32
 	TilePadding struct {
 		Top     int
 		Left    int
@@ -28,6 +29,8 @@ type Create struct {
 		Stroke     string
 		FillColors []string
 	}
+	StrokeWidth  float32
+	MarkerRadius float32
 }
 
 type layer struct {
@@ -38,13 +41,13 @@ type layer struct {
 
 type routeStyle struct {
 	Stroke  string
-	Width   int
+	Width   float32
 	Opacity float32
 }
 
 type markerStyle struct {
 	Fill    string
-	Radius  int
+	Radius  float32
 	Opacity float32
 }
 
@@ -58,7 +61,7 @@ type textStyle struct {
 func (c *Create) Run(log *gpx.TrackLog) error {
 	bbox := log.BoundingBox()
 	if bbox.Min == nil || bbox.Max == nil {
-		return fmt.Errorf("Failed to calculate bounding box")
+		return fmt.Errorf("failed to calculate bounding box")
 	}
 	file := os.Stdout
 	minX, minY := c.getIntXY(bbox.Min.Latitude, bbox.Min.Longitude)
@@ -96,7 +99,7 @@ func (c *Create) Run(log *gpx.TrackLog) error {
 					}
 					defer res.Body.Close()
 					if res.StatusCode != 200 {
-						return fmt.Errorf("Failed to download image '%s': %s", imageUrl, res.Status)
+						return fmt.Errorf("failed to download image '%s': %s", imageUrl, res.Status)
 					}
 					fmt.Fprintf(file, "xlink:href=\"data:image/png;base64,")
 					err = c.base64enc(res.Body, file)
@@ -123,17 +126,21 @@ func (c *Create) Run(log *gpx.TrackLog) error {
 		fill := c.Scale.FillColors[i%len(c.Scale.FillColors)]
 		fmt.Fprintf(file, "    <rect x=\"%f\" y=\"%f\" width=\"%f\" height=\"%f\" stroke=\"%s\" stroke-width=\"%d\" fill=\"%s\"/>\n", x, y, w, h, c.Scale.Stroke, sw, fill)
 	}
+	strokeWidth := c.StrokeWidth
+	if strokeWidth == 0 {
+		strokeWidth = float32(math.Max(1, maxWidthHeight*0.001))
+	}
 	fmt.Fprintf(file, "  </g>\n")
 	for i, t := range log.GetTracks() {
 		fmt.Fprintf(file, "  <g id=\"track_%02d_%s\">\n", i, t.GetName())
 		for j, s := range t.GetSegments() {
 			fmt.Fprintf(file, "    <g id=\"track_%02d_segment_%02d\">\n", i, j)
 			styles := []routeStyle{
-				{Stroke: "#ffffff", Width: int(math.Max(1, maxWidthHeight*0.003)), Opacity: 0.5},
-				{Stroke: "#0000ff", Width: int(math.Max(1, maxWidthHeight*0.001)), Opacity: 0.5},
+				{Stroke: "#ffffff", Width: strokeWidth * 2.5, Opacity: 0.5},
+				{Stroke: "#0000ff", Width: strokeWidth, Opacity: 0.5},
 			}
 			for _, st := range styles {
-				fmt.Fprintf(file, "      <polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%d\" opacity=\"%f\" points=\"", st.Stroke, st.Width, st.Opacity)
+				fmt.Fprintf(file, "      <polyline fill=\"none\" stroke=\"%s\" stroke-width=\"%f\" opacity=\"%f\" points=\"", st.Stroke, st.Width, st.Opacity)
 				for _, p := range s.GetPoints() {
 					if p.Latitude == nil || p.Longitude == nil {
 						continue
@@ -149,6 +156,10 @@ func (c *Create) Run(log *gpx.TrackLog) error {
 		}
 		fmt.Fprintf(file, "  </g>\n")
 	}
+	markerRadius := c.MarkerRadius
+	if markerRadius == 0 {
+		markerRadius = float32(math.Max(1, maxWidthHeight*0.002))
+	}
 	for i, p := range log.WayPoints {
 		fmt.Fprintf(file, "  <g id=\"waypoint_%02d_%s\">\n", i, p.GetName())
 		if p.Latitude == nil || p.Longitude == nil {
@@ -158,21 +169,24 @@ func (c *Create) Run(log *gpx.TrackLog) error {
 		dx := (x - float64(minX)) * float64(c.TileWidth)
 		dy := (y - float64(maxY)) * float64(c.TileHeight)
 		styles := []markerStyle{
-			{Fill: "#ffffff", Radius: int(math.Max(1, maxWidthHeight*0.003)), Opacity: 0.5},
-			{Fill: "#ff0000", Radius: int(math.Max(1, maxWidthHeight*0.002)), Opacity: 0.8},
+			{Fill: "#ffffff", Radius: markerRadius * 1.5, Opacity: 0.5},
+			{Fill: "#ff0000", Radius: markerRadius, Opacity: 0.8},
 		}
 		shift := 0.0
 		for _, s := range styles {
 			shift = math.Max(shift, float64(s.Radius))
-			fmt.Fprintf(file, "    <circle cx=\"%f\" cy=\"%f\" r=\"%d\" fill=\"%s\" opacity=\"%f\"/>\n", dx, dy, s.Radius, s.Fill, s.Opacity)
+			fmt.Fprintf(file, "    <circle cx=\"%f\" cy=\"%f\" r=\"%f\" fill=\"%s\" opacity=\"%f\"/>\n", dx, dy, s.Radius, s.Fill, s.Opacity)
 		}
 		textStyles := []textStyle{
 			{Fill: "none", Stroke: "#ffffff", StrokeWidth: int(math.Max(1, maxWidthHeight*0.001)), Opacity: 0.9},
 			{Fill: "#000000", Stroke: "none", Opacity: 1.0},
 		}
-		fontSize := int(math.Max(1, maxWidthHeight*0.008))
+		fontSize := c.FontSize
+		if fontSize == 0 {
+			fontSize = float32(math.Max(1, maxWidthHeight*0.008))
+		}
 		for _, st := range textStyles {
-			fmt.Fprintf(file, "    <text x=\"%f\" y=\"%f\" font-size=\"%d\" fill=\"%s\" stroke=\"%s\" stroke-width=\"%d\" opacity=\"%f\">%s</text>\n", dx+shift, dy-shift, fontSize, st.Fill, st.Stroke, st.StrokeWidth, st.Opacity, p.GetName())
+			fmt.Fprintf(file, "    <text x=\"%f\" y=\"%f\" font-size=\"%f\" fill=\"%s\" stroke=\"%s\" stroke-width=\"%d\" opacity=\"%f\">%s</text>\n", dx+shift, dy-shift, fontSize, st.Fill, st.Stroke, st.StrokeWidth, st.Opacity, p.GetName())
 		}
 		fmt.Fprintf(file, "  </g>\n")
 	}

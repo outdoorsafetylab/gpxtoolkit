@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
+	"gpxtoolkit/gpxutil"
 	"gpxtoolkit/twd97"
 	"os"
 
@@ -13,6 +14,7 @@ import (
 
 var (
 	wpt2csvTWD97 = false
+	wpt2csvDist  = false
 )
 
 // wpt2csvCmd represents the wpt2csv command
@@ -27,14 +29,14 @@ var wpt2csvCmd = &cobra.Command{
 		}
 		service := getElevationService()
 		if len(trackLog.WayPoints) > 0 {
-			return convertWaypointsToCSV(trackLog.WayPoints, service)
+			return convertWaypointsToCSV(trackLog.WayPoints, service, wpt2csvDist)
 		} else {
 			return fmt.Errorf("no waypoints in the GPX file")
 		}
 	},
 }
 
-func convertWaypointsToCSV(waypoints []*gpx.WayPoint, service elevation.Service) error {
+func convertWaypointsToCSV(waypoints []*gpx.WayPoint, service elevation.Service, dist bool) error {
 	w := csv.NewWriter(os.Stdout)
 	headers := []string{
 		"Waypoint Name",
@@ -53,6 +55,9 @@ func convertWaypointsToCSV(waypoints []*gpx.WayPoint, service elevation.Service)
 		"Symbol")
 	if service != nil {
 		headers = append(headers, "Elevation (Calibrated) (m)")
+	}
+	if dist {
+		headers = append(headers, "Harversine Distance to Next (m)", "Terrain Distance to Next (m)")
 	}
 	err := w.Write(headers)
 	if err != nil {
@@ -93,8 +98,17 @@ func convertWaypointsToCSV(waypoints []*gpx.WayPoint, service elevation.Service)
 			p.GetComment(),
 			p.GetSymbol())
 		if service != nil {
-			values = append(values,
-				fmt.Sprintf("%f", *elevs[i]))
+			values = append(values, fmt.Sprintf("%f", *elevs[i]))
+		}
+		if dist {
+			if i != len(waypoints)-1 {
+				values = append(values,
+					fmt.Sprintf("%.f", gpxutil.HaversinDistance(p.GetPoint(), waypoints[i+1].GetPoint())),
+					fmt.Sprintf("%.f", gpxutil.TerrainDistance(p.GetPoint(), waypoints[i+1].GetPoint())),
+				)
+			} else {
+				values = append(values, "", "")
+			}
 		}
 		err := w.Write(values)
 		if err != nil {
@@ -108,4 +122,5 @@ func convertWaypointsToCSV(waypoints []*gpx.WayPoint, service elevation.Service)
 func init() {
 	rootCmd.AddCommand(wpt2csvCmd)
 	wpt2csvCmd.Flags().BoolVarP(&wpt2csvTWD97, "twd97", "", wpt2csvTWD97, "TWD97")
+	wpt2csvCmd.Flags().BoolVarP(&wpt2csvDist, "dist", "", wpt2csvDist, "Calculate distance between waypoints")
 }

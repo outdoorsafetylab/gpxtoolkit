@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="gpxtoolkit" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <link href="http://www.garmin.com"><text>Garmin International</text></link>
+    <time>2024-08-22T13:33:00Z</time>
+  </metadata>
+  <wpt lat="23.439198" lon="120.962259">
+    <ele>3695.000000</ele>
+    <time>2024-08-11T09:04:09Z</time>
+    <name>東2.3K/支0.0K</name>
+    <cmt>東南C-2-1/C-1型 方向牌</cmt>
+    <desc>東南C-2-1/C-1型 方向牌</desc>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.439848" lon="120.961735">
+    <ele>3686.000000</ele>
+    <time>2016-04-24T23:07:28Z</time>
+    <name>支0.1K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.440521" lon="120.961239">
+    <ele>3676.000000</ele>
+    <time>2016-04-24T23:10:49Z</time>
+    <name>支0.2K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.441311" lon="120.961361">
+    <ele>3658.000000</ele>
+    <time>2016-04-24T23:13:11Z</time>
+    <name>支0.3K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.442093" lon="120.961081">
+    <ele>3659.000000</ele>
+    <time>2016-04-24T23:15:30Z</time>
+    <name>支0.4K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.442766" lon="120.960983">
+    <ele>3642.000000</ele>
+    <time>2016-04-24T23:21:36Z</time>
+    <name>支0.5K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.443586" lon="120.961088">
+    <ele>3629.000000</ele>
+    <time>2024-08-11T09:04:09Z</time>
+    <name>支0.6K</name>
+    <cmt>水源叉</cmt>
+    <desc>水源叉</desc>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.444608" lon="120.961559">
+    <ele>3612.000000</ele>
+    <time>2016-04-24T23:28:32Z</time>
+    <name>支0.7K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.445398" lon="120.962203">
+    <ele>3598.000000</ele>
+    <time>2024-08-11T09:04:09Z</time>
+    <name>鹿2.1K/支0.8K</name>
+    <cmt>鹿C-2-1/C-1型 方向牌</cmt>
+    <desc>鹿C-2-1/C-1型 方向牌</desc>
+    <sym>Milestone</sym>
+  </wpt>
+</gpx>
