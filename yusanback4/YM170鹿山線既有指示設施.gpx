@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.topografix.com/GPX/gpx_style/0/2 http://www.topografix.com/GPX/gpx_style/0/2/gpx_style.xsd" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpx_style="http://www.topografix.com/GPX/gpx_style/0/2" version="1.1" creator="gpxtoolkit">
+<metadata>
+    <name>S.L三叉鹿山線既有指示設施</name>
+    <author>
+        <name>gpx.studio</name>
+        <link href="https://gpx.studio"></link>
+    </author>
+</metadata>
+<wpt lat="23.45666" lon="120.95485">
+    <ele>3681.9</ele>
+    <name>圓C-1-2</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>南玉山5.5k→
+南峰1.7k→
+←排雲山莊2.2k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.454723" lon="120.955569">
+    <ele>3671.4</ele>
+    <name>南D-8-1</name>
+    <cmt>公告及警告牌</cmt>
+    <desc>玉山後四峰為非經常維護步道，請小心注意安全</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45253" lon="120.95517">
+    <ele>3663.5</ele>
+    <name>南C-3-1</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←圓峰山屋0.5k 
+→東小南1.9k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45022" lon="120.95525">
+    <ele>3723.8</ele>
+    <name>南C-1-1</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>→圓峰山屋0.8k 
+←東小南山1.6k
+南玉山4.7k→</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44858" lon="120.95517">
+    <ele>3797.9</ele>
+    <name>南C-2-1</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>←圓峰山屋1.0k 
+→東小南1.4k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.448276" lon="120.955692">
+    <ele>3793.0</ele>
+    <name>南F-1-1</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.447986" lon="120.955857">
+    <ele>3790.4</ele>
+    <name>南F-1-2</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.447557" lon="120.9569">
+    <ele>3782.6</ele>
+    <name>南F-1-3</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.447038" lon="120.957378">
+    <ele>3796.5</ele>
+    <name>南F-1-4</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.4469" lon="120.957522">
+    <ele>3801.1</ele>
+    <name>南F-1-5</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44658" lon="120.95747">
+    <ele>3805.6</ele>
+    <name>南C-2-2</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>圓峰山屋1.4k→</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.446723" lon="120.957486">
+    <ele>3805.1</ele>
+    <name>南F-1-6</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.446712" lon="120.957508">
+    <ele>3805.3</ele>
+    <name>南F-1-7</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.446573" lon="120.957696">
+    <ele>3807.8</ele>
+    <name>南D-8-2</name>
+    <cmt>D-8型 公告及警告牌</cmt>
+    <desc>斷崖小心通行</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.446551" lon="120.95774">
+    <ele>3808.4</ele>
+    <name>南F-1-8</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44579" lon="120.9582">
+    <ele>3793.4</ele>
+    <name>南D-8-3</name>
+    <cmt>D-8型 公告及警告牌</cmt>
+    <desc>斷崖小心通行</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.4456" lon="120.9583">
+    <ele>3780.8</ele>
+    <name>南C-1-3</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>←東小南山0.9K
+南峰0.2k→
+圓峰山屋1.5K→
+←鹿山</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44507" lon="120.95996">
+    <ele>3695.7</ele>
+    <name>鹿F-1-1</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44486" lon="120.9602">
+    <ele>3675.1</ele>
+    <name>鹿F-1-2</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44474" lon="120.96089">
+    <ele>3649.3</ele>
+    <name>鹿C-1-1</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>→排雲山莊4.4k 
+←東小南山
+鹿山3.6k→</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44533" lon="120.96219">
+    <ele>3608.0</ele>
+    <name>鹿C-2-1</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>圓峰山屋
+鹿山
+東小南山</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44605" lon="120.96328">
+    <ele>3613.4</ele>
+    <name>鹿C-3-1</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>→鹿山3.2
+←排雲山莊4.8</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44738" lon="120.96628">
+    <ele>3616.0</ele>
+    <name>鹿F-1-3</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44739" lon="120.96632">
+    <ele>3615.9</ele>
+    <name>鹿C-3-2</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>→鹿山2.7
+←排雲山莊5.3</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44823" lon="120.96972">
+    <ele>3517.8</ele>
+    <name>鹿C-3-3</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>→鹿山2.2
+←排雲山莊5.8</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44897" lon="120.97095">
+    <ele>3459.7</ele>
+    <name>鹿F-2-1</name>
+    <cmt>F-2型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44861" lon="120.97203">
+    <ele>3435.7</ele>
+    <name>鹿F-1-4</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.4485" lon="120.97306">
+    <ele>3389.9</ele>
+    <name>鹿C-3-4</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>→鹿山1.7
+←排雲山莊6.3</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44932" lon="120.97689">
+    <ele>3249.7</ele>
+    <name>鹿C-3-5</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>→鹿山1.2
+←排雲山莊6.8</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45018" lon="120.98271">
+    <ele>3148.1</ele>
+    <name>鹿F-1-5</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45025" lon="120.98316">
+    <ele>3139.0</ele>
+    <name>鹿F-1-6</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45054" lon="120.98837">
+    <ele>2968.9</ele>
+    <name>鹿F-1-7</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45063" lon="120.9886">
+    <ele>2968.5</ele>
+    <name>鹿E-1-1</name>
+    <cmt>鹿山2981公尺</cmt>
+    <desc>手舉牌</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44972" lon="120.98197">
+    <ele>3167.3</ele>
+    <name>鹿C-3-6</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←4.8km圓峰山屋
+0.7km→鹿山</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.4508" lon="120.98686">
+    <ele>2971.7</ele>
+    <name>鹿C-3-7</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←5.3km圓峰山屋
+0.2km→鹿山</desc>
+    <sym> </sym>
+</wpt>
+</gpx>

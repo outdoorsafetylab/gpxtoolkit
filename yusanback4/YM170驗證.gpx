@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="gpxtoolkit" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>/Users/cedric.shih/Downloads/路標套版資料 - YM170.csv</name>
+  </metadata>
+  <wpt lat="23.456660" lon="120.954850">
+    <ele>3691.239990</ele>
+    <name>南鹿東0.0K</name>
+  </wpt>
+  <wpt lat="23.455694" lon="120.955077">
+    <ele>3670.949951</ele>
+    <name>南鹿東0.1K</name>
+  </wpt>
+  <wpt lat="23.454723" lon="120.955569">
+    <ele>3686.610107</ele>
+    <name>南鹿東0.2K</name>
+  </wpt>
+  <wpt lat="23.453971" lon="120.955628">
+    <ele>3683.500000</ele>
+    <name>南鹿東0.3K</name>
+  </wpt>
+  <wpt lat="23.453244" lon="120.955389">
+    <ele>3686.689941</ele>
+    <name>南鹿東0.4K</name>
+  </wpt>
+  <wpt lat="23.452530" lon="120.955170">
+    <ele>3688.209961</ele>
+    <name>南鹿東0.5K</name>
+  </wpt>
+  <wpt lat="23.451755" lon="120.955238">
+    <ele>3689.250000</ele>
+    <name>南鹿東0.6K</name>
+  </wpt>
+  <wpt lat="23.450990" lon="120.955275">
+    <ele>3712.459961</ele>
+    <name>南鹿東0.7K</name>
+  </wpt>
+  <wpt lat="23.450298" lon="120.955266">
+    <ele>3733.030029</ele>
+    <name>南鹿東0.8K</name>
+  </wpt>
+  <wpt lat="23.449531" lon="120.955320">
+    <ele>3776.489990</ele>
+    <name>鹿東0.9K</name>
+  </wpt>
+  <wpt lat="23.448699" lon="120.955240">
+    <ele>3804.719971</ele>
+    <name>鹿東1.0K</name>
+  </wpt>
+  <wpt lat="23.447986" lon="120.955857">
+    <ele>3806.500000</ele>
+    <name>鹿東1.1K</name>
+  </wpt>
+  <wpt lat="23.447557" lon="120.956900">
+    <ele>3774.610107</ele>
+    <name>鹿東1.2K</name>
+  </wpt>
+  <wpt lat="23.447086" lon="120.957413">
+    <ele>3789.830078</ele>
+    <name>鹿東1.3K</name>
+  </wpt>
+  <wpt lat="23.446539" lon="120.957659">
+    <ele>3817.820068</ele>
+    <name>鹿東1.4K</name>
+  </wpt>
+  <wpt lat="23.445726" lon="120.958393">
+    <ele>3794.570068</ele>
+    <name>鹿東1.5K</name>
+  </wpt>
+  <wpt lat="23.445326" lon="120.958998">
+    <ele>3743.679932</ele>
+    <name>鹿1.6K</name>
+  </wpt>
+  <wpt lat="23.445015" lon="120.959624">
+    <ele>3716.120117</ele>
+    <name>鹿1.7K</name>
+  </wpt>
+  <wpt lat="23.444790" lon="120.960270">
+    <ele>3683.580078</ele>
+    <name>鹿1.8K</name>
+  </wpt>
+  <wpt lat="23.444740" lon="120.960890">
+    <ele>3653.229980</ele>
+    <name>鹿1.9K</name>
+  </wpt>
+  <wpt lat="23.445153" lon="120.961577">
+    <ele>3619.949951</ele>
+    <name>鹿2.0K</name>
+  </wpt>
+  <wpt lat="23.445398" lon="120.962203">
+    <ele>3598.479980</ele>
+    <name>鹿2.1K/支0.8K</name>
+  </wpt>
+  <wpt lat="23.445813" lon="120.962713">
+    <ele>3622.929932</ele>
+    <name>鹿2.2K</name>
+  </wpt>
+  <wpt lat="23.446140" lon="120.963337">
+    <ele>3619.300049</ele>
+    <name>鹿2.3K</name>
+  </wpt>
+  <wpt lat="23.446600" lon="120.963692">
+    <ele>3618.560059</ele>
+    <name>鹿2.4K</name>
+  </wpt>
+  <wpt lat="23.447233" lon="120.964079">
+    <ele>3629.939941</ele>
+    <name>鹿2.5K</name>
+  </wpt>
+  <wpt lat="23.447486" lon="120.964719">
+    <ele>3642.669922</ele>
+    <name>鹿2.6K</name>
+  </wpt>
+  <wpt lat="23.447398" lon="120.965513">
+    <ele>3616.310059</ele>
+    <name>鹿2.7K</name>
+  </wpt>
+  <wpt lat="23.447526" lon="120.966330">
+    <ele>3641.899902</ele>
+    <name>鹿2.8K</name>
+  </wpt>
+  <wpt lat="23.447810" lon="120.966849">
+    <ele>3628.929932</ele>
+    <name>鹿2.9K</name>
+  </wpt>
+  <wpt lat="23.448099" lon="120.967449">
+    <ele>3601.189941</ele>
+    <name>鹿3.0K</name>
+  </wpt>
+  <wpt lat="23.448082" lon="120.968242">
+    <ele>3601.370117</ele>
+    <name>鹿3.1K</name>
+  </wpt>
+  <wpt lat="23.448197" lon="120.968964">
+    <ele>3591.080078</ele>
+    <name>鹿3.2K</name>
+  </wpt>
+  <wpt lat="23.448345" lon="120.969770">
+    <ele>3529.729980</ele>
+    <name>鹿3.3K</name>
+  </wpt>
+  <wpt lat="23.448636" lon="120.970361">
+    <ele>3486.719971</ele>
+    <name>鹿3.4K</name>
+  </wpt>
+  <wpt lat="23.448971" lon="120.971077">
+    <ele>3465.199951</ele>
+    <name>鹿3.5K</name>
+  </wpt>
+  <wpt lat="23.448745" lon="120.971676">
+    <ele>3452.129883</ele>
+    <name>鹿3.6K</name>
+  </wpt>
+  <wpt lat="23.448684" lon="120.972332">
+    <ele>3429.790039</ele>
+    <name>鹿3.7K</name>
+  </wpt>
+  <wpt lat="23.448589" lon="120.973029">
+    <ele>3399.449951</ele>
+    <name>鹿3.8K</name>
+  </wpt>
+  <wpt lat="23.448747" lon="120.973783">
+    <ele>3371.199951</ele>
+    <name>鹿3.9K</name>
+  </wpt>
+  <wpt lat="23.448989" lon="120.974430">
+    <ele>3358.620117</ele>
+    <name>鹿4.0K</name>
+  </wpt>
+  <wpt lat="23.449218" lon="120.975169">
+    <ele>3327.530029</ele>
+    <name>鹿4.1K</name>
+  </wpt>
+  <wpt lat="23.449239" lon="120.975948">
+    <ele>3294.020020</ele>
+    <name>鹿4.2K</name>
+  </wpt>
+  <wpt lat="23.449427" lon="120.976872">
+    <ele>3264.540039</ele>
+    <name>鹿4.3K</name>
+  </wpt>
+  <wpt lat="23.449702" lon="120.977953">
+    <ele>3207.669922</ele>
+    <name>鹿4.4K</name>
+  </wpt>
+  <wpt lat="23.450137" lon="120.978871">
+    <ele>3194.500000</ele>
+    <name>鹿4.5K</name>
+  </wpt>
+  <wpt lat="23.450171" lon="120.979900">
+    <ele>3206.280029</ele>
+    <name>鹿4.6K</name>
+  </wpt>
+  <wpt lat="23.450018" lon="120.980940">
+    <ele>3200.199951</ele>
+    <name>鹿4.7K</name>
+  </wpt>
+  <wpt lat="23.449795" lon="120.981924">
+    <ele>3186.530029</ele>
+    <name>鹿4.8K</name>
+  </wpt>
+  <wpt lat="23.450180" lon="120.982710">
+    <ele>3156.060059</ele>
+    <name>鹿4.9K</name>
+  </wpt>
+  <wpt lat="23.450565" lon="120.983649">
+    <ele>3154.229980</ele>
+    <name>鹿5.0K</name>
+  </wpt>
+  <wpt lat="23.450848" lon="120.984636">
+    <ele>3107.189941</ele>
+    <name>鹿5.1K</name>
+  </wpt>
+  <wpt lat="23.450952" lon="120.985702">
+    <ele>3052.149902</ele>
+    <name>鹿5.2K</name>
+  </wpt>
+  <wpt lat="23.450911" lon="120.986862">
+    <ele>2984.689941</ele>
+    <name>鹿5.3K</name>
+  </wpt>
+  <wpt lat="23.450810" lon="120.987745">
+    <ele>2968.399902</ele>
+    <name>鹿5.4K</name>
+  </wpt>
+  <wpt lat="23.450630" lon="120.988600">
+    <ele>2979.979980</ele>
+    <name>鹿5.5K</name>
+  </wpt>
+  <wpt lat="23.450810" lon="120.987745">
+    <ele>2968.399902</ele>
+    <name>鹿5.4K</name>
+  </wpt>
+  <wpt lat="23.450911" lon="120.986862">
+    <ele>2984.689941</ele>
+    <name>鹿5.3K</name>
+  </wpt>
+  <wpt lat="23.450952" lon="120.985702">
+    <ele>3052.149902</ele>
+    <name>鹿5.2K</name>
+  </wpt>
+  <wpt lat="23.450848" lon="120.984636">
+    <ele>3107.189941</ele>
+    <name>鹿5.1K</name>
+  </wpt>
+  <wpt lat="23.450565" lon="120.983649">
+    <ele>3154.229980</ele>
+    <name>鹿5.0K</name>
+  </wpt>
+  <wpt lat="23.450180" lon="120.982710">
+    <ele>3156.060059</ele>
+    <name>鹿4.9K</name>
+  </wpt>
+  <wpt lat="23.449795" lon="120.981924">
+    <ele>3186.530029</ele>
+    <name>鹿4.8K</name>
+  </wpt>
+  <wpt lat="23.450018" lon="120.980940">
+    <ele>3200.199951</ele>
+    <name>鹿4.7K</name>
+  </wpt>
+  <wpt lat="23.450171" lon="120.979900">
+    <ele>3206.280029</ele>
+    <name>鹿4.6K</name>
+  </wpt>
+  <wpt lat="23.450137" lon="120.978871">
+    <ele>3194.500000</ele>
+    <name>鹿4.5K</name>
+  </wpt>
+  <wpt lat="23.449702" lon="120.977953">
+    <ele>3207.669922</ele>
+    <name>鹿4.4K</name>
+  </wpt>
+  <wpt lat="23.449427" lon="120.976872">
+    <ele>3264.540039</ele>
+    <name>鹿4.3K</name>
+  </wpt>
+  <wpt lat="23.449239" lon="120.975948">
+    <ele>3294.020020</ele>
+    <name>鹿4.2K</name>
+  </wpt>
+  <wpt lat="23.449218" lon="120.975169">
+    <ele>3327.530029</ele>
+    <name>鹿4.1K</name>
+  </wpt>
+  <wpt lat="23.448989" lon="120.974430">
+    <ele>3358.620117</ele>
+    <name>鹿4.0K</name>
+  </wpt>
+  <wpt lat="23.448747" lon="120.973783">
+    <ele>3371.199951</ele>
+    <name>鹿3.9K</name>
+  </wpt>
+  <wpt lat="23.448589" lon="120.973029">
+    <ele>3399.449951</ele>
+    <name>鹿3.8K</name>
+  </wpt>
+  <wpt lat="23.448684" lon="120.972332">
+    <ele>3429.790039</ele>
+    <name>鹿3.7K</name>
+  </wpt>
+  <wpt lat="23.448745" lon="120.971676">
+    <ele>3452.129883</ele>
+    <name>鹿3.6K</name>
+  </wpt>
+  <wpt lat="23.448971" lon="120.971077">
+    <ele>3465.199951</ele>
+    <name>鹿3.5K</name>
+  </wpt>
+  <wpt lat="23.448636" lon="120.970361">
+    <ele>3486.719971</ele>
+    <name>鹿3.4K</name>
+  </wpt>
+  <wpt lat="23.448345" lon="120.969770">
+    <ele>3529.729980</ele>
+    <name>鹿3.3K</name>
+  </wpt>
+  <wpt lat="23.448197" lon="120.968964">
+    <ele>3591.080078</ele>
+    <name>鹿3.2K</name>
+  </wpt>
+  <wpt lat="23.448082" lon="120.968242">
+    <ele>3601.370117</ele>
+    <name>鹿3.1K</name>
+  </wpt>
+  <wpt lat="23.448099" lon="120.967449">
+    <ele>3601.189941</ele>
+    <name>鹿3.0K</name>
+  </wpt>
+  <wpt lat="23.447810" lon="120.966849">
+    <ele>3628.929932</ele>
+    <name>鹿2.9K</name>
+  </wpt>
+  <wpt lat="23.447526" lon="120.966330">
+    <ele>3641.899902</ele>
+    <name>鹿2.8K</name>
+  </wpt>
+  <wpt lat="23.447398" lon="120.965513">
+    <ele>3616.310059</ele>
+    <name>鹿2.7K</name>
+  </wpt>
+  <wpt lat="23.447486" lon="120.964719">
+    <ele>3642.669922</ele>
+    <name>鹿2.6K</name>
+  </wpt>
+  <wpt lat="23.447233" lon="120.964079">
+    <ele>3629.939941</ele>
+    <name>鹿2.5K</name>
+  </wpt>
+  <wpt lat="23.446600" lon="120.963692">
+    <ele>3618.560059</ele>
+    <name>鹿2.4K</name>
+  </wpt>
+  <wpt lat="23.446140" lon="120.963337">
+    <ele>3619.300049</ele>
+    <name>鹿2.3K</name>
+  </wpt>
+  <wpt lat="23.445813" lon="120.962713">
+    <ele>3622.929932</ele>
+    <name>鹿2.2K</name>
+  </wpt>
+  <wpt lat="23.445398" lon="120.962203">
+    <ele>3598.479980</ele>
+    <name>鹿2.1K/支0.8K</name>
+  </wpt>
+  <wpt lat="23.445153" lon="120.961577">
+    <ele>3619.949951</ele>
+    <name>鹿2.0K</name>
+  </wpt>
+  <wpt lat="23.444740" lon="120.960890">
+    <ele>3653.229980</ele>
+    <name>鹿1.9K</name>
+  </wpt>
+  <wpt lat="23.444790" lon="120.960270">
+    <ele>3683.580078</ele>
+    <name>鹿1.8K</name>
+  </wpt>
+  <wpt lat="23.445015" lon="120.959624">
+    <ele>3716.120117</ele>
+    <name>鹿1.7K</name>
+  </wpt>
+  <wpt lat="23.445326" lon="120.958998">
+    <ele>3743.679932</ele>
+    <name>鹿1.6K</name>
+  </wpt>
+  <wpt lat="23.445726" lon="120.958393">
+    <ele>3794.570068</ele>
+    <name>鹿東1.5K</name>
+  </wpt>
+  <wpt lat="23.446539" lon="120.957659">
+    <ele>3817.820068</ele>
+    <name>鹿東1.4K</name>
+  </wpt>
+  <wpt lat="23.447086" lon="120.957413">
+    <ele>3789.830078</ele>
+    <name>鹿東1.3K</name>
+  </wpt>
+  <wpt lat="23.447557" lon="120.956900">
+    <ele>3774.610107</ele>
+    <name>鹿東1.2K</name>
+  </wpt>
+  <wpt lat="23.447986" lon="120.955857">
+    <ele>3806.500000</ele>
+    <name>鹿東1.1K</name>
+  </wpt>
+  <wpt lat="23.448699" lon="120.955240">
+    <ele>3804.719971</ele>
+    <name>鹿東1.0K</name>
+  </wpt>
+  <wpt lat="23.449531" lon="120.955320">
+    <ele>3776.489990</ele>
+    <name>鹿東0.9K</name>
+  </wpt>
+  <wpt lat="23.450298" lon="120.955266">
+    <ele>3733.030029</ele>
+    <name>南鹿東0.8K</name>
+  </wpt>
+  <wpt lat="23.450990" lon="120.955275">
+    <ele>3712.459961</ele>
+    <name>南鹿東0.7K</name>
+  </wpt>
+  <wpt lat="23.451755" lon="120.955238">
+    <ele>3689.250000</ele>
+    <name>南鹿東0.6K</name>
+  </wpt>
+  <wpt lat="23.452530" lon="120.955170">
+    <ele>3688.209961</ele>
+    <name>南鹿東0.5K</name>
+  </wpt>
+  <wpt lat="23.453244" lon="120.955389">
+    <ele>3686.689941</ele>
+    <name>南鹿東0.4K</name>
+  </wpt>
+  <wpt lat="23.453971" lon="120.955628">
+    <ele>3683.500000</ele>
+    <name>南鹿東0.3K</name>
+  </wpt>
+  <wpt lat="23.454723" lon="120.955569">
+    <ele>3686.610107</ele>
+    <name>南鹿東0.2K</name>
+  </wpt>
+  <wpt lat="23.455694" lon="120.955077">
+    <ele>3670.949951</ele>
+    <name>南鹿東0.1K</name>
+  </wpt>
+</gpx>

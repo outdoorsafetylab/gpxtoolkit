@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="gpxtoolkit" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>YM151東小南鹿山支線</name>
+  </metadata>
+  <wpt lat="23.439198" lon="120.962259">
+    <ele>3695.000000</ele>
+    <time>2024-08-11T09:04:09Z</time>
+    <name>東2.3K/支0.0K</name>
+    <cmt>東南C-2-1/C-1型 方向牌</cmt>
+    <desc>東南C-2-1/C-1型 方向牌</desc>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.439848" lon="120.961735">
+    <ele>3686.000000</ele>
+    <time>2016-04-24T23:07:28Z</time>
+    <name>支0.1K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.440521" lon="120.961239">
+    <ele>3676.000000</ele>
+    <time>2016-04-24T23:10:49Z</time>
+    <name>支0.2K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.441311" lon="120.961361">
+    <ele>3658.000000</ele>
+    <time>2016-04-24T23:13:11Z</time>
+    <name>支0.3K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.442093" lon="120.961081">
+    <ele>3659.000000</ele>
+    <time>2016-04-24T23:15:30Z</time>
+    <name>支0.4K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.442766" lon="120.960983">
+    <ele>3642.000000</ele>
+    <time>2016-04-24T23:21:36Z</time>
+    <name>支0.5K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.443586" lon="120.961088">
+    <ele>3629.000000</ele>
+    <time>2024-08-11T09:04:09Z</time>
+    <name>支0.6K</name>
+    <cmt>水源叉</cmt>
+    <desc>水源叉</desc>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.444608" lon="120.961559">
+    <ele>3612.000000</ele>
+    <time>2016-04-24T23:28:32Z</time>
+    <name>支0.7K</name>
+    <sym>Milestone</sym>
+  </wpt>
+  <wpt lat="23.445398" lon="120.962203">
+    <ele>3598.000000</ele>
+    <time>2024-08-11T09:04:09Z</time>
+    <name>鹿2.1K/支0.8K</name>
+    <cmt>鹿C-2-1/C-1型 方向牌</cmt>
+    <desc>鹿C-2-1/C-1型 方向牌</desc>
+    <sym>Milestone</sym>
+  </wpt>
+  <trk>
+    <name>東小南鹿山支線</name>
+    <type>Cycling</type>
+    <trkseg>
+      <trkpt lat="23.439241" lon="120.962249">
+        <ele>3695.000000</ele>
+        <time>2016-04-24T22:57:03Z</time>
+      </trkpt>
+      <trkpt lat="23.439506" lon="120.962211">
+        <ele>3690.000000</ele>
+        <time>2016-04-24T23:06:13Z</time>
+      </trkpt>
+      <trkpt lat="23.439674" lon="120.962107">
+        <ele>3689.000000</ele>
+        <time>2016-04-24T23:06:51Z</time>
+      </trkpt>
+      <trkpt lat="23.439784" lon="120.961883">
+        <ele>3693.000000</ele>
+        <time>2016-04-24T23:07:28Z</time>
+      </trkpt>
+      <trkpt lat="23.439904" lon="120.961606">
+        <ele>3688.000000</ele>
+        <time>2016-04-24T23:07:57Z</time>
+      </trkpt>
+      <trkpt lat="23.440053" lon="120.961490">
+        <ele>3681.000000</ele>
+        <time>2016-04-24T23:09:44Z</time>
+      </trkpt>
+      <trkpt lat="23.440266" lon="120.961322">
+        <ele>3677.000000</ele>
+        <time>2016-04-24T23:10:19Z</time>
+      </trkpt>
+      <trkpt lat="23.440517" lon="120.961237">
+        <ele>3676.000000</ele>
+        <time>2016-04-24T23:10:49Z</time>
+      </trkpt>
+      <trkpt lat="23.440855" lon="120.961367">
+        <ele>3675.000000</ele>
+        <time>2016-04-24T23:11:24Z</time>
+      </trkpt>
+      <trkpt lat="23.441041" lon="120.961357">
+        <ele>3671.000000</ele>
+        <time>2016-04-24T23:12:00Z</time>
+      </trkpt>
+      <trkpt lat="23.441215" lon="120.961433">
+        <ele>3663.000000</ele>
+        <time>2016-04-24T23:13:11Z</time>
+      </trkpt>
+      <trkpt lat="23.441423" lon="120.961276">
+        <ele>3670.000000</ele>
+        <time>2016-04-24T23:13:53Z</time>
+      </trkpt>
+      <trkpt lat="23.441664" lon="120.961166">
+        <ele>3661.000000</ele>
+        <time>2016-04-24T23:14:38Z</time>
+      </trkpt>
+      <trkpt lat="23.441904" lon="120.961172">
+        <ele>3653.000000</ele>
+        <time>2016-04-24T23:15:30Z</time>
+      </trkpt>
+      <trkpt lat="23.442106" lon="120.961075">
+        <ele>3659.000000</ele>
+        <time>2016-04-24T23:16:02Z</time>
+      </trkpt>
+      <trkpt lat="23.442180" lon="120.960893">
+        <ele>3671.000000</ele>
+        <time>2016-04-24T23:17:26Z</time>
+      </trkpt>
+      <trkpt lat="23.442393" lon="120.960947">
+        <ele>3661.000000</ele>
+        <time>2016-04-24T23:19:17Z</time>
+      </trkpt>
+      <trkpt lat="23.442598" lon="120.960854">
+        <ele>3658.000000</ele>
+        <time>2016-04-24T23:20:18Z</time>
+      </trkpt>
+      <trkpt lat="23.442755" lon="120.960979">
+        <ele>3642.000000</ele>
+        <time>2016-04-24T23:21:36Z</time>
+      </trkpt>
+      <trkpt lat="23.442929" lon="120.961047">
+        <ele>3638.000000</ele>
+        <time>2016-04-24T23:22:24Z</time>
+      </trkpt>
+      <trkpt lat="23.443111" lon="120.961100">
+        <ele>3634.000000</ele>
+        <time>2016-04-24T23:23:01Z</time>
+      </trkpt>
+      <trkpt lat="23.443307" lon="120.961162">
+        <ele>3625.000000</ele>
+        <time>2016-04-24T23:23:49Z</time>
+      </trkpt>
+      <trkpt lat="23.443508" lon="120.961111">
+        <ele>3629.000000</ele>
+        <time>2016-04-24T23:24:20Z</time>
+      </trkpt>
+      <trkpt lat="23.443690" lon="120.961149">
+        <ele>3620.000000</ele>
+        <time>2016-04-24T23:25:42Z</time>
+      </trkpt>
+      <trkpt lat="23.443844" lon="120.961250">
+        <ele>3628.000000</ele>
+        <time>2016-04-24T23:26:33Z</time>
+      </trkpt>
+      <trkpt lat="23.444043" lon="120.961328">
+        <ele>3627.000000</ele>
+        <time>2016-04-24T23:27:12Z</time>
+      </trkpt>
+      <trkpt lat="23.444232" lon="120.961321">
+        <ele>3625.000000</ele>
+        <time>2016-04-24T23:27:36Z</time>
+      </trkpt>
+      <trkpt lat="23.444474" lon="120.961405">
+        <ele>3620.000000</ele>
+        <time>2016-04-24T23:28:32Z</time>
+      </trkpt>
+      <trkpt lat="23.444640" lon="120.961597">
+        <ele>3612.000000</ele>
+        <time>2016-04-24T23:29:13Z</time>
+      </trkpt>
+      <trkpt lat="23.444724" lon="120.961771">
+        <ele>3603.000000</ele>
+        <time>2016-04-24T23:29:51Z</time>
+      </trkpt>
+      <trkpt lat="23.444811" lon="120.961972">
+        <ele>3595.000000</ele>
+        <time>2016-04-24T23:30:52Z</time>
+      </trkpt>
+      <trkpt lat="23.444972" lon="120.962139">
+        <ele>3591.000000</ele>
+        <time>2016-04-24T23:31:32Z</time>
+      </trkpt>
+      <trkpt lat="23.445191" lon="120.962210">
+        <ele>3594.000000</ele>
+        <time>2016-04-24T23:32:34Z</time>
+      </trkpt>
+      <trkpt lat="23.445393" lon="120.962229">
+        <ele>3598.000000</ele>
+        <time>2016-04-24T23:33:14Z</time>
+      </trkpt>
+      <trkpt lat="23.445449" lon="120.962238">
+        <ele>3607.000000</ele>
+        <time>2016-04-24T23:34:10Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

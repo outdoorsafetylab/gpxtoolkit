@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.topografix.com/GPX/gpx_style/0/2 http://www.topografix.com/GPX/gpx_style/0/2/gpx_style.xsd" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpx_style="http://www.topografix.com/GPX/gpx_style/0/2" version="1.1" creator="gpxtoolkit">
+<metadata>
+    <name>Y.S圓峰南玉山線既有指示設施</name>
+    <author>
+        <name>gpx.studio</name>
+        <link href="https://gpx.studio"></link>
+    </author>
+</metadata>
+<wpt lat="23.45666" lon="120.95485">
+    <ele>3681.9</ele>
+    <name>圓C-1-2</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>南玉山5.5k→
+南峰1.7k→
+←排雲山莊2.2k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44852" lon="120.95435">
+    <ele>3766.8</ele>
+    <name>南玉C-1-1</name>
+    <cmt>C-1型 里程柱</cmt>
+    <desc>←南玉山4.5k 
+→圓峰山屋1.0k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44723" lon="120.95323">
+    <ele>3659.6</ele>
+    <name>南玉C-1-2</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>南玉山4.2km→ 
+←圓峰山屋1.3km</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44678" lon="120.95172">
+    <ele>3560.9</ele>
+    <name>南玉C-3-1</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←南玉山4.0k 
+→圓峰山屋1.5k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44519" lon="120.94795">
+    <ele>3506.7</ele>
+    <name>南玉C-3-2</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←南玉山3.5k 
+→圓峰山屋2.0k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44229" lon="120.94463">
+    <ele>3518.4</ele>
+    <name>南玉C-3-3</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←南玉山3.0k 
+→圓峰山屋2.5k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44347" lon="120.94145">
+    <ele>3469.9</ele>
+    <name>南玉C-1-3</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>圓峰山屋2.9km→ 
+←南玉山2.6k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.44279" lon="120.94042">
+    <ele>3489.9</ele>
+    <name>南玉C-3-4</name>
+    <cmt>C-3型_x000D_ 里程柱</cmt>
+    <desc>←南玉山2.5k 
+→圓峰山屋3.0k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.43981" lon="120.93718">
+    <ele>3523.7</ele>
+    <name>南玉C-1-4</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>小南山→ 
+圓峰山屋3.5k
+南玉山2.0k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.43734" lon="120.9343">
+    <ele>3428.9</ele>
+    <name>南玉C-3-6</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←南玉山1.5k 
+→圓峰山屋4.0k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.43524" lon="120.93078">
+    <ele>3323.2</ele>
+    <name>南玉C-3-7</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←南玉山1.0k 
+→圓峰山屋4.5k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.43206" lon="120.92738">
+    <ele>3341.7</ele>
+    <name>南玉C-3-8</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←南玉山0.5k 
+→圓峰山屋5.0k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.430628" lon="120.926978">
+    <ele>3342.7</ele>
+    <name>南玉F-1-1</name>
+    <cmt>F-1型 指引標誌</cmt>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.454723" lon="120.955569">
+    <ele>3671.4</ele>
+    <name>南D-8-1</name>
+    <cmt>公告及警告牌</cmt>
+    <desc>玉山後四峰為非經常維護步道，請小心注意安全</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45253" lon="120.95517">
+    <ele>3663.5</ele>
+    <name>南C-3-1</name>
+    <cmt>C-3型 里程柱</cmt>
+    <desc>←圓峰山屋0.5k 
+→東小南1.9k</desc>
+    <sym> </sym>
+</wpt>
+<wpt lat="23.45022" lon="120.95525">
+    <ele>3723.8</ele>
+    <name>南C-1-1</name>
+    <cmt>C-1型 方向牌</cmt>
+    <desc>→圓峰山屋0.8k 
+←東小南山1.6k
+南玉山4.7k→</desc>
+    <sym> </sym>
+</wpt>
+</gpx>
