@@ -18,8 +18,11 @@ include scripts/protoc-gen-go.mk
 serve:
 	go run . serve -d
 
-watch: # To install 'nodemon': npm install -g nodemon
-	nodemon -e go --signal SIGTERM --exec 'make serve'
+watch: # To install 'air': go install github.com/cosmtrek/air@latest
+	air
+
+frontend:
+	cd webroot && npm install && npm run serve
 
 lint: $(STATICCHECK)
 	$(realpath $(STATICCHECK)) ./...
