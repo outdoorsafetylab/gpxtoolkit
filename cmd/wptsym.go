@@ -12,36 +12,36 @@ import (
 )
 
 var (
-	symSymbol = ""
-	symRegexp = ""
+	wptsymSymbol = ""
+	wptsymRegexp = ""
 )
 
-// symCmd represents the sym command
-var symCmd = &cobra.Command{
-	Use:   "sym",
+// wptsymCmd represents the wptsym command
+var wptsymCmd = &cobra.Command{
+	Use:   "wptsym",
 	Short: "Alter the <sym> of GPX waypoints",
 	Long:  `Alter the <sym> of GPX waypoints.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if symSymbol == "" {
+		if wptsymSymbol == "" {
 			return fmt.Errorf("please specify the new symbol")
 		}
 		trackLog, err := loadGpx()
 		if err != nil {
 			return err
 		}
-		if symRegexp != "" {
-			re, err := regexp.Compile(symRegexp)
+		if wptsymRegexp != "" {
+			re, err := regexp.Compile(wptsymRegexp)
 			if err != nil {
 				return err
 			}
 			for _, wpt := range trackLog.WayPoints {
 				if re.MatchString(wpt.GetName()) {
-					wpt.Symbol = proto.String(symSymbol)
+					wpt.Symbol = proto.String(wptsymSymbol)
 				}
 			}
 		} else {
 			for _, wpt := range trackLog.WayPoints {
-				wpt.Symbol = proto.String(symSymbol)
+				wpt.Symbol = proto.String(wptsymSymbol)
 			}
 		}
 		return dumpGpx(trackLog)
@@ -49,7 +49,7 @@ var symCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(symCmd)
-	symCmd.Flags().StringVarP(&symSymbol, "symbol", "s", symSymbol, "New symbol for the waypoints.")
-	symCmd.Flags().StringVarP(&symRegexp, "regexp", "r", symRegexp, "Only alter waypoints which names match the given regular exporession.")
+	rootCmd.AddCommand(wptsymCmd)
+	wptsymCmd.Flags().StringVarP(&wptsymSymbol, "symbol", "s", wptsymSymbol, "New symbol for the waypoints.")
+	wptsymCmd.Flags().StringVarP(&wptsymRegexp, "regexp", "r", wptsymRegexp, "Only alter waypoints which names match the given regular exporession.")
 }
