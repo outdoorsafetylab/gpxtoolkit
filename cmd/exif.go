@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gpxtoolkit/gpx"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,7 +49,7 @@ func loadImageAsWaypoints() ([]*gpx.WayPoint, error) {
 	waypoints := make([]*gpx.WayPoint, 0)
 	heicParser := heicexif.NewHeicExifMediaParser()
 	jpegParser := jpegexif.NewJpegMediaParser()
-	list, err := ioutil.ReadDir(exifDirectory)
+	list, err := os.ReadDir(exifDirectory)
 	if err != nil {
 		return nil, err
 	}

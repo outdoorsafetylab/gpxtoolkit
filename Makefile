@@ -11,7 +11,7 @@ all: $(PBGO)
 test:
 	go test ./...
 
-include scripts/golangci-lint.mk
+include scripts/staticcheck.mk
 include scripts/protoc.mk
 include scripts/protoc-gen-go.mk
 
@@ -21,8 +21,8 @@ serve:
 watch: # To install 'nodemon': npm install -g nodemon
 	nodemon -e go --signal SIGTERM --exec 'make serve'
 
-lint: $(GOLANGCI_LINT)
-	$(realpath $(GOLANGCI_LINT)) run
+lint: $(STATICCHECK)
+	$(realpath $(STATICCHECK)) ./...
 
 docker/build:
 	docker build --network=host --force-rm \

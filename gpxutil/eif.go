@@ -3,7 +3,7 @@ package gpxutil
 import (
 	"gpxtoolkit/gpx"
 
-	"github.com/oskanberg/eif-go"
+	eif "github.com/oskanberg/eif-go"
 )
 
 type RemoveOutlierByEIF struct {
