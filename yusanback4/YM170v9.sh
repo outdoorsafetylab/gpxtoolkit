@@ -1,1 +1,0 @@
-go run . svg -f yusanback4/YM170v9.gpx -b 0 -l 0 -t 0 -r 0 --font-size=16.5 --scale-length=0 --stroke-width=3 --marker-radius=5 -e > yusanback4/YM170v9.svg
