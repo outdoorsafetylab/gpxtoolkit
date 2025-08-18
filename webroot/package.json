@@ -2,6 +2,10 @@
   "name": "gpxtoolkit",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=16.0.0 <=20.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -11,9 +15,10 @@
     "@mapbox/mapbox-gl-language": "^1.0.0",
     "@mapbox/togeojson": "^0.16.0",
     "@popperjs/core": "^2.11.5",
+    "@vue/babel-preset-jsx": "^1.4.0",
     "bootstrap": "^5.2.0",
     "core-js": "^3.8.3",
-    "mapbox-gl": "^2.9.2",
+    "mapbox-gl": "^2.15.0",
     "vue": "^3.2.13",
     "vue-router": "^4.1.2",
     "vue3-cookies": "^1.0.6"
@@ -45,6 +50,7 @@
     "> 1%",
     "last 2 versions",
     "not dead",
-    "not ie 11"
+    "not ie 11",
+    "not op_mini all"
   ]
 }
