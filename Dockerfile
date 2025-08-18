@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine as go-builder
+FROM golang:1.24-alpine as go-builder
 
 RUN apk update \
     && apk upgrade \

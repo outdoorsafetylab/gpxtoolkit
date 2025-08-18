@@ -36,6 +36,10 @@ func (s *Parser) OnAny(enter xmlEnterCallback, text xmlTextCallback, leave xmlLe
 }
 
 func (s *Parser) On(xpath string, enter xmlEnterCallback, text xmlTextCallback, leave xmlLeaveCallback) *Parser {
+	// Strip the "//" prefix from xpath for consistent hook registration
+	// This ensures hooks are stored without the prefix, matching our lookup logic
+	xpath = strings.TrimPrefix(xpath, "//")
+
 	splits := strings.Split(xpath, "/")
 	last := splits[len(splits)-1]
 	hooks := s.hooks[last]
@@ -120,7 +124,7 @@ func (s *Parser) Parse(r io.Reader) error {
 		}
 	}
 	if !started {
-		return fmt.Errorf("Invalid XML")
+		return fmt.Errorf("invalid XML")
 	}
 	return nil
 }
@@ -160,6 +164,8 @@ func (s *Parser) pop(e string) error {
 	if last != e {
 		return fmt.Errorf("Pop mismatch: %s vs %s", last, e)
 	}
+
+	// Call leave hooks before popping the element so the stack state is correct
 	hook := s.hook()
 	if hook != nil && hook.leave != nil {
 		err := hook.leave()
@@ -167,20 +173,25 @@ func (s *Parser) pop(e string) error {
 			return err
 		}
 	}
-	s.Pop()
+
 	if s.any != nil && s.any.leave != nil {
 		err := s.any.leave()
 		if err != nil {
 			return err
 		}
 	}
+
+	// Pop the element after calling hooks
+	s.Pop()
 	return nil
 }
 
 func (s *Parser) hook() *xmlHook {
 	hooks := s.hooks[s.Peek()]
 	if hooks != nil {
-		return hooks[s.XPath()]
+		// Strip the "//" prefix from XPath for hook lookup since hooks are registered without it
+		xpath := strings.TrimPrefix(s.XPath(), "//")
+		return hooks[xpath]
 	}
 	return nil
 }

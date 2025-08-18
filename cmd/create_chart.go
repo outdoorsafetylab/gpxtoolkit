@@ -63,7 +63,7 @@ func (w *indenter) decrease() {
 
 func (w *indenter) printf(format string, args ...interface{}) {
 	for i := 0; i < w.level; i++ {
-		fmt.Fprintf(w.writer, w.indentation)
+		fmt.Fprint(w.writer, w.indentation)
 	}
 	fmt.Fprintf(w.writer, format, args...)
 }

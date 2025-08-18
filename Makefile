@@ -9,8 +9,7 @@ all: $(PBGO)
 	go build -ldflags="-X gpxtoolkit/version.GitHash=$(GIT_HASH) -X gpxtoolkit/version.GitTag=$(GIT_TAG)" -o gpxtoolkit .
 
 test:
-	go test ./gpx
-	go test ./gpxutil
+	go test ./...
 
 include scripts/golangci-lint.mk
 include scripts/protoc.mk
