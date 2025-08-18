@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
+	"gpxtoolkit/twd97"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -29,6 +31,9 @@ var (
 	csv2gpxComment       = "Comment"
 	csv2gpxDescription   = "Description"
 	csv2gpxWaypointsOnly = false
+	csv2gpxTWD97         = false
+	csv2gpxEasting       = "Easting"
+	csv2gpxNorthing      = "Northing"
 )
 
 // csv2gpxCmd represents the csv2gpx command
@@ -66,6 +71,8 @@ var csv2gpxCmd = &cobra.Command{
 		timeIndex := -1
 		latitudeIndex := -1
 		longitudeIndex := -1
+		eastingIndex := -1
+		northingIndex := -1
 		elevationIndex := -1
 		nameIndex := -1
 		commentIndex := -1
@@ -82,6 +89,10 @@ var csv2gpxCmd = &cobra.Command{
 				latitudeIndex = i
 			case csv2gpxLongitude:
 				longitudeIndex = i
+			case csv2gpxEasting:
+				eastingIndex = i
+			case csv2gpxNorthing:
+				northingIndex = i
 			case csv2gpxElevation:
 				elevationIndex = i
 			case csv2gpxName:
@@ -92,11 +103,20 @@ var csv2gpxCmd = &cobra.Command{
 				descriptionIndex = i
 			}
 		}
-		if latitudeIndex < 0 {
-			return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxLatitude)
-		}
-		if longitudeIndex < 0 {
-			return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxLongitude)
+		if csv2gpxTWD97 {
+			if eastingIndex < 0 {
+				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxEasting)
+			}
+			if northingIndex < 0 {
+				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxNorthing)
+			}
+		} else {
+			if latitudeIndex < 0 {
+				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxLatitude)
+			}
+			if longitudeIndex < 0 {
+				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxLongitude)
+			}
 		}
 		if elevationIndex < 0 {
 			fmt.Fprintf(os.Stderr, "Skipping elevation due to '%s' is not found in the CSV headers\n", csv2gpxElevation)
@@ -138,13 +158,27 @@ var csv2gpxCmd = &cobra.Command{
 					return err
 				}
 			}
-			lat, err := strconv.ParseFloat(strings.Trim(row[latitudeIndex], " \t"), 64)
-			if err != nil {
-				return err
-			}
-			lon, err := strconv.ParseFloat(strings.Trim(row[longitudeIndex], " \t"), 64)
-			if err != nil {
-				return err
+			var lat, lon float64
+			if csv2gpxTWD97 {
+				x, err := strconv.ParseFloat(strings.Trim(row[eastingIndex], " \t"), 64)
+				if err != nil {
+					return err
+				}
+				y, err := strconv.ParseFloat(strings.Trim(row[northingIndex], " \t"), 64)
+				if err != nil {
+					return err
+				}
+				lat, lon = twd97.ToWGS84(x, y, false)
+				log.Printf("TWD97: %s: %f, %f -> %f, %f", waypointName, x, y, lat, lon)
+			} else {
+				lat, err = strconv.ParseFloat(strings.Trim(row[latitudeIndex], " \t"), 64)
+				if err != nil {
+					return err
+				}
+				lon, err = strconv.ParseFloat(strings.Trim(row[longitudeIndex], " \t"), 64)
+				if err != nil {
+					return err
+				}
 			}
 			if waypointName != "" {
 				wpt := &gpx.WayPoint{
@@ -209,7 +243,7 @@ var csv2gpxCmd = &cobra.Command{
 			}
 		}
 		trackLog.WayPoints = waypoints
-		if !csv2gpxWaypointsOnly {
+		if !csv2gpxWaypointsOnly && len(points) > 0 {
 			trackLog.Tracks = []*gpx.Track{
 				{
 					Segments: []*gpx.Segment{
@@ -237,4 +271,7 @@ func init() {
 	csv2gpxCmd.Flags().StringVarP(&csv2gpxComment, "cmt", "", csv2gpxComment, "CSV header of waypoint comment")
 	csv2gpxCmd.Flags().StringVarP(&csv2gpxDescription, "desc", "", csv2gpxDescription, "CSV header of waypoint description")
 	csv2gpxCmd.Flags().BoolVarP(&csv2gpxWaypointsOnly, "wpt", "", csv2gpxWaypointsOnly, "Process waypoints only")
+	csv2gpxCmd.Flags().BoolVarP(&csv2gpxTWD97, "twd97", "", csv2gpxTWD97, "Convert coordinates from TWD97 to WGS84")
+	csv2gpxCmd.Flags().StringVarP(&csv2gpxEasting, "easting", "", csv2gpxEasting, "CSV header of easting; only used when --twd97 is true")
+	csv2gpxCmd.Flags().StringVarP(&csv2gpxNorthing, "northing", "", csv2gpxNorthing, "CSV header of northing; only used when --twd97 is true")
 }
