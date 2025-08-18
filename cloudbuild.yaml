@@ -1,28 +1,14 @@
 steps:
 - name: golang:1.24-alpine
   args:
-  - sh
-  - -c
-  - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /workspace v1.55.2
-- name: golang:1.24-alpine
-  args:
   - go
   - mod
   - tidy
 - name: golang:1.24-alpine
   args:
-  - /workspace/golangci-lint
-  - run
-  env:
-  - 'CGO_ENABLED=0'
-- name: golang:1.24-alpine
-  args:
   - go
   - test
-  - ./gpx
-  - ./gpxutil
-  env:
-  - 'CGO_ENABLED=0'
+  - ./...
 - name: gcr.io/cloud-builders/docker
   args:
   - build
