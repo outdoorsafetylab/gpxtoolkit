@@ -25,6 +25,10 @@ func NewRouter(webroot string, service elevation.Service) http.Handler {
 		Service: service,
 	}
 	sub.HandleFunc("/correct", correct.Handler).Methods("POST")
+	command := &controller.CommandController{
+		Service: service,
+	}
+	sub.HandleFunc("/execute", command.Handler).Methods("POST")
 	r.NotFoundHandler = &weboortHandler{
 		path: webroot,
 	}

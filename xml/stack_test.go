@@ -157,3 +157,4 @@ func TestStack_Contains(t *testing.T) {
 		t.Error("Expected s1 to not contain s4 with different elements")
 	}
 }
+

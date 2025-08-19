@@ -214,13 +214,7 @@ import mapboxgl from "mapbox-gl";
 import toGeoJSON from "@mapbox/togeojson";
 import { useCookies } from "vue3-cookies";
 
-function encodeQueryData(data) {
-  const ret = [];
-  for (let d in data) {
-    ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
-  }
-  return ret.join('&');
-}
+
 
 function isDOMParseError(parsedDocument) {
   // parser and parsererrorNS could be cached on startup for efficiency
@@ -282,6 +276,7 @@ export default {
       terrain: false,
       gpxFile: null,
       gpxFileContent: null,
+      processedGpxContent: null, // Store processed GPX content
       progress: 0,
       previewed: false,
       layers: [],
@@ -307,6 +302,7 @@ export default {
   mounted() {
     document.title = '里程產生器';
     this.loadCookies();
+    this.loadProcessedGpx(); // Load processed GPX from localStorage
     this.getVersion();
     this.map = new mapboxgl.Map({
       container: "map", // container ID
@@ -526,7 +522,16 @@ export default {
     },
     clear() {
       this.gpxFile = null;
+      this.processedGpxContent = null;
       this.clearMap();
+      
+      // Clear from localStorage
+      try {
+        localStorage.removeItem('milestone.processedGpx');
+        localStorage.removeItem('milestone.timestamp');
+      } catch (e) {
+        console.warn('Failed to clear localStorage:', e);
+      }
     },
     clearMap() {
       this.previewed = false;
@@ -546,40 +551,100 @@ export default {
     getVersion() {
       let self = this;
       let xhr = new XMLHttpRequest();
-      xhr.open("GET", "/cgi/version");
+      
+      // Create FormData for the version command
+      let formData = new FormData();
+      formData.append('command', 'version');
+      
+      xhr.open("POST", "/cgi/execute");
       xhr.onload = function () {
         if (xhr.status != 200) {
-          alert(xhr.responseText);
+          console.error("Version request failed:", xhr.responseText);
+          self.version = "unknown";
         } else {
-          let version = JSON.parse(xhr.response);
-          self.version = version.tag ? version.tag : version.commit;
+          try {
+            let response = JSON.parse(xhr.response);
+            if (response.success) {
+              // Parse version from stdout
+              let versionOutput = response.stdout.trim();
+              // Extract version from the output (assuming it's the first line)
+              let lines = versionOutput.split('\n');
+              if (lines.length > 0) {
+                self.version = lines[0].trim();
+              } else {
+                self.version = versionOutput;
+              }
+            } else {
+              console.error("Version command failed:", response.error);
+              self.version = "unknown";
+            }
+          } catch (e) {
+            console.error("Failed to parse version response:", e);
+            self.version = "unknown";
+          }
         }
       };
-      xhr.send();
+      xhr.onerror = function() {
+        console.error("Version request network error");
+        self.version = "unknown";
+      };
+      xhr.send(formData);
     },
     post(format, onresponse) {
       let self = this;
       let xhr = new XMLHttpRequest();
-      let data = {
-        format: format,
-        distance: this.distance,
-        template: this.template,
-        symbol: this.symbol,
-        reverse: this.reverse,
-        fits: this.fits,
-        terrainDistance: this.terrainDistance,
-      };
-      xhr.open("POST", "/cgi/milestones?" + encodeQueryData(data));
-      xhr.setRequestHeader("Content-Type", "application/gpx+xml");
+      
+      // Create FormData for multipart request
+      let formData = new FormData();
+      formData.append('command', 'milestone');
+      formData.append('file', this.gpxFile);
+      
+      // Add command flags
+      formData.append('distance', this.distance);
+      formData.append('template', this.template);
+      formData.append('symbol', this.symbol);
+      formData.append('reverse', this.reverse.toString());
+      formData.append('fits', this.fits.toString());
+      formData.append('terrain-distance', this.terrainDistance.toString());
+      formData.append('format', 'gpx'); // Always request GPX format for localStorage
+      
+      xhr.open("POST", "/cgi/execute");
       xhr.onload = function () {
         self.progress = 0;
         if (xhr.status != 200) {
-          alert(xhr.responseText);
+          alert("Error: " + xhr.responseText);
         } else {
-          onresponse(xhr.response, xhr.getResponseHeader("Content-Type"));
+          try {
+            let response = JSON.parse(xhr.response);
+            if (response.success) {
+              // Store the processed GPX content in localStorage
+              self.processedGpxContent = response.stdout;
+              
+              // Store in browser localStorage for persistence
+              try {
+                localStorage.setItem('milestone.processedGpx', response.stdout);
+                localStorage.setItem('milestone.timestamp', new Date().toISOString());
+              } catch (e) {
+                console.warn('Failed to save to localStorage:', e);
+              }
+              
+              // Call the response handler
+              onresponse(response.stdout, "application/gpx+xml");
+            } else {
+              alert("Command failed: " + (response.error || "Unknown error"));
+            }
+          } catch (e) {
+            // If response is not JSON, treat it as direct output (backward compatibility)
+            self.processedGpxContent = xhr.response;
+            onresponse(xhr.response, xhr.getResponseHeader("Content-Type") || "application/gpx+xml");
+          }
         }
       };
-      xhr.send(this.gpxFile);
+      xhr.onerror = function() {
+        self.progress = 0;
+        alert("Network error occurred");
+      };
+      xhr.send(formData);
       this.progress = 100;
     },
     preview() {
@@ -607,24 +672,91 @@ export default {
       this.loadGpx(this.gpxFileContent, false);
     },
     download(format) {
-      let filename =
-        this.gpxFile.name.replace(/\.[^/.]+$/, "") + "(含里程)." + format;
-      this.post(format, function (response, type) {
-        let reader = new FileReader();
-        reader.onload = function (event) {
-          let a = document.createElement("a");
-          a.href = event.target.result;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-        };
-        let blob = new Blob([response], { type: type });
-        reader.readAsDataURL(blob);
-      });
+      if (!this.processedGpxContent) {
+        alert("請先預覽里程航點");
+        return;
+      }
+      
+      let filename = this.gpxFile.name.replace(/\.[^/.]+$/, "") + "(含里程)." + format;
+      
+      if (format === 'gpx') {
+        // Download GPX directly from localStorage
+        this.downloadGpxDirect(filename);
+      } else if (format === 'csv') {
+        // Convert GPX to CSV on-the-fly
+        this.convertGpxToCsv(filename);
+      }
     },
+    
+    downloadGpxDirect(filename) {
+      // Download GPX directly from localStorage
+      let blob = new Blob([this.processedGpxContent], { type: "application/gpx+xml" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    
+    convertGpxToCsv(filename) {
+      // Convert GPX to CSV using gpx2csv command
+      let xhr = new XMLHttpRequest();
+      
+      let formData = new FormData();
+      formData.append('command', 'gpx2csv');
+      
+      // Create a blob from the processed GPX content
+      let gpxBlob = new Blob([this.processedGpxContent], { type: "application/gpx+xml" });
+      formData.append('file', gpxBlob, 'processed.gpx');
+      
+      xhr.open("POST", "/cgi/execute");
+      xhr.onload = function () {
+        if (xhr.status != 200) {
+          alert("CSV conversion failed: " + xhr.responseText);
+        } else {
+          try {
+            let response = JSON.parse(xhr.response);
+            if (response.success) {
+              // Download the CSV content
+              let blob = new Blob([response.stdout], { type: "text/csv" });
+              let url = URL.createObjectURL(blob);
+              let a = document.createElement("a");
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            } else {
+              alert("CSV conversion failed: " + (response.error || "Unknown error"));
+            }
+          } catch (e) {
+            // If response is not JSON, treat it as direct CSV output
+            let blob = new Blob([xhr.response], { type: "text/csv" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
+        }
+      };
+      xhr.onerror = function() {
+        alert("Network error during CSV conversion");
+      };
+      xhr.send(formData);
+    },
+    
     downloadGpx() {
       this.download("gpx");
     },
+    
     downloadCsv() {
       this.download("csv");
     },
@@ -648,6 +780,32 @@ export default {
       this.fits = parameters.fits;
       this.reverse = parameters.reverse;
       this.terrainDistance = parameters.terrainDistance;
+    },
+    
+    loadProcessedGpx() {
+      // Try to restore processed GPX from localStorage
+      try {
+        let savedGpx = localStorage.getItem('milestone.processedGpx');
+        let timestamp = localStorage.getItem('milestone.timestamp');
+        
+        if (savedGpx && timestamp) {
+          // Check if the saved data is not too old (e.g., 24 hours)
+          let savedTime = new Date(timestamp);
+          let now = new Date();
+          let hoursDiff = (now - savedTime) / (1000 * 60 * 60);
+          
+          if (hoursDiff < 24) {
+            this.processedGpxContent = savedGpx;
+            console.log('Restored processed GPX from localStorage');
+          } else {
+            // Clear old data
+            localStorage.removeItem('milestone.processedGpx');
+            localStorage.removeItem('milestone.timestamp');
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load from localStorage:', e);
+      }
     },
   },
 };
