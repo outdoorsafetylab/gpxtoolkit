@@ -8,7 +8,7 @@ The storage package provides an abstract interface for file storage operations, 
 
 ## Architecture
 
-```
+```text
 StorageProvider Interface
 ├── LocalStorage (for development/testing)
 └── GCSStorage (for production - not tested in unit tests)
@@ -28,6 +28,7 @@ StorageProvider Interface
 ### ✅ **Comprehensive Local Storage Tests**
 
 #### **Unit Tests** (`local_test.go`)
+
 - ✅ `TestNewLocalStorage` - Constructor validation
 - ✅ `TestLocalStorage_Store` - File storage operations
 - ✅ `TestLocalStorage_Retrieve` - File retrieval operations
@@ -39,6 +40,7 @@ StorageProvider Interface
 - ✅ `TestLocalStorage_ConcurrentAccess` - Thread safety
 
 #### **Interface Tests** (`storage_test.go`)
+
 - ✅ `TestGenerateUniqueID` - Unique ID generation
 - ✅ `TestRandomString` - Random string utilities
 - ✅ `TestFileInfo` - Metadata structure
@@ -46,6 +48,7 @@ StorageProvider Interface
 - ✅ `TestFileInfoWithoutOptionalFields` - Optional field handling
 
 #### **Integration Tests** (`integration_test.go`)
+
 - ✅ `TestStorageProviderInterface` - Interface compliance
 - ✅ `TestStorageProviderBehavior` - Common behavior patterns
 - ✅ `TestStorageErrorHandling` - Error condition handling
@@ -55,11 +58,13 @@ StorageProvider Interface
 ### ⚠️ **GCS Tests Status**
 
 GCS tests are **skipped** in unit tests because:
+
 - Require actual GCS credentials
 - Need complex mocking infrastructure
 - Are better suited for integration testing environments
 
 The GCS implementation is complete and ready for use, but testing requires:
+
 - Valid GCP service account credentials
 - Accessible GCS bucket
 - Integration test environment setup
@@ -79,7 +84,7 @@ go test ./storage/... -run TestLocalStorage_Store -v
 
 ## Test Results
 
-```
+```text
 === Storage Package Test Results ===
 ✅ TestStorageProviderInterface
 ✅ TestStorageProviderBehavior
@@ -111,12 +116,14 @@ PASS: 18/18 tests passed
 To test GCS functionality in the future:
 
 1. **Set up test environment**:
+
    ```bash
    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
    export TEST_GCS_BUCKET="test-bucket-name"
    ```
 
 2. **Create integration test**:
+
    ```go
    func TestGCSIntegration(t *testing.T) {
        if testing.Short() {
@@ -127,6 +134,7 @@ To test GCS functionality in the future:
    ```
 
 3. **Run integration tests**:
+
    ```bash
    go test ./storage/... -tags=integration -v
    ```
@@ -134,6 +142,7 @@ To test GCS functionality in the future:
 ### **Performance Tests**
 
 Consider adding benchmarks for:
+
 - File upload/download performance
 - Concurrent operation throughput
 - Memory usage patterns
