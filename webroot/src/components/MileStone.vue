@@ -214,8 +214,6 @@ import mapboxgl from "mapbox-gl";
 import toGeoJSON from "@mapbox/togeojson";
 import { useCookies } from "vue3-cookies";
 
-
-
 function isDOMParseError(parsedDocument) {
   // parser and parsererrorNS could be cached on startup for efficiency
   let parser = new DOMParser(),
