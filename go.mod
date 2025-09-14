@@ -3,6 +3,7 @@ module gpxtoolkit
 go 1.24
 
 require (
+	cloud.google.com/go/storage v1.56.0
 	github.com/blendle/zapdriver v1.3.1
 	github.com/dsoprea/go-exif/v3 v3.0.1
 	github.com/dsoprea/go-heic-exif-extractor/v2 v2.0.0-20210512044107-62067e44c235
@@ -13,6 +14,7 @@ require (
 	github.com/oskanberg/eif-go v0.0.0-20201113164108-063b347a7508
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
+	google.golang.org/api v0.247.0
 	google.golang.org/protobuf v1.36.7
 	googlemaps.github.io/maps v1.7.0
 )
@@ -25,7 +27,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.8.0 // indirect
 	cloud.google.com/go/iam v1.5.2 // indirect
 	cloud.google.com/go/monitoring v1.24.2 // indirect
-	cloud.google.com/go/storage v1.56.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.27.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.53.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.53.0 // indirect
@@ -71,7 +72,6 @@ require (
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	google.golang.org/api v0.247.0 // indirect
 	google.golang.org/genproto v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250721164621-a45f3dfb1074 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
