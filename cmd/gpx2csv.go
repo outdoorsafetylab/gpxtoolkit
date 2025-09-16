@@ -6,6 +6,7 @@ import (
 	"gpxtoolkit/elevation"
 	"gpxtoolkit/gpx"
 	"gpxtoolkit/gpxutil"
+	"gpxtoolkit/twd97"
 	"os"
 	"time"
 
@@ -67,6 +68,11 @@ func convertTracksToCSV(tracks []*gpx.Track, service elevation.Service) error {
 			"Vertical Speed (Calibrated) (m/H)",
 			"KmE/H (Calibrated)",
 			"EpH (Calibrated)")
+	}
+	if gpx2csvTWD97 {
+		headers = append(headers,
+			"TWD97 TM2 X (m)",
+			"TWD97 TM2 Y (m)")
 	}
 	err := w.Write(headers)
 	if err != nil {
@@ -170,6 +176,13 @@ func convertTracksToCSV(tracks []*gpx.Track, service elevation.Service) error {
 						fmt.Sprintf("%f", vspeed1),
 						fmt.Sprintf("%f", KmEpH1),
 						fmt.Sprintf("%f", EpH1))
+				}
+				if gpx2csvTWD97 {
+					// Convert WGS84 coordinates to TWD97 TM2
+					x, y := twd97.FromWGS84(p.GetLongitude(), p.GetLatitude(), false)
+					values = append(values,
+						fmt.Sprintf("%.2f", x),
+						fmt.Sprintf("%.2f", y))
 				}
 				err := w.Write(values)
 				if err != nil {

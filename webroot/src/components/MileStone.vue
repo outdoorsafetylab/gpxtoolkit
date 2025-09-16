@@ -101,6 +101,10 @@
           <input type="checkbox" class="form-check-input" id="terrainDistance" v-model="terrainDistance">
           <label class="form-check-label" for="terrainDistance">使用地表距離</label>
         </div>
+        <div>
+          <input type="checkbox" class="form-check-input" id="twd97" v-model="twd97">
+          <label class="form-check-label" for="twd97">CSV含TWD97座標</label>
+        </div>
       </div>
     </div>
     <div id="map_container" class="row flex-grow-1">
@@ -286,6 +290,7 @@ export default {
       reverse: false,
       fits: false,
       terrainDistance: false,
+      twd97: false,
     };
   },
   computed: {
@@ -704,11 +709,16 @@ export default {
       let xhr = new XMLHttpRequest();
       
       let formData = new FormData();
-      formData.append('command', 'gpx2csv');
+      formData.append('command', 'wpt2csv');
       
       // Create a blob from the processed GPX content
       let gpxBlob = new Blob([this.processedGpxContent], { type: "application/gpx+xml" });
       formData.append('file', gpxBlob, 'processed.gpx');
+      
+      // Add TWD97 flag if enabled
+      if (this.twd97) {
+        formData.append('twd97', 'true');
+      }
       
       xhr.open("POST", "/cgi/execute");
       xhr.onload = function () {

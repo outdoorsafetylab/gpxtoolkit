@@ -170,8 +170,14 @@ func (c *CommandController) executeCommand(commandName string, args []string, fl
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
+	// Get the absolute path of the current executable to avoid relative path issues
+	execPath, err := filepath.Abs(os.Args[0])
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute path of executable: %v", err)
+	}
+
 	// Execute the command using the current executable
-	cmd := exec.CommandContext(ctx, os.Args[0], cmdArgs...)
+	cmd := exec.CommandContext(ctx, execPath, cmdArgs...)
 
 	// Capture stdout and stderr
 	var stdout, stderr bytes.Buffer
@@ -188,7 +194,7 @@ func (c *CommandController) executeCommand(commandName string, args []string, fl
 	}
 
 	// Execute command
-	err := cmd.Run()
+	err = cmd.Run()
 
 	// Build response
 	response := &CommandResponse{
