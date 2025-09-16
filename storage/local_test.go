@@ -38,7 +38,19 @@ func TestNewLocalStorage(t *testing.T) {
 	}
 
 	// Test with invalid directory (non-writable)
-	invalidDir := "/root/invalid"
+	readonlyTempDir := t.TempDir()
+	invalidDir := filepath.Join(readonlyTempDir, "readonly", "subdir")
+
+	// Create parent directory and make it read-only
+	parentDir := filepath.Dir(invalidDir)
+	if err := os.MkdirAll(parentDir, 0755); err != nil {
+		t.Fatalf("Failed to create parent directory: %v", err)
+	}
+	if err := os.Chmod(parentDir, 0444); err != nil {
+		t.Fatalf("Failed to make directory read-only: %v", err)
+	}
+	defer os.Chmod(parentDir, 0755) // Clean up for test cleanup
+
 	_, err = NewLocalStorage(invalidDir, retention)
 	if err == nil {
 		t.Error("Expected error when creating storage in invalid directory")
