@@ -14,7 +14,9 @@ RUN go test ./...
 
 ARG GIT_HASH
 ARG GIT_TAG
-RUN go build -ldflags="-X gpxtoolkit/version.GitHash=${GIT_HASH} -X gpxtoolkit/version.GitTag=${GIT_TAG}" -o gpxtoolkit .
+RUN echo "GIT_HASH=${GIT_HASH}" > .env && \
+    echo "GIT_TAG=${GIT_TAG}" >> .env
+RUN go build -o gpxtoolkit .
 
 FROM node:alpine as npm-builder
 

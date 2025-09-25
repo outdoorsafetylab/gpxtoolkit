@@ -5,8 +5,12 @@ GIT_TAG ?= $(shell git describe --tags --exact-match 2>/dev/null || echo "")
 
 IMAGE_NAME := outdoorsafetylab/gpxtoolkit
 
-all: $(PBGO)
-	go build -ldflags="-X gpxtoolkit/version.GitHash=$(GIT_HASH) -X gpxtoolkit/version.GitTag=$(GIT_TAG)" -o gpxtoolkit .
+.env:
+	@echo "GIT_HASH=$(GIT_HASH)" > $@
+	@echo "GIT_TAG=$(GIT_TAG)" >> $@
+
+all: $(PBGO) .env
+	go build -o gpxtoolkit .
 
 test:
 	go test ./...
