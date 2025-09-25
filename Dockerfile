@@ -36,11 +36,10 @@ RUN apk update \
 
 COPY --from=go-builder /src/gpxtoolkit /usr/sbin/
 COPY --from=go-builder /src/.env /usr/sbin/.env
-WORKDIR /usr/sbin/
 RUN mkdir -p /var/www/html/
 COPY --from=npm-builder /src/dist/ /var/www/html/
 
 ENV ELEVATION_URL=
 ENV ELEVATION_TOKEN=
 
-ENTRYPOINT [ "./gpxtoolkit", "serve", "-w", "/var/www/html" ]
+ENTRYPOINT [ "/usr/sbin/gpxtoolkit", "serve", "-w", "/var/www/html" ]
