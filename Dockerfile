@@ -35,6 +35,7 @@ RUN apk update \
     && rm -rf /var/cache/apk/* /tmp/*
 
 COPY --from=go-builder /src/gpxtoolkit /usr/sbin/
+COPY --from=go-builder /src/.env /usr/sbin/.env
 RUN mkdir -p /var/www/html/
 COPY --from=npm-builder /src/dist/ /var/www/html/
 
