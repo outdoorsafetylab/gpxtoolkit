@@ -9,6 +9,9 @@ RUN mkdir -p /src/
 COPY . /src/
 WORKDIR /src/
 
+RUN go mod tidy
+RUN go test ./...
+
 ARG GIT_HASH
 ARG GIT_TAG
 RUN go build -ldflags="-X gpxtoolkit/version.GitHash=${GIT_HASH} -X gpxtoolkit/version.GitTag=${GIT_TAG}" -o gpxtoolkit .
