@@ -47,7 +47,11 @@ jobs:
       id: git
       run: |
         echo "hash=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-        echo "tag=$(git describe --tags --exact-match 2>/dev/null || echo "")" >> $GITHUB_OUTPUT
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=$(git describe --tags --exact-match 2>/dev/null || echo "")" >> $GITHUB_OUTPUT
+        fi
 
     - name: Extract metadata
       id: meta
