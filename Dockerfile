@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine as go-builder
+FROM golang:1.24-alpine AS go-builder
 
 RUN apk update \
     && apk upgrade \
@@ -18,7 +18,7 @@ RUN echo "GIT_HASH=${GIT_HASH}" > .env && \
     echo "GIT_TAG=${GIT_TAG}" >> .env
 RUN go build -o gpxtoolkit .
 
-FROM node:alpine as npm-builder
+FROM node:alpine AS npm-builder
 
 RUN mkdir -p /src/
 COPY ./webroot /src/
@@ -36,10 +36,11 @@ RUN apk update \
 
 COPY --from=go-builder /src/gpxtoolkit /usr/sbin/
 COPY --from=go-builder /src/.env /usr/sbin/.env
+WORKDIR /usr/sbin/
 RUN mkdir -p /var/www/html/
 COPY --from=npm-builder /src/dist/ /var/www/html/
 
 ENV ELEVATION_URL=
 ENV ELEVATION_TOKEN=
 
-ENTRYPOINT [ "/usr/sbin/gpxtoolkit", "serve", "-w", "/var/www/html" ]
+ENTRYPOINT [ "./gpxtoolkit", "serve", "-w", "/var/www/html" ]
