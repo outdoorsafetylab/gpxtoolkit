@@ -9,6 +9,8 @@
 - Use structured logging with consistent format
 - Honor golang's nature and prefer CapitalizedCamelCase for JSON/YAML codec
 - Conform to [staticcheck](https://staticcheck.io/) to maintain high code quality
+- Prefer pointers for function returns and struct members. e.g. `func GetItem() *Item` instead of `func GetItem() Item`, `struct { Member *Member }` instead of `struct { Member Member }`
+- Avoid using `log.Fatalf(...)` except in cobra commands.
 
 ## Coding Best Practices
 
@@ -21,9 +23,7 @@ Follow general coding best practices, especially:
 
 - Use format: `{author}/{descriptive-name}`
 - Examples:
-  - `john/add-new-gpx-command`
-  - `sarah/fix-elevation-calculation`
-  - `mike/improve-csv-parsing`
+  - `john/add-new-metrics-endpoint`
 - Use kebab-case for descriptive names (lowercase with hyphens)
 - Keep descriptive names concise but clear
 - The ticket ID is preferred but not required. And it must be an existing Jira ticket.
@@ -70,45 +70,28 @@ AI-Ratio: {ai-ratio}
 ### Examples
 
 ```text
-feat: add new GPX track simplification command
+chore: migrate github organization from abc to xyz
 
-- Implement Douglas-Peucker algorithm for track simplification
-- Add CLI flag for tolerance parameter
-- Include progress bar for large files
-- Add comprehensive test coverage
+- Update GitHub workflows to use xyz organization
+- Remove unused Repos configuration from config.yaml
+- Keep PRCycleTime config for potential future use
 
-This new command allows users to reduce GPX file size while
-maintaining track accuracy for visualization and analysis.
+This addresses the GitHub repository migration where SDKs moved
+from the abc organization to xyz organization.
 
-AI-Ratio: 0.3
+AI-Ratio: 0.5
 ```
 
 ```text
-fix: resolve elevation data parsing issue
+feat: add pull request cycle time analysis
 
-- Fix negative elevation values not being handled correctly
-- Update elevation service error handling
-- Add validation for coordinate bounds
-- Improve error messages for debugging
+- Implement PR cycle time calculation
+- Add BigQuery integration for metrics storage
+- Create CLI command for analysis report
 
-Addresses issue where some GPX files with negative elevations
-were causing parsing failures.
+This enables tracking of development velocity metrics.
 
 AI-Ratio: 0
-```
-
-```text
-docs: update README with new command examples
-
-- Add usage examples for all CLI commands
-- Include sample GPX file processing workflows
-- Document configuration options and environment variables
-- Add troubleshooting section for common issues
-
-Improves user experience by providing clear examples and
-documentation for all available features.
-
-AI-Ratio: 0.8
 ```
 
 ## Pull Request Guidelines
@@ -217,9 +200,45 @@ improve documentation and readability but are not blocking for submission.
 
 This workflow ensures code quality while giving you control over when to submit the PR.
 
+### Post-Submission PR Review
+
+After a PR is successfully submitted, automatically conduct a follow-up review and post the results as a comment on the PR:
+
+1. **Automatic Review After Submission**
+   - Once the PR is created, immediately perform a comprehensive review of the entire PR content
+   - Use the same review criteria as the pre-submission review
+   - The commit hash in the title indicates when the review was conducted, not which specific commit was reviewed
+   - Focus on any additional insights or observations after seeing the complete PR context
+
+2. **Generate Review Comment**
+   - Create a structured review comment using the same format as the `Example Review Output Format`
+   - Include the latest commit hash in the title to indicate when the review was conducted
+   - Review the entire PR content, not just the specific commit referenced in the title
+   - Include all categories: Critical Issues, Recommendations, Minor Suggestions,
+     and Positive Findings
+   - Add any additional context that might be helpful for other reviewers
+
+3. **Submit Review Comment**
+   - Automatically post the review summary as a comment on the newly created PR
+   - Use the GitHub review comment functionality to make it visible to all stakeholders
+   - This provides immediate feedback and sets expectations for other reviewers
+
+4. **Review Comment Format**
+   - Use the exact same markdown format as shown in the Example Review Output Format
+   - Include emojis and clear categorization for easy reading
+   - Ensure all findings include file locations, specific issues, and reasoning
+
+5. **Multiple Review Handling for Updated PRs**
+   - Each review comment should include the latest commit hash in the title to indicate when the review was conducted
+   - Always review the entire PR content, regardless of which commit hash is in the title
+   - This allows tracking when reviews were conducted and which issues were addressed over time
+
+This ensures that every PR gets an immediate, comprehensive review comment that helps maintain code quality and provides guidance for other team members reviewing the code.
+
 ## Markdown Formatting Standards
 
-- All markdown files must conform to markdownlint rules
+- All markdown files must conform to `markdownlint` rules
+- Always run `markdownlint` after creating or updating markdown files
 - Use consistent heading styles (prefer ATX-style: `# Heading`)
 - Add space after hash marks in headings: `# Title` not `#Title`
 - Use consistent list formatting with proper indentation
@@ -259,3 +278,10 @@ Check out the [markdownlint documentation][markdownlint] for more details.
 
 [markdownlint]: https://github.com/DavidAnson/markdownlint
 ````
+
+## For AI Agents
+
+- **DO NOT START SERVER PROCESSES** Don't start the backend server or frontend development server by yourself. AI always got stuck by server processes and create zombie processes all the time. The worse of all, some IDEs like Cursor make the AI process read-only and prohibit human correction. So, please request the user to do it. The user probably using hot-reloading for other development, running or killing thread (with `pkill`) by yourself may interrupt the development or even cause ports are bound by unknown processes.
+- **DO NOT COMMIT/PUSH GIT BY YOURSELF** Don't do git commit by yourself. Only do it upon clear and explicit request from user.
+- **DO NOT STAGE CHANGES By YOURSELF** Don't add staged changes by yourself. If there is no staged changes to commit, double check with the user if you got a request to commit.
+- **RUN TESTS AFTER MODIFICATION** Always run available unit tests after doing any changes.
