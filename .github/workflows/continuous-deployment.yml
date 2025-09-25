@@ -72,6 +72,8 @@ jobs:
         build-args: |
           GIT_HASH=${{ steps.git.outputs.hash }}
           GIT_TAG=${{ steps.git.outputs.tag }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
   deploy-alpha:
     name: Deploy to Alpha Environment
