@@ -8,8 +8,18 @@ on:
 env:
   GO_VERSION: '1.24'
   NODE_VERSION: '18'
-  IMAGE_NAME: gcr.io/${{ vars.GCP_PROJECT_ID }}/gpxtoolkit
-  REGISTRY: gcr.io
+  # Images live in asia-northeast1, not gcr.io and not asia-east1.
+  #
+  # Both the gcr.io compatibility repositories and the asia-east1 Artifact
+  # Registry location stopped accepting writes (503) and blob reads (500) for
+  # this project in August 2026, after the project was deleted and restored.
+  # Metadata still reads fine, so a tag listing looks healthy while nothing can
+  # actually be pushed or pulled. See outdoorsafetylab/outdoorsafetylab#47.
+  #
+  # The Cloud Run services stay in asia-east1; only the registry moved, so they
+  # pull cross-region.
+  IMAGE_NAME: asia-northeast1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/gpxtoolkit/gpxtoolkit
+  REGISTRY: asia-northeast1-docker.pkg.dev
 
 jobs:
   build-and-push:
@@ -37,8 +47,12 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
+    # The host argument is required. Bare `gcloud auth configure-docker`
+    # registers the credential helper for the six *.gcr.io hosts only -- not
+    # for Artifact Registry -- so without it the push below fails to
+    # authenticate. Verified against gcloud 579.0.0.
     - name: Configure Docker to use gcloud
-      run: gcloud auth configure-docker --quiet
+      run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
