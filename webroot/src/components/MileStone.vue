@@ -243,13 +243,14 @@ const RUDY_BASE_STYLE = 'mapbox://styles/mapbox/outdoors-v11';
 const RUDY_TILEJSON_URL = 'https://rudy-tiles-brv2w5mzdq-de.a.run.app/tilejson';
 const RUDY_BOUNDS = [118.0, 21.7, 122.3, 26.5]; // Taiwan, Penghu, Kinmen, Matsu
 const RUDY_SOURCE = 'rudy-tiles';
-const RUDY_REFRESH_MS = 60 * 1000; // re-read the TileJSON at most this often after tile errors
+const RUDY_REFRESH_MS = 60 * 60 * 1000; // re-read the TileJSON this often while 魯地圖 is shown
 
 let rudyTileJSON = null;
 function loadRudyTileJSON(fresh = false) {
   if (fresh) rudyTileJSON = null;
   if (!rudyTileJSON) {
-    rudyTileJSON = fetch(RUDY_TILEJSON_URL)
+    // A refresh must not be answered from the browser's HTTP cache (the TileJSON is cacheable).
+    rudyTileJSON = fetch(RUDY_TILEJSON_URL, fresh ? { cache: 'no-cache' } : {})
       .then((res) => {
         if (!res.ok) throw new Error('TileJSON ' + res.status);
         return res.json();
@@ -305,7 +306,7 @@ export default {
       terrainDistance: false,
       twd97: false,
       rudyTiles: null,
-      rudyRefreshedAt: 0,
+      rudyTimer: null,
     };
   },
   computed: {
@@ -340,10 +341,10 @@ export default {
       if (this.style === RUDY_STYLE) this.addRudyLayer()
     })
     // A page left open across the weekly release still holds last week's tile URL, which the server
-    // no longer serves: on tile errors, re-read the TileJSON and move to the new URL if it changed.
-    this.map.on('error', (e) => {
-      if (e.sourceId === RUDY_SOURCE) this.refreshRudyLayer()
-    })
+    // no longer serves. Mapbox does not report a tile's 404, so the TileJSON is re-read on a timer.
+    this.rudyTimer = setInterval(() => {
+      if (this.style === RUDY_STYLE) this.refreshRudyLayer()
+    }, RUDY_REFRESH_MS)
     this.map.addControl(new mapboxgl.NavigationControl())
     this.map.addControl(new mapboxgl.ScaleControl({ position: 'bottom-right' }))
     // this.map.addControl(
@@ -351,6 +352,9 @@ export default {
     //     defaultLanguage: "zh-Hant",
     //   })
     // )
+  },
+  beforeUnmount() {
+    clearInterval(this.rudyTimer)
   },
   watch: {
     style(style, previous) {
@@ -392,9 +396,6 @@ export default {
       });
     },
     refreshRudyLayer() {
-      const now = Date.now();
-      if (now - this.rudyRefreshedAt < RUDY_REFRESH_MS) return;
-      this.rudyRefreshedAt = now;
       const current = this.rudyTiles;
       loadRudyTileJSON(true).then((tj) => {
         const tiles = window.devicePixelRatio > 1 && tj.tiles_2x ? tj.tiles_2x : tj.tiles;
