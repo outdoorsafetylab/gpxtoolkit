@@ -330,6 +330,7 @@ export default {
       processedGpxContent: null, // Store processed GPX content
       progress: 0,
       previewed: false,
+      shownGpx: null, // the GPX on the map, redrawn after a base-style switch drops its layers
       layers: [],
       sources: [],
       markers: [],
@@ -374,6 +375,13 @@ export default {
       })
       this.setTerrain()
       this.addOverlays()
+      // A switch to another base style drops every layer, the tracks included (markers are DOM
+      // elements and stay): draw the shown GPX again, keeping whether it is a preview.
+      if (this.shownGpx && !this.map.getSource('gpx')) {
+        const previewed = this.previewed
+        this.loadGpx(this.shownGpx, false)
+        this.previewed = previewed
+      }
     })
     // A page left open across the weekly release still holds last week's tile URL, which the server
     // no longer serves. Mapbox does not report a tile's 404, so the TileJSON is re-read on a timer.
@@ -507,6 +515,7 @@ export default {
         return false;
       }
       this.clearMap();
+      this.shownGpx = gpx;
       let geojson = toGeoJSON.gpx(doc);
       let colors = [
         "#ff0000",
@@ -660,6 +669,7 @@ export default {
       return true;
     },
     clear() {
+      this.shownGpx = null;
       this.gpxFile = null;
       this.processedGpxContent = null;
       this.clearMap();
