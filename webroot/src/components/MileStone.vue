@@ -646,6 +646,12 @@ export default {
           "text-justify": "auto",
           "icon-image": ["get", "icon"],
         },
+        // A white halo keeps the names readable on the photo and satellite basemaps.
+        paint: {
+          "text-color": "#000000",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
       });
       this.layers.push(id);
       // 魯地圖 by default, 戶外地圖 for a track outside Taiwan — unless the user picked a map.
