@@ -111,7 +111,7 @@
       <div id="menu" class="d-flex justify-content-start">
         <div>
           <label class="visually-hidden" for="inlineFormSelectStyle">底圖</label>
-          <select class="form-select form-select-sm border-0 bg-transparent" id="inlineFormSelectStyle" v-model="style">
+          <select class="form-select form-select-sm border-0 bg-transparent" id="inlineFormSelectStyle" v-model="style" @change="styleChosen = true">
             <option v-for="style in styles" :key="style.name" :value="style.value">{{ style.name }}</option>
           </select>
         </div>
@@ -235,6 +235,68 @@ function truncate(str, n) {
   return (str.length > n) ? str.substr(0, n - 1) + '…' : str;
 }
 
+// 魯地圖 is drawn over Mapbox's outdoor style, inside Taiwan only, so the map is never blank
+// elsewhere. The tile URL comes from the server's TileJSON at run time: it carries a version that
+// changes every week, and the old one stops being served.
+const RUDY_STYLE = 'rudy';
+const RUDY_BASE_STYLE = 'mapbox://styles/mapbox/outdoors-v11';
+const RUDY_TILEJSON_URL = 'https://rudy-tiles-brv2w5mzdq-de.a.run.app/tilejson';
+const TAIWAN_BOUNDS = [118.0, 21.7, 122.3, 26.5]; // Taiwan, Penghu, Kinmen, Matsu
+const RUDY_SOURCE = 'rudy-tiles';
+const RUDY_REFRESH_MS = 60 * 60 * 1000; // re-read the TileJSON this often while 魯地圖 is shown
+
+let rudyTileJSON = null;
+function loadRudyTileJSON(fresh = false) {
+  if (fresh) rudyTileJSON = null;
+  if (!rudyTileJSON) {
+    // A refresh must not be answered from the browser's HTTP cache (the TileJSON is cacheable).
+    rudyTileJSON = fetch(RUDY_TILEJSON_URL, fresh ? { cache: 'no-cache' } : {})
+      .then((res) => {
+        if (!res.ok) throw new Error('TileJSON ' + res.status);
+        return res.json();
+      })
+      .catch((err) => {
+        rudyTileJSON = null; // try again on the next switch
+        throw err;
+      });
+  }
+  return rudyTileJSON;
+}
+
+// 正射影像＋等高線 is the Taiwan government's (NLSC) orthophoto with its contour overlay, drawn over
+// Mapbox satellite inside Taiwan, as on totoo.me. Both WMTS layers allow cross-origin reads.
+const NLSC_STYLE = 'nlsc';
+const NLSC_BASE_STYLE = 'mapbox://styles/mapbox/satellite-v9';
+const NLSC_LAYERS = [
+  {
+    id: 'nlsc-photo',
+    url: 'https://wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/{z}/{y}/{x}',
+    attribution: '© <a href="https://maps.nlsc.gov.tw/">內政部國土測繪中心</a> 正射影像、等高線',
+  },
+  {
+    id: 'nlsc-contour',
+    url: 'https://wmts.nlsc.gov.tw/wmts/MOI_CONTOUR_2/default/EPSG:3857/{z}/{y}/{x}',
+  },
+];
+
+// A track is in Taiwan when the middle of its extent is.
+function inTaiwan(coordinates) {
+  let [minLng, minLat, maxLng, maxLat] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const [lng, lat] of coordinates) {
+    minLng = Math.min(minLng, lng); maxLng = Math.max(maxLng, lng);
+    minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
+  }
+  const [lng, lat] = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+  const [w, s, e, n] = TAIWAN_BOUNDS;
+  return lng >= w && lng <= e && lat >= s && lat <= n;
+}
+
+function baseStyle(style) {
+  if (style === RUDY_STYLE) return RUDY_BASE_STYLE;
+  if (style === NLSC_STYLE) return NLSC_BASE_STYLE;
+  return style;
+}
+
 export default {
   data() {
     return {
@@ -244,43 +306,31 @@ export default {
       map: null,
       styles: [
         {
-          name: '戶外地圖',
-          value: 'mapbox://styles/mapbox/outdoors-v11',
+          name: '魯地圖',
+          value: RUDY_STYLE,
         },
         {
-          name: '魯地圖',
-          value: {
-            'version': 8,
-            'sources': {
-              'raster-tiles': {
-                'type': 'raster',
-                'tiles': ['http://tile.happyman.idv.tw/map/moi_osm/{z}/{x}/{y}.png'],
-                'tileSize': 256,
-                'attribution':
-                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              }
-            },
-            'layers': [
-              {
-                'id': 'simple-tiles',
-                'type': 'raster',
-                'source': 'raster-tiles',
-              }
-            ]
-          },
+          name: '正射影像＋等高線',
+          value: NLSC_STYLE,
         },
-        { 
-          name: '衛星地圖',
-          value: 'mapbox://styles/mapbox/satellite-v9',
+        {
+          name: '戶外地圖 (全球)',
+          value: RUDY_BASE_STYLE,
+        },
+        {
+          name: '衛星地圖 (全球)',
+          value: NLSC_BASE_STYLE,
         },
       ],
-      style: 'mapbox://styles/mapbox/outdoors-v11',
+      style: RUDY_STYLE,
+      styleChosen: false,
       terrain: false,
       gpxFile: null,
       gpxFileContent: null,
       processedGpxContent: null, // Store processed GPX content
       progress: 0,
       previewed: false,
+      shownGpx: null, // the GPX on the map, redrawn after a base-style switch drops its layers
       layers: [],
       sources: [],
       markers: [],
@@ -291,6 +341,8 @@ export default {
       fits: false,
       terrainDistance: false,
       twd97: false,
+      rudyTiles: null,
+      rudyTimer: null,
     };
   },
   computed: {
@@ -309,7 +361,7 @@ export default {
     this.getVersion();
     this.map = new mapboxgl.Map({
       container: "map", // container ID
-      style: this.style,
+      style: baseStyle(this.style),
       center: this.center, // starting position [lng, lat]
       zoom: this.zoom, // starting zoom
       projection: "globe", // display the map as a 3D globe
@@ -322,7 +374,20 @@ export default {
         'maxzoom': 14
       })
       this.setTerrain()
+      this.addOverlays()
+      // A switch to another base style drops every layer, the tracks included (markers are DOM
+      // elements and stay): draw the shown GPX again, keeping whether it is a preview.
+      if (this.shownGpx && !this.map.getSource('gpx')) {
+        const previewed = this.previewed
+        this.loadGpx(this.shownGpx, false)
+        this.previewed = previewed
+      }
     })
+    // A page left open across the weekly release still holds last week's tile URL, which the server
+    // no longer serves. Mapbox does not report a tile's 404, so the TileJSON is re-read on a timer.
+    this.rudyTimer = setInterval(() => {
+      if (this.style === RUDY_STYLE) this.refreshRudyLayer()
+    }, RUDY_REFRESH_MS)
     this.map.addControl(new mapboxgl.NavigationControl())
     this.map.addControl(new mapboxgl.ScaleControl({ position: 'bottom-right' }))
     // this.map.addControl(
@@ -331,15 +396,90 @@ export default {
     //   })
     // )
   },
+  beforeUnmount() {
+    clearInterval(this.rudyTimer)
+  },
   watch: {
-    style(style) {
-      this.map.setStyle(style)
+    style(style, previous) {
+      // 魯地圖 and 戶外地圖 share one base style, as do 正射影像＋等高線 and 衛星地圖, and setStyle with
+      // the same style changes nothing: between two of a pair only the overlay comes and goes (and the
+      // tracks stay).
+      if (baseStyle(style) === baseStyle(previous)) {
+        this.removeOverlays()
+        this.addOverlays()
+        return
+      }
+      this.map.setStyle(baseStyle(style))
     },
     terrain() {
       this.setTerrain()
     },
   },
   methods: {
+    addRudyLayer() {
+      loadRudyTileJSON().then((tj) => {
+        // The user may have switched away, or the style reloaded, while the TileJSON was loading.
+        if (this.style !== RUDY_STYLE || this.map.getSource(RUDY_SOURCE)) return;
+        const tiles = window.devicePixelRatio > 1 && tj.tiles_2x ? tj.tiles_2x : tj.tiles;
+        this.rudyTiles = tiles[0];
+        this.map.addSource(RUDY_SOURCE, {
+          type: 'raster',
+          tiles: tiles,
+          tileSize: 256,
+          minzoom: tj.minzoom,
+          maxzoom: tj.maxzoom,
+          bounds: TAIWAN_BOUNDS,
+          attribution: tj.attribution,
+        });
+        // Below any track already drawn.
+        const before = this.layers.find((id) => this.map.getLayer(id));
+        this.map.addLayer({ id: RUDY_SOURCE, type: 'raster', source: RUDY_SOURCE }, before);
+      }).catch((err) => {
+        // The outdoor style underneath stays visible.
+        console.warn('魯地圖 unavailable:', err);
+      });
+    },
+    addNlscLayers() {
+      // Below any track already drawn; the contours over the photo.
+      const before = this.layers.find((id) => this.map.getLayer(id));
+      for (const layer of NLSC_LAYERS) {
+        if (this.map.getSource(layer.id)) continue;
+        const source = {
+          type: 'raster',
+          tiles: [layer.url],
+          tileSize: 256,
+          // Below z7 NLSC answers with an opaque placeholder that would hide Mapbox satellite.
+          minzoom: 7,
+          maxzoom: 19,
+          bounds: TAIWAN_BOUNDS,
+        };
+        // Mapbox rejects a source whose attribution is present but undefined.
+        if (layer.attribution) source.attribution = layer.attribution;
+        this.map.addSource(layer.id, source);
+        this.map.addLayer({ id: layer.id, type: 'raster', source: layer.id }, before);
+      }
+    },
+    refreshRudyLayer() {
+      const current = this.rudyTiles;
+      loadRudyTileJSON(true).then((tj) => {
+        const tiles = window.devicePixelRatio > 1 && tj.tiles_2x ? tj.tiles_2x : tj.tiles;
+        if (this.style !== RUDY_STYLE || tiles[0] === current) return;
+        this.removeOverlays();
+        this.addRudyLayer();
+      }).catch((err) => {
+        console.warn('魯地圖 unavailable:', err);
+      });
+    },
+    addOverlays() {
+      if (this.style === RUDY_STYLE) this.addRudyLayer()
+      if (this.style === NLSC_STYLE) this.addNlscLayers()
+    },
+    removeOverlays() {
+      for (const id of [RUDY_SOURCE, ...NLSC_LAYERS.map((l) => l.id)]) {
+        if (this.map.getLayer(id)) this.map.removeLayer(id);
+        if (this.map.getSource(id)) this.map.removeSource(id);
+      }
+    },
     setTerrain: function () {
       if (this.terrain) {
         // add the DEM source as a terrain layer with exaggerated height
@@ -375,6 +515,7 @@ export default {
         return false;
       }
       this.clearMap();
+      this.shownGpx = gpx;
       let geojson = toGeoJSON.gpx(doc);
       let colors = [
         "#ff0000",
@@ -505,8 +646,18 @@ export default {
           "text-justify": "auto",
           "icon-image": ["get", "icon"],
         },
+        // A white halo keeps the names readable on the photo and satellite basemaps.
+        paint: {
+          "text-color": "#000000",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
       });
       this.layers.push(id);
+      // 魯地圖 by default, 戶外地圖 for a track outside Taiwan — unless the user picked a map.
+      if (!this.styleChosen && coordinates.length > 0) {
+        this.style = inTaiwan(coordinates) ? RUDY_STYLE : RUDY_BASE_STYLE;
+      }
       if (fitBounds && coordinates.length > 0) {
         const bounds = new mapboxgl.LngLatBounds(
           coordinates[0],
@@ -524,6 +675,7 @@ export default {
       return true;
     },
     clear() {
+      this.shownGpx = null;
       this.gpxFile = null;
       this.processedGpxContent = null;
       this.clearMap();
@@ -538,12 +690,13 @@ export default {
     },
     clearMap() {
       this.previewed = false;
+      // A switch to another base style has already dropped them; removing a missing one throws.
       for (let i = 0; i < this.layers.length; i++) {
-        this.map.removeLayer(this.layers[i]);
+        if (this.map.getLayer(this.layers[i])) this.map.removeLayer(this.layers[i]);
       }
       this.layers = [];
       for (let i = 0; i < this.sources.length; i++) {
-        this.map.removeSource(this.sources[i]);
+        if (this.map.getSource(this.sources[i])) this.map.removeSource(this.sources[i]);
       }
       this.sources = [];
       for (let i = 0; i < this.markers.length; i++) {
