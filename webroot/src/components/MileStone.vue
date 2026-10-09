@@ -111,7 +111,7 @@
       <div id="menu" class="d-flex justify-content-start">
         <div>
           <label class="visually-hidden" for="inlineFormSelectStyle">底圖</label>
-          <select class="form-select form-select-sm border-0 bg-transparent" id="inlineFormSelectStyle" v-model="style">
+          <select class="form-select form-select-sm border-0 bg-transparent" id="inlineFormSelectStyle" v-model="style" @change="styleChosen = true">
             <option v-for="style in styles" :key="style.name" :value="style.value">{{ style.name }}</option>
           </select>
         </div>
@@ -279,6 +279,18 @@ const NLSC_LAYERS = [
   },
 ];
 
+// A track is in Taiwan when the middle of its extent is.
+function inTaiwan(coordinates) {
+  let [minLng, minLat, maxLng, maxLat] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const [lng, lat] of coordinates) {
+    minLng = Math.min(minLng, lng); maxLng = Math.max(maxLng, lng);
+    minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
+  }
+  const [lng, lat] = [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+  const [w, s, e, n] = TAIWAN_BOUNDS;
+  return lng >= w && lng <= e && lat >= s && lat <= n;
+}
+
 function baseStyle(style) {
   if (style === RUDY_STYLE) return RUDY_BASE_STYLE;
   if (style === NLSC_STYLE) return NLSC_BASE_STYLE;
@@ -294,10 +306,6 @@ export default {
       map: null,
       styles: [
         {
-          name: '戶外地圖',
-          value: 'mapbox://styles/mapbox/outdoors-v11',
-        },
-        {
           name: '魯地圖',
           value: RUDY_STYLE,
         },
@@ -305,8 +313,17 @@ export default {
           name: '正射影像＋等高線',
           value: NLSC_STYLE,
         },
+        {
+          name: '戶外地圖 (全球)',
+          value: RUDY_BASE_STYLE,
+        },
+        {
+          name: '衛星地圖 (全球)',
+          value: NLSC_BASE_STYLE,
+        },
       ],
-      style: 'mapbox://styles/mapbox/outdoors-v11',
+      style: RUDY_STYLE,
+      styleChosen: false,
       terrain: false,
       gpxFile: null,
       gpxFileContent: null,
@@ -356,8 +373,7 @@ export default {
         'maxzoom': 14
       })
       this.setTerrain()
-      if (this.style === RUDY_STYLE) this.addRudyLayer()
-      if (this.style === NLSC_STYLE) this.addNlscLayers()
+      this.addOverlays()
     })
     // A page left open across the weekly release still holds last week's tile URL, which the server
     // no longer serves. Mapbox does not report a tile's 404, so the TileJSON is re-read on a timer.
@@ -377,11 +393,12 @@ export default {
   },
   watch: {
     style(style, previous) {
-      // 魯地圖 and 戶外地圖 share one base style, and setStyle with the same style changes nothing,
-      // so between those two only the overlay comes and goes (and the tracks stay).
+      // 魯地圖 and 戶外地圖 share one base style, as do 正射影像＋等高線 and 衛星地圖, and setStyle with
+      // the same style changes nothing: between two of a pair only the overlay comes and goes (and the
+      // tracks stay).
       if (baseStyle(style) === baseStyle(previous)) {
-        if (style === RUDY_STYLE) this.addRudyLayer()
-        else this.removeRudyLayer()
+        this.removeOverlays()
+        this.addOverlays()
         return
       }
       this.map.setStyle(baseStyle(style))
@@ -439,15 +456,21 @@ export default {
       loadRudyTileJSON(true).then((tj) => {
         const tiles = window.devicePixelRatio > 1 && tj.tiles_2x ? tj.tiles_2x : tj.tiles;
         if (this.style !== RUDY_STYLE || tiles[0] === current) return;
-        this.removeRudyLayer();
+        this.removeOverlays();
         this.addRudyLayer();
       }).catch((err) => {
         console.warn('魯地圖 unavailable:', err);
       });
     },
-    removeRudyLayer() {
-      if (this.map.getLayer(RUDY_SOURCE)) this.map.removeLayer(RUDY_SOURCE);
-      if (this.map.getSource(RUDY_SOURCE)) this.map.removeSource(RUDY_SOURCE);
+    addOverlays() {
+      if (this.style === RUDY_STYLE) this.addRudyLayer()
+      if (this.style === NLSC_STYLE) this.addNlscLayers()
+    },
+    removeOverlays() {
+      for (const id of [RUDY_SOURCE, ...NLSC_LAYERS.map((l) => l.id)]) {
+        if (this.map.getLayer(id)) this.map.removeLayer(id);
+        if (this.map.getSource(id)) this.map.removeSource(id);
+      }
     },
     setTerrain: function () {
       if (this.terrain) {
@@ -616,6 +639,10 @@ export default {
         },
       });
       this.layers.push(id);
+      // 魯地圖 by default, 戶外地圖 for a track outside Taiwan — unless the user picked a map.
+      if (!this.styleChosen && coordinates.length > 0) {
+        this.style = inTaiwan(coordinates) ? RUDY_STYLE : RUDY_BASE_STYLE;
+      }
       if (fitBounds && coordinates.length > 0) {
         const bounds = new mapboxgl.LngLatBounds(
           coordinates[0],
@@ -647,12 +674,13 @@ export default {
     },
     clearMap() {
       this.previewed = false;
+      // A switch to another base style has already dropped them; removing a missing one throws.
       for (let i = 0; i < this.layers.length; i++) {
-        this.map.removeLayer(this.layers[i]);
+        if (this.map.getLayer(this.layers[i])) this.map.removeLayer(this.layers[i]);
       }
       this.layers = [];
       for (let i = 0; i < this.sources.length; i++) {
-        this.map.removeSource(this.sources[i]);
+        if (this.map.getSource(this.sources[i])) this.map.removeSource(this.sources[i]);
       }
       this.sources = [];
       for (let i = 0; i < this.markers.length; i++) {
