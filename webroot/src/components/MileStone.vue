@@ -241,7 +241,7 @@ function truncate(str, n) {
 const RUDY_STYLE = 'rudy';
 const RUDY_BASE_STYLE = 'mapbox://styles/mapbox/outdoors-v11';
 const RUDY_TILEJSON_URL = 'https://rudy-tiles-brv2w5mzdq-de.a.run.app/tilejson';
-const RUDY_BOUNDS = [118.0, 21.7, 122.3, 26.5]; // Taiwan, Penghu, Kinmen, Matsu
+const TAIWAN_BOUNDS = [118.0, 21.7, 122.3, 26.5]; // Taiwan, Penghu, Kinmen, Matsu
 const RUDY_SOURCE = 'rudy-tiles';
 const RUDY_REFRESH_MS = 60 * 60 * 1000; // re-read the TileJSON this often while 魯地圖 is shown
 
@@ -263,8 +263,26 @@ function loadRudyTileJSON(fresh = false) {
   return rudyTileJSON;
 }
 
+// 正射影像＋等高線 is the Taiwan government's (NLSC) orthophoto with its contour overlay, drawn over
+// Mapbox satellite inside Taiwan, as on totoo.me. Both WMTS layers allow cross-origin reads.
+const NLSC_STYLE = 'nlsc';
+const NLSC_BASE_STYLE = 'mapbox://styles/mapbox/satellite-v9';
+const NLSC_LAYERS = [
+  {
+    id: 'nlsc-photo',
+    url: 'https://wmts.nlsc.gov.tw/wmts/PHOTO2/default/EPSG:3857/{z}/{y}/{x}',
+    attribution: '© <a href="https://maps.nlsc.gov.tw/">內政部國土測繪中心</a> 正射影像、等高線',
+  },
+  {
+    id: 'nlsc-contour',
+    url: 'https://wmts.nlsc.gov.tw/wmts/MOI_CONTOUR_2/default/EPSG:3857/{z}/{y}/{x}',
+  },
+];
+
 function baseStyle(style) {
-  return style === RUDY_STYLE ? RUDY_BASE_STYLE : style;
+  if (style === RUDY_STYLE) return RUDY_BASE_STYLE;
+  if (style === NLSC_STYLE) return NLSC_BASE_STYLE;
+  return style;
 }
 
 export default {
@@ -283,9 +301,9 @@ export default {
           name: '魯地圖',
           value: RUDY_STYLE,
         },
-        { 
-          name: '衛星地圖',
-          value: 'mapbox://styles/mapbox/satellite-v9',
+        {
+          name: '正射影像＋等高線',
+          value: NLSC_STYLE,
         },
       ],
       style: 'mapbox://styles/mapbox/outdoors-v11',
@@ -339,6 +357,7 @@ export default {
       })
       this.setTerrain()
       if (this.style === RUDY_STYLE) this.addRudyLayer()
+      if (this.style === NLSC_STYLE) this.addNlscLayers()
     })
     // A page left open across the weekly release still holds last week's tile URL, which the server
     // no longer serves. Mapbox does not report a tile's 404, so the TileJSON is re-read on a timer.
@@ -384,7 +403,7 @@ export default {
           tileSize: 256,
           minzoom: tj.minzoom,
           maxzoom: tj.maxzoom,
-          bounds: RUDY_BOUNDS,
+          bounds: TAIWAN_BOUNDS,
           attribution: tj.attribution,
         });
         // Below any track already drawn.
@@ -394,6 +413,22 @@ export default {
         // The outdoor style underneath stays visible.
         console.warn('魯地圖 unavailable:', err);
       });
+    },
+    addNlscLayers() {
+      // Below any track already drawn; the contours over the photo.
+      const before = this.layers.find((id) => this.map.getLayer(id));
+      for (const layer of NLSC_LAYERS) {
+        if (this.map.getSource(layer.id)) continue;
+        this.map.addSource(layer.id, {
+          type: 'raster',
+          tiles: [layer.url],
+          tileSize: 256,
+          maxzoom: 19,
+          bounds: TAIWAN_BOUNDS,
+          attribution: layer.attribution,
+        });
+        this.map.addLayer({ id: layer.id, type: 'raster', source: layer.id }, before);
+      }
     },
     refreshRudyLayer() {
       const current = this.rudyTiles;
