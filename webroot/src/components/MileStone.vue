@@ -235,6 +235,35 @@ function truncate(str, n) {
   return (str.length > n) ? str.substr(0, n - 1) + '…' : str;
 }
 
+// 魯地圖 is drawn over Mapbox's outdoor style, inside Taiwan only, so the map is never blank
+// elsewhere. The tile URL comes from the server's TileJSON at run time: it carries a version that
+// changes every week, and the old one stops being served.
+const RUDY_STYLE = 'rudy';
+const RUDY_BASE_STYLE = 'mapbox://styles/mapbox/outdoors-v11';
+const RUDY_TILEJSON_URL = 'https://rudy-tiles-brv2w5mzdq-de.a.run.app/tilejson';
+const RUDY_BOUNDS = [118.0, 21.7, 122.3, 26.5]; // Taiwan, Penghu, Kinmen, Matsu
+const RUDY_SOURCE = 'rudy-tiles';
+
+let rudyTileJSON = null;
+function loadRudyTileJSON() {
+  if (!rudyTileJSON) {
+    rudyTileJSON = fetch(RUDY_TILEJSON_URL)
+      .then((res) => {
+        if (!res.ok) throw new Error('TileJSON ' + res.status);
+        return res.json();
+      })
+      .catch((err) => {
+        rudyTileJSON = null; // try again on the next switch
+        throw err;
+      });
+  }
+  return rudyTileJSON;
+}
+
+function baseStyle(style) {
+  return style === RUDY_STYLE ? RUDY_BASE_STYLE : style;
+}
+
 export default {
   data() {
     return {
@@ -249,25 +278,7 @@ export default {
         },
         {
           name: '魯地圖',
-          value: {
-            'version': 8,
-            'sources': {
-              'raster-tiles': {
-                'type': 'raster',
-                'tiles': ['http://tile.happyman.idv.tw/map/moi_osm/{z}/{x}/{y}.png'],
-                'tileSize': 256,
-                'attribution':
-                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              }
-            },
-            'layers': [
-              {
-                'id': 'simple-tiles',
-                'type': 'raster',
-                'source': 'raster-tiles',
-              }
-            ]
-          },
+          value: RUDY_STYLE,
         },
         { 
           name: '衛星地圖',
@@ -309,7 +320,7 @@ export default {
     this.getVersion();
     this.map = new mapboxgl.Map({
       container: "map", // container ID
-      style: this.style,
+      style: baseStyle(this.style),
       center: this.center, // starting position [lng, lat]
       zoom: this.zoom, // starting zoom
       projection: "globe", // display the map as a 3D globe
@@ -322,6 +333,7 @@ export default {
         'maxzoom': 14
       })
       this.setTerrain()
+      if (this.style === RUDY_STYLE) this.addRudyLayer()
     })
     this.map.addControl(new mapboxgl.NavigationControl())
     this.map.addControl(new mapboxgl.ScaleControl({ position: 'bottom-right' }))
@@ -332,14 +344,47 @@ export default {
     // )
   },
   watch: {
-    style(style) {
-      this.map.setStyle(style)
+    style(style, previous) {
+      // 魯地圖 and 戶外地圖 share one base style, and setStyle with the same style changes nothing,
+      // so between those two only the overlay comes and goes (and the tracks stay).
+      if (baseStyle(style) === baseStyle(previous)) {
+        if (style === RUDY_STYLE) this.addRudyLayer()
+        else this.removeRudyLayer()
+        return
+      }
+      this.map.setStyle(baseStyle(style))
     },
     terrain() {
       this.setTerrain()
     },
   },
   methods: {
+    addRudyLayer() {
+      loadRudyTileJSON().then((tj) => {
+        // The user may have switched away, or the style reloaded, while the TileJSON was loading.
+        if (this.style !== RUDY_STYLE || this.map.getSource(RUDY_SOURCE)) return;
+        const tiles = window.devicePixelRatio > 1 && tj.tiles_2x ? tj.tiles_2x : tj.tiles;
+        this.map.addSource(RUDY_SOURCE, {
+          type: 'raster',
+          tiles: tiles,
+          tileSize: 256,
+          minzoom: tj.minzoom,
+          maxzoom: tj.maxzoom,
+          bounds: RUDY_BOUNDS,
+          attribution: tj.attribution,
+        });
+        // Below any track already drawn.
+        const before = this.layers.find((id) => this.map.getLayer(id));
+        this.map.addLayer({ id: RUDY_SOURCE, type: 'raster', source: RUDY_SOURCE }, before);
+      }).catch((err) => {
+        // The outdoor style underneath stays visible.
+        console.warn('魯地圖 unavailable:', err);
+      });
+    },
+    removeRudyLayer() {
+      if (this.map.getLayer(RUDY_SOURCE)) this.map.removeLayer(RUDY_SOURCE);
+      if (this.map.getSource(RUDY_SOURCE)) this.map.removeSource(RUDY_SOURCE);
+    },
     setTerrain: function () {
       if (this.terrain) {
         // add the DEM source as a terrain layer with exaggerated height
