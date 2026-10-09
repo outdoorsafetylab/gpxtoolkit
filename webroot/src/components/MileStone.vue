@@ -243,9 +243,11 @@ const RUDY_BASE_STYLE = 'mapbox://styles/mapbox/outdoors-v11';
 const RUDY_TILEJSON_URL = 'https://rudy-tiles-brv2w5mzdq-de.a.run.app/tilejson';
 const RUDY_BOUNDS = [118.0, 21.7, 122.3, 26.5]; // Taiwan, Penghu, Kinmen, Matsu
 const RUDY_SOURCE = 'rudy-tiles';
+const RUDY_REFRESH_MS = 60 * 1000; // re-read the TileJSON at most this often after tile errors
 
 let rudyTileJSON = null;
-function loadRudyTileJSON() {
+function loadRudyTileJSON(fresh = false) {
+  if (fresh) rudyTileJSON = null;
   if (!rudyTileJSON) {
     rudyTileJSON = fetch(RUDY_TILEJSON_URL)
       .then((res) => {
@@ -302,6 +304,8 @@ export default {
       fits: false,
       terrainDistance: false,
       twd97: false,
+      rudyTiles: null,
+      rudyRefreshedAt: 0,
     };
   },
   computed: {
@@ -335,6 +339,11 @@ export default {
       this.setTerrain()
       if (this.style === RUDY_STYLE) this.addRudyLayer()
     })
+    // A page left open across the weekly release still holds last week's tile URL, which the server
+    // no longer serves: on tile errors, re-read the TileJSON and move to the new URL if it changed.
+    this.map.on('error', (e) => {
+      if (e.sourceId === RUDY_SOURCE) this.refreshRudyLayer()
+    })
     this.map.addControl(new mapboxgl.NavigationControl())
     this.map.addControl(new mapboxgl.ScaleControl({ position: 'bottom-right' }))
     // this.map.addControl(
@@ -364,6 +373,7 @@ export default {
         // The user may have switched away, or the style reloaded, while the TileJSON was loading.
         if (this.style !== RUDY_STYLE || this.map.getSource(RUDY_SOURCE)) return;
         const tiles = window.devicePixelRatio > 1 && tj.tiles_2x ? tj.tiles_2x : tj.tiles;
+        this.rudyTiles = tiles[0];
         this.map.addSource(RUDY_SOURCE, {
           type: 'raster',
           tiles: tiles,
@@ -378,6 +388,20 @@ export default {
         this.map.addLayer({ id: RUDY_SOURCE, type: 'raster', source: RUDY_SOURCE }, before);
       }).catch((err) => {
         // The outdoor style underneath stays visible.
+        console.warn('魯地圖 unavailable:', err);
+      });
+    },
+    refreshRudyLayer() {
+      const now = Date.now();
+      if (now - this.rudyRefreshedAt < RUDY_REFRESH_MS) return;
+      this.rudyRefreshedAt = now;
+      const current = this.rudyTiles;
+      loadRudyTileJSON(true).then((tj) => {
+        const tiles = window.devicePixelRatio > 1 && tj.tiles_2x ? tj.tiles_2x : tj.tiles;
+        if (this.style !== RUDY_STYLE || tiles[0] === current) return;
+        this.removeRudyLayer();
+        this.addRudyLayer();
+      }).catch((err) => {
         console.warn('魯地圖 unavailable:', err);
       });
     },
