@@ -419,14 +419,18 @@ export default {
       const before = this.layers.find((id) => this.map.getLayer(id));
       for (const layer of NLSC_LAYERS) {
         if (this.map.getSource(layer.id)) continue;
-        this.map.addSource(layer.id, {
+        const source = {
           type: 'raster',
           tiles: [layer.url],
           tileSize: 256,
+          // Below z7 NLSC answers with an opaque placeholder that would hide Mapbox satellite.
+          minzoom: 7,
           maxzoom: 19,
           bounds: TAIWAN_BOUNDS,
-          attribution: layer.attribution,
-        });
+        };
+        // Mapbox rejects a source whose attribution is present but undefined.
+        if (layer.attribution) source.attribution = layer.attribution;
+        this.map.addSource(layer.id, source);
         this.map.addLayer({ id: layer.id, type: 'raster', source: layer.id }, before);
       }
     },
