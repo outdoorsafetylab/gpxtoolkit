@@ -240,7 +240,7 @@ function truncate(str, n) {
 // changes every week, and the old one stops being served.
 const RUDY_STYLE = 'rudy';
 const RUDY_BASE_STYLE = 'mapbox://styles/mapbox/outdoors-v11';
-const RUDY_TILEJSON_URL = 'https://rudy-tiles-brv2w5mzdq-de.a.run.app/tilejson';
+const RUDY_TILEJSON_URL = 'https://tiles.rudymap.tw/tilejson';
 const TAIWAN_BOUNDS = [118.0, 21.7, 122.3, 26.5]; // Taiwan, Penghu, Kinmen, Matsu
 const RUDY_SOURCE = 'rudy-tiles';
 const RUDY_REFRESH_MS = 60 * 60 * 1000; // re-read the TileJSON this often while 魯地圖 is shown
