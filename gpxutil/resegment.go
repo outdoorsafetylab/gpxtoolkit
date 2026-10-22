@@ -2,7 +2,7 @@ package gpxutil
 
 import (
 	"fmt"
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 
 	"google.golang.org/protobuf/proto"
 )

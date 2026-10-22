@@ -1,7 +1,7 @@
 package gpx
 
 import (
-	"gpxtoolkit/xml"
+	"github.com/outdoorsafetylab/gpxtoolkit/xml"
 	"io"
 	"strconv"
 	"time"

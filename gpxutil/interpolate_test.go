@@ -2,7 +2,7 @@ package gpxutil
 
 import (
 	"bytes"
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 	"testing"
 )
 

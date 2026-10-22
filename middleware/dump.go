@@ -9,7 +9,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 )
 
 type responseDumper struct {

@@ -4,7 +4,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"gpxtoolkit/cmd/svg"
+	"github.com/outdoorsafetylab/gpxtoolkit/cmd/svg"
 
 	"github.com/spf13/cobra"
 )

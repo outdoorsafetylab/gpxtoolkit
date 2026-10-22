@@ -3,9 +3,9 @@ package server
 import (
 	"net/http"
 
-	"gpxtoolkit/controller"
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/middleware"
+	"github.com/outdoorsafetylab/gpxtoolkit/controller"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/middleware"
 
 	"github.com/gorilla/mux"
 )

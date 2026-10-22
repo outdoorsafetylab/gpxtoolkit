@@ -2,9 +2,9 @@ package gpxutil
 
 import (
 	"fmt"
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/simpleline"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/simpleline"
 	"time"
 
 	"google.golang.org/protobuf/proto"

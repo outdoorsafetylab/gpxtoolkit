@@ -3,7 +3,7 @@ package gpxutil
 import (
 	"encoding/csv"
 	"fmt"
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 	"io"
 )
 

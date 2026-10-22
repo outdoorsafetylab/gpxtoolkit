@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 )
 
 func (c *RemoveOutlier) Name() string {

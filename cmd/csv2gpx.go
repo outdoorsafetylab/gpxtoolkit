@@ -3,9 +3,9 @@ package cmd
 import (
 	"encoding/csv"
 	"fmt"
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/twd97"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/twd97"
 	"io"
 	"log"
 	"os"

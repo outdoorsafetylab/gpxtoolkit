@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 	"io"
 	"mime/multipart"
 	"net/http"

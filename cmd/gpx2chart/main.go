@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gpxtoolkit/cmd"
+	"github.com/outdoorsafetylab/gpxtoolkit/cmd"
 	"os"
 )
 

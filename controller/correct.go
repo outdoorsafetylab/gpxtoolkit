@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/gpxutil"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpxutil"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 )
 
 type CorrectController struct {

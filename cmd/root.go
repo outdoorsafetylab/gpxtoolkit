@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 	"net/http"
 	"os"
 

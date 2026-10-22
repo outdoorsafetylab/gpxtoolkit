@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 
 	"googlemaps.github.io/maps"
 )

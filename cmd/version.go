@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"gpxtoolkit/version"
+	"github.com/outdoorsafetylab/gpxtoolkit/version"
 
 	"github.com/spf13/cobra"
 )
