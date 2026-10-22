@@ -122,6 +122,7 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%1000000%")`,
 		`printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%99s", "")))))))))))))))`,
 		`printf("%99s%99s%99s", "", "", "")`,
+		`printf("%99s%99s%99s", "", "", "") == "" ? "short" : "name"`,
 		`"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`,
 		`printf()`,
 	}
