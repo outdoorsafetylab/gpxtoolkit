@@ -236,7 +236,7 @@ func Convert(r io.Reader, opts *Options) (*gpx.TrackLog, error) {
 	trackLog := &gpx.TrackLog{
 		WayPoints: waypoints,
 	}
-	if !opts.WaypointsOnly && len(points) > 0 {
+	if len(points) > 0 {
 		trackLog.Tracks = []*gpx.Track{
 			{
 				Segments: []*gpx.Segment{
