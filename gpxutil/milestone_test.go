@@ -5,6 +5,8 @@ import (
 	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 	"math"
 	"testing"
+
+	"google.golang.org/protobuf/proto"
 )
 
 func TestMilestone(t *testing.T) {
@@ -90,6 +92,7 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%10.10f", dist)`,
 		`printf("km 100: %d", num)`,
 		`printf("%+-# 099.99e|%c|%q|%t|%x|%%", dist, 65, "a", true, 255)`,
+		`printf("%99s%99s%58s", "", "", "")`,
 	}
 	for _, template := range ok {
 		name := &MilestoneName{Template: template}
@@ -117,6 +120,9 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%T", num)`,
 		`printf("%[2]d-%[1]d", num, total)`,
 		`printf("%1000000%")`,
+		`printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%99s", "")))))))))))))))`,
+		`printf("%99s%99s%99s", "", "", "")`,
+		`"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`,
 		`printf()`,
 	}
 	for _, template := range bad {
@@ -134,5 +140,22 @@ func TestMilestoneRejectsInvalidDistance(t *testing.T) {
 		if _, err := m.Run(tracklog); err == nil {
 			t.Errorf("distance %v: no error", d)
 		}
+	}
+}
+
+// A name that is too long fails the run as soon as it is made, not after
+// every milestone has been named.
+func TestMilestoneStopsAtTheFirstLongName(t *testing.T) {
+	tracklog := &gpx.TrackLog{Tracks: []*gpx.Track{{Segments: []*gpx.Segment{{Points: []*gpx.Point{
+		{Latitude: proto.Float64(24), Longitude: proto.Float64(121)},
+		{Latitude: proto.Float64(24.1), Longitude: proto.Float64(121)},
+	}}}}}}
+	m := &Milestone{Distance: 100, MilestoneName: &MilestoneName{Template: `num < 3 ? "x" : printf("%99s%99s%99s", "", "", "")`}}
+	n, err := m.Run(tracklog)
+	if err == nil {
+		t.Fatal("no error")
+	}
+	if n != 0 || len(tracklog.WayPoints) != 0 {
+		t.Errorf("%d milestones, %d waypoints added before the error", n, len(tracklog.WayPoints))
 	}
 }

@@ -286,6 +286,9 @@ func (n *MilestoneName) Eval(variables *MilestoneNameVariables) (string, error) 
 		return "", err
 	}
 	str := fmt.Sprintf("%v", val)
+	if len(str) > maxNameLength {
+		return "", fmt.Errorf("milestone name is longer than %d bytes", maxNameLength)
+	}
 	return str, err
 }
 
@@ -339,9 +342,19 @@ func mathFunc(call func(float64) float64, args ...interface{}) (interface{}, err
 // %T and %p that fmt pads without consulting the argument.
 var formatPattern = regexp.MustCompile(`^(?:[^%]|%%|%[-+# 0]*[0-9]{0,2}(?:\.[0-9]{0,2})?[dfsvxXoeEgGcqt])*$`)
 
+// maxNameLength bounds a milestone name and every printf result inside its
+// template. Nested printf calls could otherwise double a string per level
+// (%x of a string does), so each call's inputs stay short and a name fails as
+// soon as it is evaluated, before the next milestone is made.
+const maxNameLength = 256
+
 func boundedSprintf(format string, args ...interface{}) (string, error) {
 	if !formatPattern.MatchString(format) {
 		return "", fmt.Errorf("printf format %q is not supported; use %%d, %%s, %%f and the like with at most two digits of width and precision", format)
 	}
-	return fmt.Sprintf(format, args...), nil
+	str := fmt.Sprintf(format, args...)
+	if len(str) > maxNameLength {
+		return "", fmt.Errorf("printf result is longer than %d bytes", maxNameLength)
+	}
+	return str, nil
 }
