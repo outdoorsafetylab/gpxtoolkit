@@ -100,6 +100,7 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 	bad := []string{
 		`printf("%100s", "")`,
 		`printf("%.1000000f", dist)`,
+		`printf("%.100f", dist)`,
 		`printf("%" + "1000000" + "s", "")`,
 		`printf("%*s", num, "")`,
 		`printf("%1000000d", 7)`,
