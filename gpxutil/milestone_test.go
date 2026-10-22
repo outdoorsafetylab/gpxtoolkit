@@ -88,6 +88,7 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%03d/%d", num, total)`,
 		`printf("%99s|%-5.2f%%", "a", elev)`,
 		`printf("%[2]d-%[1]d", num, total)`,
+		`printf("%10.10f", dist)`,
 	}
 	for _, template := range ok {
 		name := &MilestoneName{Template: template}
