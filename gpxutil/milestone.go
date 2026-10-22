@@ -3,7 +3,6 @@ package gpxutil
 import (
 	"fmt"
 	"math"
-	"strings"
 
 	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
 	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
@@ -294,11 +293,7 @@ var functions map[string]func(args ...interface{}) (interface{}, error) = map[st
 		if len(args) == 0 {
 			return nil, fmt.Errorf("printf needs a format")
 		}
-		str := fmt.Sprintf("%s", args[0])
-		if err := checkFormat(str); err != nil {
-			return nil, err
-		}
-		return fmt.Sprintf(str, args[1:]...), nil
+		return boundedSprintf(fmt.Sprintf("%s", args[0]), args[1:]...)
 	},
 	"round": func(args ...interface{}) (interface{}, error) {
 		return mathFunc(math.Round, args...)
@@ -335,29 +330,39 @@ func mathFunc(call func(float64) float64, args ...interface{}) (interface{}, err
 	}
 }
 
-// maxFormatWidth bounds the width and precision a printf format may ask for,
-// so a short template cannot expand into megabytes for every milestone. The
-// format is checked when printf runs, because a template can build it from
-// strings and variables. Rather than parse directives the way fmt does, the
-// check refuses every '*' and every run of digits above the bound anywhere in
-// the format: a width or precision can come from nowhere else. A literal
-// number above 99 has to be passed as an argument instead.
+// maxFormatWidth bounds the width and precision a printf directive may ask
+// for, so a short template cannot expand into megabytes for every milestone.
 const maxFormatWidth = 99
 
-func checkFormat(format string) error {
-	if strings.Contains(format, "*") {
-		return fmt.Errorf("printf width or precision from an argument is not supported")
+// boundedArg lets fmt parse the directive and refuses the width or precision
+// it asks for when either is above maxFormatWidth. fmt leaves padding to a
+// Formatter, so every width that applies to an argument passes through here,
+// however the format was spelled or assembled. A '*' width needs an int
+// argument, which a boundedArg is not, so fmt reports it as bad instead.
+type boundedArg struct {
+	value   interface{}
+	refused *bool
+}
+
+func (a boundedArg) Format(f fmt.State, verb rune) {
+	width, _ := f.Width()
+	precision, _ := f.Precision()
+	if width > maxFormatWidth || precision > maxFormatWidth {
+		*a.refused = true
+		return
 	}
-	n := 0
-	for _, c := range format {
-		if c < '0' || c > '9' {
-			n = 0
-			continue
-		}
-		n = n*10 + int(c-'0')
-		if n > maxFormatWidth {
-			return fmt.Errorf("printf format has a number above %d; pass it as an argument", maxFormatWidth)
-		}
+	fmt.Fprintf(f, fmt.FormatString(f, verb), a.value)
+}
+
+func boundedSprintf(format string, args ...interface{}) (string, error) {
+	refused := false
+	bounded := make([]interface{}, len(args))
+	for i, arg := range args {
+		bounded[i] = boundedArg{value: arg, refused: &refused}
 	}
-	return nil
+	str := fmt.Sprintf(format, bounded...)
+	if refused {
+		return "", fmt.Errorf("printf width or precision is more than %d", maxFormatWidth)
+	}
+	return str, nil
 }

@@ -89,7 +89,8 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%99s|%-5.2f%%", "a", elev)`,
 		`printf("%[2]d-%[1]d", num, total)`,
 		`printf("%10.10f", dist)`,
-		`printf("km %d: %d", 100, num)`,
+		`printf("km 100: %d", num)`,
+		`printf("%1000000%")`,
 	}
 	for _, template := range ok {
 		name := &MilestoneName{Template: template}
@@ -102,6 +103,7 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%.1000000f", dist)`,
 		`printf("%" + "1000000" + "s", "")`,
 		`printf("%*s", num, "")`,
+		`printf("%1000000d", 7)`,
 		`printf("%.*f", num, dist)`,
 		`printf("%_%1000000s", "", "")`,
 		`printf("%_%*s", "", num, "")`,
@@ -110,14 +112,23 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%1-%1000000s", "", "")`,
 		`printf("%.0.%1000000s", "", "")`,
 		`printf("%1-%*s", "", num, "")`,
-		`printf("km 100: %d", num)`,
 		`printf()`,
 	}
+	// Each either fails or comes out short; fmt reports a '*' width it cannot
+	// read as %!(BADWIDTH) rather than an error.
 	for _, template := range bad {
 		name := &MilestoneName{Template: template}
-		if _, err := name.Eval(&MilestoneNameVariables{Number: 1, Total: 2}); err == nil {
-			t.Errorf("%s: no error", template)
+		if val, err := name.Eval(&MilestoneNameVariables{Number: 1, Total: 2}); err == nil && len(val) > 100 {
+			t.Errorf("%s: %d bytes", template, len(val))
 		}
+	}
+	name := &MilestoneName{Template: `printf("%100s", "")`}
+	if _, err := name.Eval(&MilestoneNameVariables{}); err == nil {
+		t.Error("width 100 did not fail")
+	}
+	name = &MilestoneName{Template: `printf()`}
+	if _, err := name.Eval(&MilestoneNameVariables{}); err == nil {
+		t.Error("printf without a format did not fail")
 	}
 }
 
