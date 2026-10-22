@@ -154,3 +154,24 @@ func TestConvertErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestConvertWarnsWhenElevationColumnIsMissing(t *testing.T) {
+	opts := DefaultOptions()
+	var warnings bytes.Buffer
+	opts.Warnings = &warnings
+	_, err := Convert(strings.NewReader("Latitude,Longitude\n24,121\n"), opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "Skipping elevation due to 'Elevation (m)' is not found in the CSV headers\n"; warnings.String() != want {
+		t.Errorf("warnings = %q, want %q", warnings.String(), want)
+	}
+	warnings.Reset()
+	_, err = Convert(strings.NewReader("Latitude,Longitude,Elevation (m)\n24,121,5\n"), opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if warnings.Len() != 0 {
+		t.Errorf("warned with the column present: %q", warnings.String())
+	}
+}

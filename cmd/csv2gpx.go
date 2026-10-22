@@ -68,6 +68,7 @@ var csv2gpxCmd = &cobra.Command{
 			Easting:       csv2gpxEasting,
 			Northing:      csv2gpxNorthing,
 			Service:       getElevationService(),
+			Warnings:      os.Stderr,
 		})
 		if err != nil {
 			return err

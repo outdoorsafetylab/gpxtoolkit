@@ -12,7 +12,6 @@ import (
 
 	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
 	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
-	"github.com/outdoorsafetylab/gpxtoolkit/log"
 	"github.com/outdoorsafetylab/gpxtoolkit/twd97"
 
 	"google.golang.org/protobuf/proto"
@@ -38,6 +37,8 @@ type Options struct {
 	// Service looks up elevations for every point when set, replacing the
 	// elevation column.
 	Service elevation.Service
+	// Warnings receives notes about columns that were not found, when set.
+	Warnings io.Writer
 }
 
 // DefaultOptions returns the column names the csv2gpx command uses by default.
@@ -123,8 +124,8 @@ func Convert(r io.Reader, opts *Options) (*gpx.TrackLog, error) {
 			return nil, fmt.Errorf("can not find '%s' in the CSV headers", opts.Longitude)
 		}
 	}
-	if elevationIndex < 0 {
-		log.Infof("Skipping elevation due to '%s' is not found in the CSV headers", opts.Elevation)
+	if elevationIndex < 0 && opts.Warnings != nil {
+		fmt.Fprintf(opts.Warnings, "Skipping elevation due to '%s' is not found in the CSV headers\n", opts.Elevation)
 	}
 	tz, err := time.LoadLocation(opts.TimeZone)
 	if err != nil {
