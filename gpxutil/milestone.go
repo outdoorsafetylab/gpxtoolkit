@@ -338,33 +338,25 @@ func mathFunc(call func(float64) float64, args ...interface{}) (interface{}, err
 // maxFormatWidth bounds the width and precision a printf format may ask for,
 // so a short template cannot expand into megabytes for every milestone. The
 // format is checked when printf runs, because a template can build it from
-// strings and variables.
+// strings and variables. Rather than parse directives the way fmt does, the
+// check refuses every '*' and every run of digits above the bound anywhere in
+// the format: a width or precision can come from nowhere else. A literal
+// number above 99 has to be passed as an argument instead.
 const maxFormatWidth = 99
 
 func checkFormat(format string) error {
-	for i := 0; i < len(format); i++ {
-		if format[i] != '%' {
+	if strings.Contains(format, "*") {
+		return fmt.Errorf("printf width or precision from an argument is not supported")
+	}
+	n := 0
+	for _, c := range format {
+		if c < '0' || c > '9' {
+			n = 0
 			continue
 		}
-		n := 0
-		for i++; i < len(format); i++ {
-			c := format[i]
-			if c >= '0' && c <= '9' {
-				n = n*10 + int(c-'0')
-				if n > maxFormatWidth {
-					return fmt.Errorf("printf width or precision is more than %d", maxFormatWidth)
-				}
-				continue
-			}
-			if c == '*' {
-				return fmt.Errorf("printf width or precision from an argument is not supported")
-			}
-			// Anything but a flag, '.', or an argument index is the verb,
-			// valid or not, and ends the directive.
-			if !strings.ContainsRune("+-# .[]", rune(c)) {
-				break
-			}
-			n = 0
+		n = n*10 + int(c-'0')
+		if n > maxFormatWidth {
+			return fmt.Errorf("printf format has a number above %d; pass it as an argument", maxFormatWidth)
 		}
 	}
 	return nil
