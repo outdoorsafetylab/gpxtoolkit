@@ -3,6 +3,7 @@ package gpxutil
 import (
 	"fmt"
 	"math"
+	"regexp"
 
 	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
 	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
@@ -330,39 +331,17 @@ func mathFunc(call func(float64) float64, args ...interface{}) (interface{}, err
 	}
 }
 
-// maxFormatWidth bounds the width and precision a printf directive may ask
-// for, so a short template cannot expand into megabytes for every milestone.
-const maxFormatWidth = 99
-
-// boundedArg lets fmt parse the directive and refuses the width or precision
-// it asks for when either is above maxFormatWidth. fmt leaves padding to a
-// Formatter, so every width that applies to an argument passes through here,
-// however the format was spelled or assembled. A '*' width needs an int
-// argument, which a boundedArg is not, so fmt reports it as bad instead.
-type boundedArg struct {
-	value   interface{}
-	refused *bool
-}
-
-func (a boundedArg) Format(f fmt.State, verb rune) {
-	width, _ := f.Width()
-	precision, _ := f.Precision()
-	if width > maxFormatWidth || precision > maxFormatWidth {
-		*a.refused = true
-		return
-	}
-	fmt.Fprintf(f, fmt.FormatString(f, verb), a.value)
-}
+// formatPattern is the printf format a milestone template may use: literal
+// text, %%, and directives with at most two digits of width and of precision
+// and a common verb. fmt reads anything matching it the obvious way, so the
+// output stays within a few hundred bytes per directive. Everything else is
+// refused rather than interpreted: argument indexes, '*', and verbs such as
+// %T and %p that fmt pads without consulting the argument.
+var formatPattern = regexp.MustCompile(`^(?:[^%]|%%|%[-+# 0]*[0-9]{0,2}(?:\.[0-9]{0,2})?[dfsvxXoeEgGcqt])*$`)
 
 func boundedSprintf(format string, args ...interface{}) (string, error) {
-	refused := false
-	bounded := make([]interface{}, len(args))
-	for i, arg := range args {
-		bounded[i] = boundedArg{value: arg, refused: &refused}
+	if !formatPattern.MatchString(format) {
+		return "", fmt.Errorf("printf format %q is not supported; use %%d, %%s, %%f and the like with at most two digits of width and precision", format)
 	}
-	str := fmt.Sprintf(format, bounded...)
-	if refused {
-		return "", fmt.Errorf("printf width or precision is more than %d", maxFormatWidth)
-	}
-	return str, nil
+	return fmt.Sprintf(format, args...), nil
 }
