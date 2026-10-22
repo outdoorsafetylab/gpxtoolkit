@@ -102,6 +102,9 @@ func TestMilestoneNameRejectsWideFormats(t *testing.T) {
 		`printf("%" + "1000000" + "s", "")`,
 		`printf("%*s", num, "")`,
 		`printf("%.*f", num, dist)`,
+		`printf("%_%1000000s", "", "")`,
+		`printf("%_%*s", "", num, "")`,
+		`printf("%é%1000s", "")`,
 		`printf()`,
 	}
 	for _, template := range bad {

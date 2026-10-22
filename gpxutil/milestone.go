@@ -3,6 +3,7 @@ package gpxutil
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
 	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
@@ -358,7 +359,9 @@ func checkFormat(format string) error {
 			if c == '*' {
 				return fmt.Errorf("printf width or precision from an argument is not supported")
 			}
-			if c == '%' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') {
+			// Anything but a flag, '.', or an argument index is the verb,
+			// valid or not, and ends the directive.
+			if !strings.ContainsRune("+-# .[]", rune(c)) {
 				break
 			}
 			n = 0
