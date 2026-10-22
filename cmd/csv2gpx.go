@@ -1,39 +1,33 @@
 package cmd
 
 import (
-	"encoding/csv"
 	"fmt"
-	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
-	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
-	"github.com/outdoorsafetylab/gpxtoolkit/twd97"
 	"io"
-	"log"
 	"os"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
+
+	"github.com/outdoorsafetylab/gpxtoolkit/csvgpx"
 
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/proto"
 )
 
 var (
-	csv2gpxDate          = ""
-	csv2gpxTime          = "Time (UTC)"
-	csv2gpxTimeFormat    = "2006-01-02 15:04:05.999"
-	csv2gpxTimeZone      = "UTC"
-	csv2gpxLatitude      = "Latitude"
-	csv2gpxLongitude     = "Longitude"
-	csv2gpxElevation     = "Elevation (m)"
-	csv2gpxName          = "Name"
-	csv2gpxNamePattern   = ""
-	csv2gpxComment       = "Comment"
-	csv2gpxDescription   = "Description"
-	csv2gpxWaypointsOnly = false
-	csv2gpxTWD97         = false
-	csv2gpxEasting       = "Easting"
-	csv2gpxNorthing      = "Northing"
+	csv2gpxDefaults      = csvgpx.DefaultOptions()
+	csv2gpxDate          = csv2gpxDefaults.Date
+	csv2gpxTime          = csv2gpxDefaults.Time
+	csv2gpxTimeFormat    = csv2gpxDefaults.TimeFormat
+	csv2gpxTimeZone      = csv2gpxDefaults.TimeZone
+	csv2gpxLatitude      = csv2gpxDefaults.Latitude
+	csv2gpxLongitude     = csv2gpxDefaults.Longitude
+	csv2gpxElevation     = csv2gpxDefaults.Elevation
+	csv2gpxName          = csv2gpxDefaults.Name
+	csv2gpxNamePattern   = csv2gpxDefaults.NamePattern
+	csv2gpxComment       = csv2gpxDefaults.Comment
+	csv2gpxDescription   = csv2gpxDefaults.Description
+	csv2gpxWaypointsOnly = csv2gpxDefaults.WaypointsOnly
+	csv2gpxTWD97         = csv2gpxDefaults.TWD97
+	csv2gpxEasting       = csv2gpxDefaults.Easting
+	csv2gpxNorthing      = csv2gpxDefaults.Northing
 )
 
 // csv2gpxCmd represents the csv2gpx command
@@ -41,219 +35,44 @@ var csv2gpxCmd = &cobra.Command{
 	Use:   "csv2gpx",
 	Short: "Convert CSV to GPX format",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		trackLog := &gpx.TrackLog{}
-		var reader *csv.Reader
+		var reader io.Reader
+		var name *string
 		switch len(files) {
 		case 0:
-			reader = csv.NewReader(os.Stdin)
+			reader = os.Stdin
 		case 1:
 			f, err := os.Open(files[0])
 			if err != nil {
 				return err
 			}
-			trackLog.Name = proto.String(files[0])
-			reader = csv.NewReader(f)
+			defer f.Close()
+			name = proto.String(files[0])
+			reader = f
 		default:
 			return fmt.Errorf("can only convert one CSV file for each time")
 		}
-		headers, err := reader.Read()
+		trackLog, err := csvgpx.Convert(reader, &csvgpx.Options{
+			Date:          csv2gpxDate,
+			Time:          csv2gpxTime,
+			TimeFormat:    csv2gpxTimeFormat,
+			TimeZone:      csv2gpxTimeZone,
+			Latitude:      csv2gpxLatitude,
+			Longitude:     csv2gpxLongitude,
+			Elevation:     csv2gpxElevation,
+			Name:          csv2gpxName,
+			NamePattern:   csv2gpxNamePattern,
+			Comment:       csv2gpxComment,
+			Description:   csv2gpxDescription,
+			WaypointsOnly: csv2gpxWaypointsOnly,
+			TWD97:         csv2gpxTWD97,
+			Easting:       csv2gpxEasting,
+			Northing:      csv2gpxNorthing,
+			Service:       getElevationService(),
+		})
 		if err != nil {
 			return err
 		}
-		var namePattern *regexp.Regexp
-		if csv2gpxNamePattern != "" {
-			namePattern, err = regexp.Compile(csv2gpxNamePattern)
-			if err != nil {
-				return fmt.Errorf("invalid pattern for waypoint name: %s", err.Error())
-			}
-		}
-		dateIndex := -1
-		timeIndex := -1
-		latitudeIndex := -1
-		longitudeIndex := -1
-		eastingIndex := -1
-		northingIndex := -1
-		elevationIndex := -1
-		nameIndex := -1
-		commentIndex := -1
-		descriptionIndex := -1
-		for i, header := range headers {
-			switch header {
-			case csv2gpxDate:
-				if csv2gpxDate != "" {
-					dateIndex = i
-				}
-			case csv2gpxTime:
-				timeIndex = i
-			case csv2gpxLatitude:
-				latitudeIndex = i
-			case csv2gpxLongitude:
-				longitudeIndex = i
-			case csv2gpxEasting:
-				eastingIndex = i
-			case csv2gpxNorthing:
-				northingIndex = i
-			case csv2gpxElevation:
-				elevationIndex = i
-			case csv2gpxName:
-				nameIndex = i
-			case csv2gpxComment:
-				commentIndex = i
-			case csv2gpxDescription:
-				descriptionIndex = i
-			}
-		}
-		if csv2gpxTWD97 {
-			if eastingIndex < 0 {
-				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxEasting)
-			}
-			if northingIndex < 0 {
-				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxNorthing)
-			}
-		} else {
-			if latitudeIndex < 0 {
-				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxLatitude)
-			}
-			if longitudeIndex < 0 {
-				return fmt.Errorf("can not find '%s' in the CSV headers", csv2gpxLongitude)
-			}
-		}
-		if elevationIndex < 0 {
-			fmt.Fprintf(os.Stderr, "Skipping elevation due to '%s' is not found in the CSV headers\n", csv2gpxElevation)
-		}
-		tz, err := time.LoadLocation(csv2gpxTimeZone)
-		if err != nil {
-			return err
-		}
-		pointsLatLons := make([]*elevation.LatLon, 0)
-		points := make([]*gpx.Point, 0)
-		waypointsLatLons := make([]*elevation.LatLon, 0)
-		waypoints := make([]*gpx.WayPoint, 0)
-		for {
-			row, err := reader.Read()
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				return err
-			}
-			waypointName := ""
-			if nameIndex >= 0 {
-				name := strings.Trim(row[nameIndex], " \t")
-				if namePattern == nil || namePattern.MatchString(name) {
-					waypointName = name
-				}
-			}
-			var tm time.Time
-			if timeIndex >= 0 {
-				timeString := strings.Trim(row[timeIndex], " \t")
-				if dateIndex >= 0 {
-					timeString = fmt.Sprintf("%s %s", strings.Trim(row[dateIndex], " \t"), timeString)
-					if err != nil {
-						return err
-					}
-				}
-				tm, err = time.ParseInLocation(csv2gpxTimeFormat, timeString, tz)
-				if err != nil {
-					return err
-				}
-			}
-			var lat, lon float64
-			if csv2gpxTWD97 {
-				x, err := strconv.ParseFloat(strings.Trim(row[eastingIndex], " \t"), 64)
-				if err != nil {
-					return err
-				}
-				y, err := strconv.ParseFloat(strings.Trim(row[northingIndex], " \t"), 64)
-				if err != nil {
-					return err
-				}
-				lat, lon = twd97.ToWGS84(x, y, false)
-				log.Printf("TWD97: %s: %f, %f -> %f, %f", waypointName, x, y, lat, lon)
-			} else {
-				lat, err = strconv.ParseFloat(strings.Trim(row[latitudeIndex], " \t"), 64)
-				if err != nil {
-					return err
-				}
-				lon, err = strconv.ParseFloat(strings.Trim(row[longitudeIndex], " \t"), 64)
-				if err != nil {
-					return err
-				}
-			}
-			if waypointName != "" {
-				wpt := &gpx.WayPoint{
-					Name:      proto.String(waypointName),
-					Latitude:  proto.Float64(lat),
-					Longitude: proto.Float64(lon),
-				}
-				if !tm.IsZero() {
-					wpt.NanoTime = proto.Int64(tm.UnixNano())
-				}
-			}
-			point := &gpx.Point{
-				Latitude:  proto.Float64(lat),
-				Longitude: proto.Float64(lon),
-			}
-			if !tm.IsZero() {
-				point.NanoTime = proto.Int64(tm.UnixNano())
-			}
-			if elevationIndex >= 0 {
-				elev, err := strconv.ParseFloat(strings.Trim(row[elevationIndex], " \t"), 64)
-				if err != nil {
-					return err
-				}
-				point.Elevation = proto.Float64(elev)
-			}
-			if waypointName != "" {
-				wpt := &gpx.WayPoint{
-					Name:      proto.String(waypointName),
-					NanoTime:  point.NanoTime,
-					Latitude:  point.Latitude,
-					Longitude: point.Longitude,
-					Elevation: point.Elevation,
-				}
-				if commentIndex >= 0 {
-					wpt.Comment = proto.String(strings.Trim(row[commentIndex], " \t"))
-				}
-				if descriptionIndex >= 0 {
-					wpt.Description = proto.String(strings.Trim(row[descriptionIndex], " \t"))
-				}
-				waypoints = append(waypoints, wpt)
-				waypointsLatLons = append(waypointsLatLons, &elevation.LatLon{Lat: lat, Lon: lon})
-			} else if !csv2gpxWaypointsOnly {
-				points = append(points, point)
-				pointsLatLons = append(pointsLatLons, &elevation.LatLon{Lat: lat, Lon: lon})
-			}
-		}
-		service := getElevationService()
-		if service != nil {
-			elevs, err := service.Lookup(pointsLatLons)
-			if err != nil {
-				return err
-			}
-			for i, elev := range elevs {
-				points[i].Elevation = elev
-			}
-			elevs, err = service.Lookup(waypointsLatLons)
-			if err != nil {
-				return err
-			}
-			for i, elev := range elevs {
-				waypoints[i].Elevation = elev
-			}
-		}
-		trackLog.WayPoints = waypoints
-		if !csv2gpxWaypointsOnly && len(points) > 0 {
-			trackLog.Tracks = []*gpx.Track{
-				{
-					Segments: []*gpx.Segment{
-						{
-							Points: points,
-						},
-					},
-				},
-			}
-		}
+		trackLog.Name = name
 		return dumpGpx(trackLog)
 	},
 }

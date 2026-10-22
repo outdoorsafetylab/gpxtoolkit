@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="gpxtoolkit" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>wgs84.csv</name>
+  </metadata>
+  <wpt lat="24.101000" lon="121.201200">
+    <ele>2130.000000</ele>
+    <time>2024-05-01T01:05:00Z</time>
+    <name>Junction</name>
+    <cmt>left fork</cmt>
+    <desc>signpost</desc>
+  </wpt>
+  <wpt lat="24.104000" lon="121.204100">
+    <ele>2190.800000</ele>
+    <time>2024-05-01T01:15:00Z</time>
+    <name>Cabin</name>
+    <cmt>water</cmt>
+    <desc></desc>
+  </wpt>
+  <trk>
+    <trkseg>
+      <trkpt lat="24.100000" lon="121.200000">
+        <ele>2100.500000</ele>
+        <time>2024-05-01T01:00:00Z</time>
+      </trkpt>
+      <trkpt lat="24.102300" lon="121.203000">
+        <ele>2165.200000</ele>
+        <time>2024-05-01T01:10:00Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
