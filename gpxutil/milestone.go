@@ -28,6 +28,9 @@ func (c *Milestone) Name() string {
 }
 
 func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
+	if !(c.Distance > 0) || math.IsInf(c.Distance, 0) {
+		return 0, fmt.Errorf("invalid milestone distance: %v", c.Distance)
+	}
 	if c.ByTerrainDistance {
 		c.distanceFunc = TerrainDistance
 	} else {
@@ -287,7 +290,13 @@ func (n *MilestoneName) Eval(variables *MilestoneNameVariables) (string, error) 
 
 var functions map[string]func(args ...interface{}) (interface{}, error) = map[string]func(args ...interface{}) (interface{}, error){
 	"printf": func(args ...interface{}) (interface{}, error) {
+		if len(args) == 0 {
+			return nil, fmt.Errorf("printf needs a format")
+		}
 		str := fmt.Sprintf("%s", args[0])
+		if err := checkFormat(str); err != nil {
+			return nil, err
+		}
 		return fmt.Sprintf(str, args[1:]...), nil
 	},
 	"round": func(args ...interface{}) (interface{}, error) {
@@ -323,4 +332,37 @@ func mathFunc(call func(float64) float64, args ...interface{}) (interface{}, err
 	default:
 		return nil, fmt.Errorf("unexpected type: %v", args[0])
 	}
+}
+
+// maxFormatWidth bounds the width and precision a printf format may ask for,
+// so a short template cannot expand into megabytes for every milestone. The
+// format is checked when printf runs, because a template can build it from
+// strings and variables.
+const maxFormatWidth = 99
+
+func checkFormat(format string) error {
+	for i := 0; i < len(format); i++ {
+		if format[i] != '%' {
+			continue
+		}
+		n := 0
+		for i++; i < len(format); i++ {
+			c := format[i]
+			if c >= '0' && c <= '9' {
+				n = n*10 + int(c-'0')
+				if n > maxFormatWidth {
+					return fmt.Errorf("printf width or precision is more than %d", maxFormatWidth)
+				}
+				continue
+			}
+			if c == '*' {
+				return fmt.Errorf("printf width or precision from an argument is not supported")
+			}
+			if c == '%' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') {
+				break
+			}
+			n = 0
+		}
+	}
+	return nil
 }

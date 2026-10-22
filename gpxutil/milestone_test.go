@@ -3,6 +3,7 @@ package gpxutil
 import (
 	"bytes"
 	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"math"
 	"testing"
 )
 
@@ -78,5 +79,44 @@ func TestMilestoneNameValidate(t *testing.T) {
 	}
 	if val != "SM400 01/10" {
 		t.Fatal(val)
+	}
+}
+
+func TestMilestoneNameRejectsWideFormats(t *testing.T) {
+	ok := []string{
+		`printf("%.1fK", dist/1000)`,
+		`printf("%03d/%d", num, total)`,
+		`printf("%99s|%-5.2f%%", "a", elev)`,
+		`printf("%[2]d-%[1]d", num, total)`,
+	}
+	for _, template := range ok {
+		name := &MilestoneName{Template: template}
+		if _, err := name.Eval(&MilestoneNameVariables{Number: 1, Total: 2}); err != nil {
+			t.Errorf("%s: %v", template, err)
+		}
+	}
+	bad := []string{
+		`printf("%100s", "")`,
+		`printf("%.1000000f", dist)`,
+		`printf("%" + "1000000" + "s", "")`,
+		`printf("%*s", num, "")`,
+		`printf("%.*f", num, dist)`,
+		`printf()`,
+	}
+	for _, template := range bad {
+		name := &MilestoneName{Template: template}
+		if _, err := name.Eval(&MilestoneNameVariables{Number: 1, Total: 2}); err == nil {
+			t.Errorf("%s: no error", template)
+		}
+	}
+}
+
+func TestMilestoneRejectsInvalidDistance(t *testing.T) {
+	for _, d := range []float64{0, -1, math.NaN(), math.Inf(1)} {
+		tracklog := &gpx.TrackLog{}
+		m := &Milestone{Distance: d, MilestoneName: &MilestoneName{Template: `"x"`}}
+		if _, err := m.Run(tracklog); err == nil {
+			t.Errorf("distance %v: no error", d)
+		}
 	}
 }
