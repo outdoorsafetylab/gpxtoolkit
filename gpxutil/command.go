@@ -1,8 +1,8 @@
 package gpxutil
 
 import (
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 )
 
 type Command interface {

@@ -1,0 +1,5 @@
+Time (UTC),Latitude,Longitude,Elevation (m),Name,Comment,Description
+2024-05-01 01:00:00,24.1000,121.2000,2100.5,,,
+2024-05-01 01:05:00,24.1010,121.2012,2130.0,Junction,left fork,signpost
+2024-05-01 01:10:00, 24.1023 ,121.2030,2165.2,,,
+2024-05-01 01:15:00,24.1040,121.2041,2190.8,Cabin,water,

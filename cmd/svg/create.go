@@ -3,7 +3,7 @@ package svg
 import (
 	"encoding/base64"
 	"fmt"
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 	"io"
 	"math"
 	"net/http"

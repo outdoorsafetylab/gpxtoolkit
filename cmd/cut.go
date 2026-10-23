@@ -5,8 +5,8 @@ package cmd
 
 import (
 	"fmt"
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/gpxutil"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpxutil"
 
 	"github.com/spf13/cobra"
 )

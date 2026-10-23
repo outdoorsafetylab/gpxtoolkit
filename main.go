@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gpxtoolkit/cmd"
+	"github.com/outdoorsafetylab/gpxtoolkit/cmd"
 
 	"github.com/joho/godotenv"
 )

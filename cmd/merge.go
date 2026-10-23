@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 
 	"github.com/spf13/cobra"
 )

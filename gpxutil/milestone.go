@@ -3,10 +3,11 @@ package gpxutil
 import (
 	"fmt"
 	"math"
+	"regexp"
 
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 
 	"github.com/maja42/goval"
 	"google.golang.org/protobuf/proto"
@@ -28,6 +29,9 @@ func (c *Milestone) Name() string {
 }
 
 func (c *Milestone) Run(tracklog *gpx.TrackLog) (int, error) {
+	if !(c.Distance > 0) || math.IsInf(c.Distance, 0) {
+		return 0, fmt.Errorf("invalid milestone distance: %v", c.Distance)
+	}
 	if c.ByTerrainDistance {
 		c.distanceFunc = TerrainDistance
 	} else {
@@ -282,13 +286,18 @@ func (n *MilestoneName) Eval(variables *MilestoneNameVariables) (string, error) 
 		return "", err
 	}
 	str := fmt.Sprintf("%v", val)
+	if len(str) > maxNameLength {
+		return "", fmt.Errorf("milestone name is longer than %d bytes", maxNameLength)
+	}
 	return str, err
 }
 
 var functions map[string]func(args ...interface{}) (interface{}, error) = map[string]func(args ...interface{}) (interface{}, error){
 	"printf": func(args ...interface{}) (interface{}, error) {
-		str := fmt.Sprintf("%s", args[0])
-		return fmt.Sprintf(str, args[1:]...), nil
+		if len(args) == 0 {
+			return nil, fmt.Errorf("printf needs a format")
+		}
+		return boundedSprintf(fmt.Sprintf("%s", args[0]), args[1:]...)
 	},
 	"round": func(args ...interface{}) (interface{}, error) {
 		return mathFunc(math.Round, args...)
@@ -323,4 +332,29 @@ func mathFunc(call func(float64) float64, args ...interface{}) (interface{}, err
 	default:
 		return nil, fmt.Errorf("unexpected type: %v", args[0])
 	}
+}
+
+// formatPattern is the printf format a milestone template may use: literal
+// text, %%, and directives with at most two digits of width and of precision
+// and a common verb. fmt reads anything matching it the obvious way, so the
+// output stays within a few hundred bytes per directive. Everything else is
+// refused rather than interpreted: argument indexes, '*', and verbs such as
+// %T and %p that fmt pads without consulting the argument.
+var formatPattern = regexp.MustCompile(`^(?:[^%]|%%|%[-+# 0]*[0-9]{0,2}(?:\.[0-9]{0,2})?[dfsvxXoeEgGcqt])*$`)
+
+// maxNameLength bounds a milestone name and every printf result inside its
+// template. Nested printf calls could otherwise double a string per level
+// (%x of a string does), so each call's inputs stay short and a name fails as
+// soon as it is evaluated, before the next milestone is made.
+const maxNameLength = 256
+
+func boundedSprintf(format string, args ...interface{}) (string, error) {
+	if !formatPattern.MatchString(format) {
+		return "", fmt.Errorf("printf format %q is not supported; use %%d, %%s, %%f and the like with at most two digits of width and precision", format)
+	}
+	str := fmt.Sprintf(format, args...)
+	if len(str) > maxNameLength {
+		return "", fmt.Errorf("printf result is longer than %d bytes", maxNameLength)
+	}
+	return str, nil
 }

@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 )
 
 func queryGetString(q url.Values, name, preset string) string {

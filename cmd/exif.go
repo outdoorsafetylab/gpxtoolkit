@@ -3,7 +3,7 @@ package cmd
 import (
 	"crypto/sha1"
 	"fmt"
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 	"io"
 	"os"
 	"path/filepath"

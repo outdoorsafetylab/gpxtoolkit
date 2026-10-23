@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="gpxtoolkit" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>twd97.csv</name>
+  </metadata>
+  <wpt lat="23.954643" lon="121.000000">
+    <name>S</name>
+  </wpt>
+  <wpt lat="23.957352" lon="121.003930">
+    <name>S-1</name>
+  </wpt>
+  <wpt lat="23.959158" lon="121.007861">
+    <name>S-2</name>
+  </wpt>
+</gpx>

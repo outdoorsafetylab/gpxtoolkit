@@ -2,8 +2,11 @@ package gpxutil
 
 import (
 	"bytes"
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"math"
 	"testing"
+
+	"google.golang.org/protobuf/proto"
 )
 
 func TestMilestone(t *testing.T) {
@@ -78,5 +81,82 @@ func TestMilestoneNameValidate(t *testing.T) {
 	}
 	if val != "SM400 01/10" {
 		t.Fatal(val)
+	}
+}
+
+func TestMilestoneNameRejectsWideFormats(t *testing.T) {
+	ok := []string{
+		`printf("%.1fK", dist/1000)`,
+		`printf("%03d/%d", num, total)`,
+		`printf("%99s|%-5.2f%%", "a", elev)`,
+		`printf("%10.10f", dist)`,
+		`printf("km 100: %d", num)`,
+		`printf("%+-# 099.99e|%c|%q|%t|%x|%%", dist, 65, "a", true, 255)`,
+		`printf("%99s%99s%58s", "", "", "")`,
+	}
+	for _, template := range ok {
+		name := &MilestoneName{Template: template}
+		if _, err := name.Eval(&MilestoneNameVariables{Number: 1, Total: 2}); err != nil {
+			t.Errorf("%s: %v", template, err)
+		}
+	}
+	bad := []string{
+		`printf("%100s", "")`,
+		`printf("%.1000000f", dist)`,
+		`printf("%.100f", dist)`,
+		`printf("%" + "1000000" + "s", "")`,
+		`printf("%*s", num, "")`,
+		`printf("%1000000d", 7)`,
+		`printf("%.*f", num, dist)`,
+		`printf("%_%1000000s", "", "")`,
+		`printf("%_%*s", "", num, "")`,
+		`printf("%é%1000s", "")`,
+		`printf("%[1]1000000s", "")`,
+		`printf("%1-%1000000s", "", "")`,
+		`printf("%.0.%1000000s", "", "")`,
+		`printf("%1-%*s", "", num, "")`,
+		`printf("%1000000T", num)`,
+		`printf("%1000000p", num)`,
+		`printf("%T", num)`,
+		`printf("%[2]d-%[1]d", num, total)`,
+		`printf("%1000000%")`,
+		`printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%x", printf("%99s", "")))))))))))))))`,
+		`printf("%99s%99s%99s", "", "", "")`,
+		`printf("%99s%99s%99s", "", "", "") == "" ? "short" : "name"`,
+		`"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"`,
+		`printf()`,
+	}
+	for _, template := range bad {
+		name := &MilestoneName{Template: template}
+		if _, err := name.Eval(&MilestoneNameVariables{Number: 1, Total: 2}); err == nil {
+			t.Errorf("%s: no error", template)
+		}
+	}
+}
+
+func TestMilestoneRejectsInvalidDistance(t *testing.T) {
+	for _, d := range []float64{0, -1, math.NaN(), math.Inf(1)} {
+		tracklog := &gpx.TrackLog{}
+		m := &Milestone{Distance: d, MilestoneName: &MilestoneName{Template: `"x"`}}
+		if _, err := m.Run(tracklog); err == nil {
+			t.Errorf("distance %v: no error", d)
+		}
+	}
+}
+
+// A name that is too long fails the run as soon as it is made, not after
+// every milestone has been named.
+func TestMilestoneStopsAtTheFirstLongName(t *testing.T) {
+	tracklog := &gpx.TrackLog{Tracks: []*gpx.Track{{Segments: []*gpx.Segment{{Points: []*gpx.Point{
+		{Latitude: proto.Float64(24), Longitude: proto.Float64(121)},
+		{Latitude: proto.Float64(24.1), Longitude: proto.Float64(121)},
+	}}}}}}
+	m := &Milestone{Distance: 100, MilestoneName: &MilestoneName{Template: `num < 3 ? "x" : printf("%99s%99s%99s", "", "", "")`}}
+	n, err := m.Run(tracklog)
+	if err == nil {
+		t.Fatal("no error")
+	}
+	if n != 0 || len(tracklog.WayPoints) != 0 {
+		t.Errorf("%d milestones, %d waypoints added before the error", n, len(tracklog.WayPoints))
 	}
 }

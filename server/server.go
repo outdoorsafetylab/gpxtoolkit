@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 	"net/http"
 	"os"
 )

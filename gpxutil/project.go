@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"gpxtoolkit/gpx"
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 
 	"google.golang.org/protobuf/proto"
 )

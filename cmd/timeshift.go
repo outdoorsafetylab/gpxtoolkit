@@ -4,7 +4,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"gpxtoolkit/gpxutil"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpxutil"
 	"time"
 
 	"github.com/spf13/cobra"

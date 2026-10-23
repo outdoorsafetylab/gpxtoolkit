@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"gpxtoolkit/log"
-	"gpxtoolkit/server"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/server"
 
 	"github.com/spf13/cobra"
 )

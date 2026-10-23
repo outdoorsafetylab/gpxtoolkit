@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/csv"
 	"fmt"
-	"gpxtoolkit/elevation"
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/elevation"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 	"io"
 	"os"
 	"regexp"

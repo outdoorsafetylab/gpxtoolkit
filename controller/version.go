@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"gpxtoolkit/version"
+	"github.com/outdoorsafetylab/gpxtoolkit/version"
 )
 
 type VersionController struct{}

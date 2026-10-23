@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"gpxtoolkit/log"
+	"github.com/outdoorsafetylab/gpxtoolkit/log"
 )
 
 type OutdoorSafetyLab struct {

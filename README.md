@@ -51,3 +51,7 @@ make docker/run
 ### Access Our Public Endpoint
 
 You can also check our public endpoint by a web browser: https://gpxtoolkit.outdoorsafetylab.org/
+
+## License
+
+MIT, see [LICENSE](LICENSE). The `twd97` package is ported from [yychen/twd97](https://github.com/yychen/twd97) and keeps its MIT notice in [twd97/LICENSE](twd97/LICENSE).

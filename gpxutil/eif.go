@@ -1,7 +1,7 @@
 package gpxutil
 
 import (
-	"gpxtoolkit/gpx"
+	"github.com/outdoorsafetylab/gpxtoolkit/gpx"
 
 	eif "github.com/oskanberg/eif-go"
 )
