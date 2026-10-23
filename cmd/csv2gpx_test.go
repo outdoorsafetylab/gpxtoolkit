@@ -131,11 +131,14 @@ func TestCsv2gpxWarnsWhenElevationColumnIsMissing(t *testing.T) {
 	}
 }
 
-// elevationServer answers each [lon, lat] with lat*100, or fails.
-func elevationServer(t *testing.T, fail bool) string {
+// elevationServer answers each [lon, lat] with lat*100. With failFirst it
+// fails the first request only, so a command that ignores that failure and
+// goes on to the next lookup does not fail.
+func elevationServer(t *testing.T, failFirst bool) string {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if fail {
+		if failFirst {
+			failFirst = false
 			http.Error(w, "down", 500)
 			return
 		}
